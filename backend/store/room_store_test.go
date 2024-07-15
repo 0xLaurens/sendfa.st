@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func SetupRoomStore() *RoomStoreInMem {
+func SetupRoomStore() RoomStore {
 	return NewRoomStoreInMemory()
 }
 
