@@ -13,30 +13,29 @@ type CodeStore interface {
 
 type CodeStoreInMem struct {
 	mu    sync.RWMutex
-	codes map[string]string
+	codes map[string]bool
 }
 
 func NewCodeStoreInMem() *CodeStoreInMem {
 	return &CodeStoreInMem{
-		codes: make(map[string]string),
+		codes: make(map[string]bool),
 	}
 }
 
 func (s *CodeStoreInMem) CreateCode(code string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.codes[code] = code
+	s.codes[code] = true
 	return nil
 }
 
 func (s *CodeStoreInMem) GetCode(code string) (string, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	c, ok := s.codes[code]
-	if !ok {
+	if s.codes[code] == false {
 		return "", errors.New("code not found")
 	}
-	return c, nil
+	return code, nil
 }
 
 func (s *CodeStoreInMem) DeleteCode(code string) error {
