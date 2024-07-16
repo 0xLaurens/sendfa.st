@@ -13,6 +13,7 @@ type RoomStore interface {
 	GetRoomByCode(code string) (*types.Room, error)
 	UpdateRoom(id uuid.UUID, room *types.Room) (*types.Room, error)
 	DeleteRoom(id uuid.UUID) error
+	GetAllRooms() []*types.Room
 }
 
 type RoomStoreInMemory struct {
@@ -104,4 +105,16 @@ func (r *RoomStoreInMemory) DeleteRoom(id uuid.UUID) error {
 	delete(r.roomsByCode, oldRoom.Code)
 
 	return nil
+}
+
+func (r *RoomStoreInMemory) GetAllRooms() []*types.Room {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	rooms := make([]*types.Room, 0, len(r.rooms))
+	for _, room := range r.rooms {
+		rooms = append(rooms, room)
+	}
+
+	return rooms
 }

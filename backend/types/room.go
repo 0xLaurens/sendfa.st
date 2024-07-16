@@ -2,18 +2,26 @@ package types
 
 import "github.com/google/uuid"
 
+type RoomOptions func(r *Room)
+
 type Room struct {
 	ID    uuid.UUID      `json:"id"`
 	Code  string         `json:"code"`
 	Users map[*User]bool `json:"users"`
 }
 
-func CreateRoom(code string) *Room {
-	return &Room{
+func CreateRoom(options ...RoomOptions) *Room {
+	room := &Room{
 		ID:    uuid.New(),
-		Code:  code,
+		Code:  "",
 		Users: make(map[*User]bool),
 	}
+
+	for _, option := range options {
+		option(room)
+	}
+
+	return room
 }
 
 func (r *Room) AddUser(user *User) {
@@ -35,4 +43,10 @@ func (r *Room) DisplayNameUnique(displayName string) bool {
 		}
 	}
 	return true
+}
+
+func WithRoomCode(code string) RoomOptions {
+	return func(r *Room) {
+		r.Code = code
+	}
 }
