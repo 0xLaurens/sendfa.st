@@ -15,3 +15,9 @@ func WithFiberConfig(config fiber.Config) Options {
 		s.app = fiber.New(config)
 	}
 }
+
+func WithDevelopmentMode() Options {
+	return func(s *Server) {
+		s.developmentMode = true
+	}
+}

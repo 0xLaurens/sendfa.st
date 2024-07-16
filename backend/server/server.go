@@ -8,8 +8,9 @@ import (
 )
 
 type Server struct {
-	app  *fiber.App
-	port int
+	app             *fiber.App
+	port            int
+	developmentMode bool
 }
 
 func NewServer(opts ...Options) *Server {
