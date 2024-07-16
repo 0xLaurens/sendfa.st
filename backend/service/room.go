@@ -7,6 +7,16 @@ import (
 	"github.com/google/uuid"
 )
 
+var (
+	ErrorRoomNotFound       = errors.New("room not found")
+	ErrorRoomNotEmpty       = errors.New("room is not empty")
+	ErrorDisplayNameInUse   = errors.New("display name already in use")
+	ErrorCouldNotJoinRoom   = errors.New("could not join room")
+	ErrorCouldNotLeaveRoom  = errors.New("could not leave room")
+	ErrorCouldNotCreateRoom = errors.New("could not create room")
+	ErrorGenerateCode       = errors.New("could not generate unique code")
+)
+
 type RoomManagement interface {
 	GetRoomById(id uuid.UUID) (*types.Room, error)
 	GetRoomByCode(code string) (*types.Room, error)
@@ -32,7 +42,7 @@ func NewRoomService(store store.RoomStore) *RoomService {
 func (r RoomService) GetRoomById(id uuid.UUID) (*types.Room, error) {
 	room, err := r.store.GetRoomById(id)
 	if err != nil {
-		return nil, errors.New("room not found")
+		return nil, ErrorRoomNotFound
 	}
 	return room, nil
 }
@@ -40,7 +50,7 @@ func (r RoomService) GetRoomById(id uuid.UUID) (*types.Room, error) {
 func (r RoomService) GetRoomByCode(code string) (*types.Room, error) {
 	room, err := r.store.GetRoomByCode(code)
 	if err != nil {
-		return nil, errors.New("room not found")
+		return nil, ErrorRoomNotFound
 	}
 	return room, nil
 }
@@ -48,17 +58,17 @@ func (r RoomService) GetRoomByCode(code string) (*types.Room, error) {
 func (r RoomService) JoinRoom(code string, user *types.User) (*types.Room, error) {
 	room, err := r.store.GetRoomByCode(code)
 	if err != nil {
-		return nil, errors.New("room not found")
+		return nil, ErrorRoomNotFound
 	}
 
 	if !room.DisplayNameUnique(user.DisplayName) {
-		return nil, errors.New("display name already in use")
+		return nil, ErrorDisplayNameInUse
 	}
 
 	room.AddUser(user)
 	updatedRoom, err := r.store.UpdateRoom(room.ID, room)
 	if err != nil {
-		return nil, errors.New("could not join room")
+		return nil, ErrorCouldNotJoinRoom
 	}
 
 	return updatedRoom, nil
@@ -67,7 +77,7 @@ func (r RoomService) JoinRoom(code string, user *types.User) (*types.Room, error
 func (r RoomService) LeaveRoom(code string, user *types.User) (*types.Room, error) {
 	room, err := r.store.GetRoomByCode(code)
 	if err != nil {
-		return nil, errors.New("room not found")
+		return nil, ErrorRoomNotFound
 	}
 
 	room.RemoveUser(user)
@@ -75,7 +85,7 @@ func (r RoomService) LeaveRoom(code string, user *types.User) (*types.Room, erro
 
 	updatedRoom, err := r.store.UpdateRoom(room.ID, room)
 	if err != nil {
-		return nil, errors.New("could not leave room")
+		return nil, ErrorCouldNotLeaveRoom
 	}
 
 	return updatedRoom, nil
@@ -84,12 +94,12 @@ func (r RoomService) LeaveRoom(code string, user *types.User) (*types.Room, erro
 func (r RoomService) CreateRoom() (*types.Room, error) {
 	code, err := r.codeService.GenerateCode()
 	if err != nil {
-		return nil, errors.New("could not generate code")
+		return nil, ErrorGenerateCode
 	}
 	room := types.CreateRoom(code)
 	err = r.store.CreateRoom(room)
 	if err != nil {
-		return nil, errors.New("could not create room")
+		return nil, ErrorCouldNotCreateRoom
 	}
 
 	return room, nil
@@ -98,11 +108,11 @@ func (r RoomService) CreateRoom() (*types.Room, error) {
 func (r RoomService) DeleteRoom(id uuid.UUID) error {
 	roomToDelete, err := r.store.GetRoomById(id)
 	if err != nil {
-		return errors.New("room not found")
+		return ErrorRoomNotFound
 	}
 
 	if !roomToDelete.IsEmpty() {
-		return errors.New("room is not empty")
+		return ErrorRoomNotEmpty
 	}
 
 	err = r.store.DeleteRoom(id)
