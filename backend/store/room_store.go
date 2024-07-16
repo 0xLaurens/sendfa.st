@@ -15,36 +15,36 @@ type RoomStore interface {
 	DeleteRoom(id uuid.UUID) error
 }
 
-type RoomStoreInMem struct {
+type RoomStoreInMemory struct {
 	rooms       map[uuid.UUID]*types.Room
 	roomsByCode map[string]*types.Room
 	mu          sync.RWMutex
 }
 
-var _ RoomStore = (*RoomStoreInMem)(nil)
+var _ RoomStore = (*RoomStoreInMemory)(nil)
 
-func NewRoomStoreInMemory() *RoomStoreInMem {
-	return &RoomStoreInMem{
+func NewRoomStoreInMemory() *RoomStoreInMemory {
+	return &RoomStoreInMemory{
 		rooms:       make(map[uuid.UUID]*types.Room),
 		roomsByCode: make(map[string]*types.Room),
 	}
 }
 
-func (r *RoomStoreInMem) roomWithIdExists(id uuid.UUID) bool {
+func (r *RoomStoreInMemory) roomWithIdExists(id uuid.UUID) bool {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	room := r.rooms[id]
 	return room != nil
 }
 
-func (r *RoomStoreInMem) roomWithCodeExists(code string) bool {
+func (r *RoomStoreInMemory) roomWithCodeExists(code string) bool {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	room := r.roomsByCode[code]
 	return room != nil
 }
 
-func (r *RoomStoreInMem) CreateRoom(room *types.Room) error {
+func (r *RoomStoreInMemory) CreateRoom(room *types.Room) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -54,7 +54,7 @@ func (r *RoomStoreInMem) CreateRoom(room *types.Room) error {
 	return nil
 }
 
-func (r *RoomStoreInMem) GetRoomById(id uuid.UUID) (*types.Room, error) {
+func (r *RoomStoreInMemory) GetRoomById(id uuid.UUID) (*types.Room, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -66,7 +66,7 @@ func (r *RoomStoreInMem) GetRoomById(id uuid.UUID) (*types.Room, error) {
 	return room, nil
 }
 
-func (r *RoomStoreInMem) GetRoomByCode(code string) (*types.Room, error) {
+func (r *RoomStoreInMemory) GetRoomByCode(code string) (*types.Room, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -78,7 +78,7 @@ func (r *RoomStoreInMem) GetRoomByCode(code string) (*types.Room, error) {
 	return room, nil
 }
 
-func (r *RoomStoreInMem) UpdateRoom(id uuid.UUID, room *types.Room) (*types.Room, error) {
+func (r *RoomStoreInMemory) UpdateRoom(id uuid.UUID, room *types.Room) (*types.Room, error) {
 	if !r.roomWithIdExists(id) {
 		return nil, errors.New("no room found")
 	}
@@ -92,7 +92,7 @@ func (r *RoomStoreInMem) UpdateRoom(id uuid.UUID, room *types.Room) (*types.Room
 	return room, nil
 }
 
-func (r *RoomStoreInMem) DeleteRoom(id uuid.UUID) error {
+func (r *RoomStoreInMemory) DeleteRoom(id uuid.UUID) error {
 	if !r.roomWithIdExists(id) {
 		return errors.New("no room found")
 	}

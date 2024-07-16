@@ -35,8 +35,8 @@ type RoomService struct {
 
 var _ RoomManagement = (*RoomService)(nil)
 
-func NewRoomService(store store.RoomStore) *RoomService {
-	return &RoomService{store: store}
+func NewRoomService(store store.RoomStore, codeService CodeManagement) *RoomService {
+	return &RoomService{store, codeService}
 }
 
 func (r RoomService) GetRoomById(id uuid.UUID) (*types.Room, error) {

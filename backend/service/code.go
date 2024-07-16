@@ -21,6 +21,10 @@ type CodeService struct {
 
 var _ CodeManagement = (*CodeService)(nil)
 
+func NewCodeService(store store.CodeStore) *CodeService {
+	return &CodeService{store}
+}
+
 func (c *CodeService) CodeExists(code string) bool {
 	_, err := c.store.GetCode(code)
 	return err == nil

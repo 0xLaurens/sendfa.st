@@ -11,25 +11,25 @@ type CodeStore interface {
 	DeleteCode(code string) error
 }
 
-type CodeStoreInMem struct {
+type CodeStoreInMemory struct {
 	mu    sync.RWMutex
 	codes map[string]bool
 }
 
-func NewCodeStoreInMem() *CodeStoreInMem {
-	return &CodeStoreInMem{
+func NewCodeStoreInMemory() *CodeStoreInMemory {
+	return &CodeStoreInMemory{
 		codes: make(map[string]bool),
 	}
 }
 
-func (s *CodeStoreInMem) CreateCode(code string) error {
+func (s *CodeStoreInMemory) CreateCode(code string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.codes[code] = true
 	return nil
 }
 
-func (s *CodeStoreInMem) GetCode(code string) (string, error) {
+func (s *CodeStoreInMemory) GetCode(code string) (string, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	if s.codes[code] == false {
@@ -38,7 +38,7 @@ func (s *CodeStoreInMem) GetCode(code string) (string, error) {
 	return code, nil
 }
 
-func (s *CodeStoreInMem) DeleteCode(code string) error {
+func (s *CodeStoreInMemory) DeleteCode(code string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	delete(s.codes, code)

@@ -21,6 +21,7 @@ func CreateUser(deviceName string, options ...UserOption) *User {
 		ID:          uuid.New(),
 		DisplayName: utils.GenerateRandomDisplayName(),
 		DeviceName:  deviceName,
+		RoomId:      uuid.Nil,
 	}
 
 	for _, option := range options {

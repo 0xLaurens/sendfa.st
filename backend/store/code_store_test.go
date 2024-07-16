@@ -6,7 +6,7 @@ import (
 )
 
 func SetupCodeStore() CodeStore {
-	return NewCodeStoreInMem()
+	return NewCodeStoreInMemory()
 }
 
 func TestCodeStoreInMem_CreateCode(t *testing.T) {
