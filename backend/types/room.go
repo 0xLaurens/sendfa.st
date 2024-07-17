@@ -1,8 +1,13 @@
 package types
 
 import (
+	"errors"
 	"github.com/google/uuid"
 	"sync"
+)
+
+var (
+	ErrorUserNotFound = errors.New("user not found")
 )
 
 type RoomOptions func(r *Room)
@@ -17,9 +22,10 @@ type Room struct {
 
 func CreateRoom(options ...RoomOptions) *Room {
 	room := &Room{
-		ID:    uuid.New(),
-		Code:  "",
-		Users: make(map[*User]bool),
+		ID:        uuid.New(),
+		Code:      "",
+		Users:     make(map[*User]bool),
+		UsersById: make(map[uuid.UUID]*User),
 	}
 
 	for _, option := range options {
@@ -45,11 +51,17 @@ func (r *Room) RemoveUser(user *User) {
 	delete(r.UsersById, user.ID)
 }
 
-func (r *Room) GetUserById(id uuid.UUID) *User {
+func (r *Room) GetUserById(id uuid.UUID) (*User, error) {
+	var user *User
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	return r.UsersById[id]
+	user, ok := r.UsersById[id]
+	if !ok {
+		return nil, ErrorUserNotFound
+	}
+
+	return user, nil
 }
 
 func (r *Room) IsEmpty() bool {

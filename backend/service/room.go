@@ -6,6 +6,7 @@ import (
 	"github.com/0xlaurens/filefa.st/types"
 	"github.com/google/uuid"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -34,6 +35,8 @@ type RoomManagement interface {
 type RoomService struct {
 	store       store.RoomStore
 	codeService CodeManagement
+	timers      map[uuid.UUID]*time.Timer
+	timerMutex  sync.RWMutex
 }
 
 func (r *RoomService) GetAllRooms() []*types.Room {
@@ -45,7 +48,9 @@ type RoomOptions func(r *RoomService)
 var _ RoomManagement = (*RoomService)(nil)
 
 func NewRoomService(store store.RoomStore, codeService CodeManagement) *RoomService {
-	return &RoomService{store, codeService}
+	return &RoomService{
+		store: store, codeService: codeService, timers: make(map[uuid.UUID]*time.Timer),
+	}
 }
 
 func (r *RoomService) GetRoomById(id uuid.UUID) (*types.Room, error) {
@@ -81,6 +86,8 @@ func (r *RoomService) JoinRoom(code string, user *types.User) (*types.Room, erro
 	}
 	user.SetRoomCode(updatedRoom.Code)
 
+	r.stopDeletionTimer(updatedRoom.ID)
+
 	return updatedRoom, nil
 }
 
@@ -92,20 +99,9 @@ func (r *RoomService) LeaveRoom(code string, user *types.User) (*types.Room, err
 
 	room.RemoveUser(user)
 	user.SetRoomCode("no-room-yet")
-	log.Println("User left room:", user.DisplayName)
 
 	if room.IsEmpty() {
-		log.Printf("Room is empty, deleting room #%s in 1 minute\n", room.Code)
-		go func() {
-			<-time.After(1 * time.Minute)
-			if !room.IsEmpty() {
-				log.Printf("Room #%s is no longer empty, not deleting\n", room.Code)
-				return
-			}
-
-			log.Println("Deleting room:", room.Code)
-			_ = r.DeleteRoom(room.ID)
-		}()
+		r.startDeletionTimer(room)
 	}
 
 	updatedRoom, err := r.store.UpdateRoom(room.ID, room)
@@ -114,6 +110,31 @@ func (r *RoomService) LeaveRoom(code string, user *types.User) (*types.Room, err
 	}
 
 	return updatedRoom, nil
+}
+
+func (r *RoomService) startDeletionTimer(room *types.Room) {
+	r.timerMutex.Lock()
+	defer r.timerMutex.Unlock()
+
+	timer := time.AfterFunc(1*time.Minute, func() {
+		log.Println("Deleting room", room.ID)
+		if room.IsEmpty() {
+			_ = r.DeleteRoom(room.ID)
+		}
+	})
+
+	r.timers[room.ID] = timer
+}
+
+func (r *RoomService) stopDeletionTimer(roomId uuid.UUID) {
+	r.timerMutex.Lock()
+	defer r.timerMutex.Unlock()
+
+	timer, ok := r.timers[roomId]
+	if ok {
+		timer.Stop()
+		delete(r.timers, roomId)
+	}
 }
 
 func (r *RoomService) CreateRoom(customCode ...string) (*types.Room, error) {
