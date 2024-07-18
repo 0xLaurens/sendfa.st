@@ -10,12 +10,14 @@ import (
 )
 
 type WebsocketHandler struct {
-	roomService service.RoomManagement
+	roomService    service.RoomManagement
+	messageHandler *MessageHandler
 }
 
 func NewWebsocketHandler(roomService service.RoomManagement) *WebsocketHandler {
 	return &WebsocketHandler{
-		roomService: roomService,
+		roomService:    roomService,
+		messageHandler: NewMessageHandler(service.NewWebsocketNotifier(roomService)),
 	}
 }
 
@@ -31,42 +33,29 @@ func (wh *WebsocketHandler) HandleWebsocket(conn *websocket.Conn) error {
 	os := ua.OSInfo().Name
 
 	user := types.CreateUser(os, types.WithConnection(conn))
-	log.Printf("New user connected: %s\n", user.DisplayName)
+	log.Println("User connected:", user.ID)
 
-	room, err := wh.roomService.CreateRoom()
-	if err != nil {
-		return err
-	}
-
-	_, err = wh.roomService.JoinRoom(room.Code, user)
-	if err != nil {
-		log.Println("Error joining room:", err)
-		return err
-	}
-	defer func(roomService service.RoomManagement, code string, user *types.User) {
-		_, err := roomService.LeaveRoom(code, user)
-		if err != nil {
-			log.Println("Error leaving room:", err)
-			return
-		}
-	}(wh.roomService, room.Code, user)
-
-	rooms := wh.roomService.GetAllRooms()
-	log.Println("All rooms:", rooms)
+	defer conn.Close()
 
 	conn.WriteJSON(fiber.Map{
-		"type": "USER_CONNECTED",
+		"type": "IDENTITY",
 		"user": user,
 	})
 
 	for {
-		_, msg, err := conn.ReadMessage()
+		var raw interface{}
+		err := conn.ReadJSON(&raw)
 		if err != nil {
 			log.Println("Error reading message:", err)
 			break
 		}
+		req := raw.(types.Message)
 
-		log.Printf("%s: %s", user.DisplayName, string(msg))
+		err = wh.messageHandler.handleResponse(conn, req.Type, raw)
+		if err != nil {
+			return err
+		}
 	}
+
 	return nil
 }
