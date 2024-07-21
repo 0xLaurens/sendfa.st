@@ -1,5 +1,7 @@
 package types
 
+import "encoding/json"
+
 var (
 	Offer       = "OFFER"
 	Answer      = "ANSWER"
@@ -10,12 +12,14 @@ var (
 	RoomExists  = "ROOM_EXISTS"
 )
 
+// Message
+// A struct for containing messages sent by the user
 type Message struct {
-	Type string `json:"type"`
+	Type    string          `json:"type"`
+	Payload json.RawMessage `json:"payload"`
 }
 
-type JoinRoomMessage struct {
-	Type string `json:"type"`
+type JoinPayload struct {
 	Code string `json:"code"`
 	User User   `json:"user"`
 }

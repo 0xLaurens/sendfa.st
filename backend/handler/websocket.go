@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"github.com/0xlaurens/filefa.st/service"
 	"github.com/0xlaurens/filefa.st/types"
 	"github.com/gofiber/contrib/websocket"
@@ -43,16 +44,19 @@ func (wh *WebsocketHandler) HandleWebsocket(conn *websocket.Conn) error {
 	})
 
 	for {
-		var raw interface{}
-		err := conn.ReadJSON(&raw)
+		_, msg, err := conn.ReadMessage()
 		if err != nil {
-			log.Println("Error reading message:", err)
-			break
+			log.Println(err)
+			return err
 		}
-		req := raw.(types.Message)
 
-		err = wh.messageHandler.handleResponse(conn, req.Type, raw)
-		if err != nil {
+		var message types.Message
+		if err = json.Unmarshal(msg, &message); err != nil {
+			log.Println(err)
+			continue
+		}
+
+		if err = wh.messageHandler.handleResponse(conn, message); err != nil {
 			return err
 		}
 	}
