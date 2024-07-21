@@ -2,23 +2,12 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/0xlaurens/filefa.st/service"
 	"github.com/0xlaurens/filefa.st/types"
 	"github.com/gofiber/contrib/websocket"
 	"log"
 )
-
-type messageHandler func(c *websocket.Conn, notifier service.MessageNotifier, message types.Message) error
-
-var responseMap = map[string]messageHandler{
-	types.Offer:       handleOffer,
-	types.Answer:      handleAnswer,
-	types.Candidate:   handleCandidate,
-	types.JoinRoom:    handleJoinRoom,
-	types.LeaveRoom:   handleLeaveRoom,
-	types.RequestRoom: handleRequestRoom,
-	types.RoomExists:  handleRoomExists,
-}
 
 type MessageHandler struct {
 	notifier service.MessageNotifier
@@ -31,14 +20,29 @@ func NewMessageHandler(notifier service.MessageNotifier) *MessageHandler {
 }
 
 func (mh *MessageHandler) handleResponse(c *websocket.Conn, message types.Message) error {
-	handler, ok := responseMap[message.Type]
-	if !ok {
-		return nil
+	switch message.Type {
+	case types.JoinRoom:
+		return mh.handleJoinRoom(c, message)
+	case types.LeaveRoom:
+		return mh.handleLeaveRoom(c, message)
+	case types.Offer:
+		return mh.handleOffer(c, message)
+	case types.Answer:
+		return mh.handleAnswer(c, message)
+	case types.Candidate:
+		return mh.handleCandidate(c, message)
+	case types.RoomExists:
+		return mh.handleRoomExists(c, message)
+	case types.RequestRoom:
+		return mh.handleRequestRoom(c, message)
+
+	default:
+		log.Println("Unknown message type received", message.Type)
+		return errors.New("unknown message type")
 	}
-	return handler(c, mh.notifier, message)
 }
 
-func handleOffer(c *websocket.Conn, notifier service.MessageNotifier, message types.Message) error {
+func (mh *MessageHandler) handleOffer(c *websocket.Conn, message types.Message) error {
 	//msg, ok := raw.(types.OfferAnswerMessage)
 	//if !ok {
 	//	log.Println("Could not cast to OfferAnswerMessage")
@@ -50,7 +54,7 @@ func handleOffer(c *websocket.Conn, notifier service.MessageNotifier, message ty
 	return nil
 }
 
-func handleAnswer(c *websocket.Conn, notifier service.MessageNotifier, message types.Message) error {
+func (mh *MessageHandler) handleAnswer(c *websocket.Conn, message types.Message) error {
 	//msg, ok := raw.(types.OfferAnswerMessage)
 	//if !ok {
 	//	log.Println("Could not cast to OfferAnswerMessage")
@@ -61,7 +65,7 @@ func handleAnswer(c *websocket.Conn, notifier service.MessageNotifier, message t
 	return nil
 }
 
-func handleCandidate(c *websocket.Conn, notifier service.MessageNotifier, message types.Message) error {
+func (mh *MessageHandler) handleCandidate(c *websocket.Conn, message types.Message) error {
 	//msg, ok := raw.(types.CandidateMessage)
 	//if !ok {
 	//	log.Println("Could not cast to CandidateMessage")
@@ -72,12 +76,12 @@ func handleCandidate(c *websocket.Conn, notifier service.MessageNotifier, messag
 	return nil
 }
 
-func handleJoinRoom(c *websocket.Conn, notifier service.MessageNotifier, message types.Message) error {
+func (mh *MessageHandler) handleJoinRoom(c *websocket.Conn, message types.Message) error {
 	var joinPayload types.JoinPayload
 	if err := json.Unmarshal(message.Payload, &joinPayload); err != nil {
 		log.Println("Failed to unmarshall the join message", err)
 	}
-	log.Printf("Received join payload: %s\n", joinPayload)
+	log.Printf("Received join payload: %v\n", joinPayload)
 
 	// get room
 	// add user to room
@@ -86,22 +90,22 @@ func handleJoinRoom(c *websocket.Conn, notifier service.MessageNotifier, message
 	return nil
 }
 
-func handleLeaveRoom(c *websocket.Conn, notifier service.MessageNotifier, message types.Message) error {
+func (mh *MessageHandler) handleLeaveRoom(c *websocket.Conn, message types.Message) error {
 	//TODO: Implement
 	panic("implement me")
 }
 
-func handleRequestRoom(c *websocket.Conn, notifier service.MessageNotifier, message types.Message) error {
+func (mh *MessageHandler) handleRequestRoom(c *websocket.Conn, message types.Message) error {
 	//TODO: Implement
 	panic("implement me")
 }
 
-func handleRoomExists(c *websocket.Conn, notifier service.MessageNotifier, message types.Message) error {
+func (mh *MessageHandler) handleRoomExists(c *websocket.Conn, message types.Message) error {
 	//TODO: Implement
 	panic("implement me")
 }
 
-func handleUnknown(c *websocket.Conn, notifier service.MessageNotifier, message types.Message) error {
+func (mh *MessageHandler) handleUnknown(c *websocket.Conn, message types.Message) error {
 	log.Println("Unknown message type")
 	return nil
 }
