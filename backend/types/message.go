@@ -1,6 +1,9 @@
 package types
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"github.com/google/uuid"
+)
 
 var (
 	Offer       = "OFFER"
@@ -19,7 +22,15 @@ type Message struct {
 	Payload json.RawMessage `json:"payload"`
 }
 
-type JoinPayload struct {
+type RoomIdPayload struct {
+	RoomID uuid.UUID `json:"roomID"`
+}
+
+type JoinLeavePayload struct {
 	Code string `json:"code"`
 	User User   `json:"user"`
+}
+
+type RoomExistsPayload struct {
+	Code string `json:"code"`
 }

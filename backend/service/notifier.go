@@ -1,10 +1,14 @@
 package service
 
-import "github.com/google/uuid"
+import (
+	"github.com/gofiber/contrib/websocket"
+	"github.com/google/uuid"
+)
 
 type MessageNotifier interface {
-	BroadcastMessage(json interface{}, roomId uuid.UUID) error
+	BroadcastMessage(sender *websocket.Conn, json interface{}, roomId uuid.UUID) error
 	SendMessage(json interface{}, roomId, userId uuid.UUID) error
+	SendToConnection(json interface{}, conn *websocket.Conn) error
 }
 
 var _ MessageNotifier = (*WebsocketNotifier)(nil)
@@ -17,16 +21,23 @@ func NewWebsocketNotifier(roomService RoomManagement) *WebsocketNotifier {
 	return &WebsocketNotifier{roomService: roomService}
 }
 
-func (w *WebsocketNotifier) BroadcastMessage(json interface{}, roomId uuid.UUID) error {
+func (w *WebsocketNotifier) BroadcastMessage(sender *websocket.Conn, json interface{}, roomId uuid.UUID) error {
 	room, err := w.roomService.GetRoomById(roomId)
 	if err != nil {
 		return err
 	}
 
 	for user := range room.Users {
+		if user.Connection == sender {
+			continue
+		}
 		_ = user.Connection.WriteJSON(json)
 	}
 	return nil
+}
+
+func (w *WebsocketNotifier) SendToConnection(json interface{}, conn *websocket.Conn) error {
+	return conn.WriteJSON(json)
 }
 
 func (w *WebsocketNotifier) SendMessage(json interface{}, roomId, userId uuid.UUID) error {
