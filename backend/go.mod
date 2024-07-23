@@ -29,6 +29,7 @@ require (
 	github.com/gofiber/contrib/swagger v1.2.0 // indirect
 	github.com/gofiber/contrib/websocket v1.3.2 // indirect
 	github.com/gofiber/swagger v1.1.0 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
