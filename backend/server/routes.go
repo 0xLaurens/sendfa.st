@@ -8,9 +8,11 @@ import (
 )
 
 func (s *Server) SetupRoutes(wh *handler.WebsocketHandler) {
-	s.app.Use("/ws", wh.UpgradeWebsocket)
+	api := s.app.Group("/api")
 
-	s.app.Use("/ws", websocket.New(func(conn *websocket.Conn) {
+	api.Use("/websocket", wh.UpgradeWebsocket)
+
+	api.Use("/websocket", websocket.New(func(conn *websocket.Conn) {
 		err := wh.HandleWebsocket(conn)
 		if err != nil {
 			log.Println(err)
@@ -18,7 +20,7 @@ func (s *Server) SetupRoutes(wh *handler.WebsocketHandler) {
 		}
 	}))
 
-	s.app.Get("/health", func(ctx *fiber.Ctx) error {
+	api.Get("/health", func(ctx *fiber.Ctx) error {
 		return ctx.SendStatus(fiber.StatusOK)
 	})
 

@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"github.com/0xlaurens/filefa.st/auth"
 	"github.com/0xlaurens/filefa.st/service"
 	"github.com/0xlaurens/filefa.st/types"
 	"github.com/gofiber/contrib/websocket"
@@ -33,6 +34,14 @@ func (mh *MessageHandler) handleResponse(c *websocket.Conn, message types.Messag
 		return mh.handleRequestRoom(c, message)
 	case types.Answer, types.Candidate, types.Offer:
 		return mh.handleWebrtcMessage(c, message)
+	case "AUTH":
+		{
+			log.Println("Received auth message")
+			handler := auth.Protected(func(conn *websocket.Conn, message types.Message) error {
+				return mh.notifier.SendToConnection(fiber.Map{"type": "auth", "message": "You are authorized"}, conn)
+			})
+			return handler(c, message)
+		}
 
 	default:
 		log.Println("Unknown message type received", message.Type)
