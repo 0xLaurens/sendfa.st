@@ -60,6 +60,4 @@ func (wh *WebsocketHandler) HandleWebsocket(conn *websocket.Conn) error {
 			return err
 		}
 	}
-
-	return nil
 }
