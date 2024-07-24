@@ -32,7 +32,7 @@ const email = data.user?.email
 <Layout title="Dashboard">
     <h1>Welcome back, {email}</h1>
     <p>We are happy to see you!</p>
-    <form action="/api/signout" method="post">
+    <form action="/api/auth/signout" method="post">
         <button type="submit">Sign out</button>
     </form>
 </Layout>
