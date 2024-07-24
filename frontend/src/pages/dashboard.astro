@@ -1,0 +1,38 @@
+---
+export const prerender = false;
+import Layout from "../layouts/Layout.astro"
+import {supabase} from "../lib/supabase.ts"
+
+const {cookies, redirect} = Astro
+
+const accessToken = cookies.get("sb-access-token")
+const refreshToken = cookies.get("sb-refresh-token")
+
+if (!accessToken || !refreshToken) {
+    return redirect("/signin")
+}
+
+const {data, error} = await supabase.auth.setSession({
+    access_token: accessToken.value,
+    refresh_token: refreshToken.value
+})
+
+if (error) {
+    cookies.delete("sb-access-token", {path: "/"})
+    cookies.delete("sb-refresh-token", {path: "/"})
+
+    return redirect("/signin")
+}
+
+console.log(data)
+const email = data.user?.email
+---
+
+
+<Layout title="Dashboard">
+    <h1>Welcome back, {email}</h1>
+    <p>We are happy to see you!</p>
+    <form action="/api/signout" method="post">
+        <button type="submit">Sign out</button>
+    </form>
+</Layout>

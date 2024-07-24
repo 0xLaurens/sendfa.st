@@ -1,0 +1,24 @@
+---
+import Layout from '../layouts/Layout.astro'
+
+const {cookies, redirect} = Astro
+
+const accessToken = cookies.get('accessToken')
+const refreshToken = cookies.get('refreshToken')
+
+if (!accessToken || !refreshToken) {
+    redirect('/')
+}
+---
+
+<Layout title="Sign in">
+    <h1>Sign in</h1>
+    <p>New here? <a href="/register">Create an Account</a></p>
+    <form action="/api/auth/signin" method="post" enctype="multipart/form-data">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+        <button type="submit">Login</button>
+    </form>
+</Layout>
