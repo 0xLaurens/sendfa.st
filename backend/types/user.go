@@ -2,7 +2,7 @@ package types
 
 import (
 	"github.com/0xlaurens/filefa.st/utils"
-	"github.com/fasthttp/websocket"
+	"github.com/gofiber/contrib/websocket"
 	"github.com/google/uuid"
 )
 
@@ -13,7 +13,7 @@ type User struct {
 	DisplayName string          `json:"display_name"`
 	DeviceName  string          `json:"device_name"`
 	Connection  *websocket.Conn `json:"-"`
-	RoomId      uuid.UUID       `json:"-"`
+	RoomCode    string          `json:"room_code"`
 }
 
 func CreateUser(deviceName string, options ...UserOption) *User {
@@ -21,7 +21,7 @@ func CreateUser(deviceName string, options ...UserOption) *User {
 		ID:          uuid.New(),
 		DisplayName: utils.GenerateRandomDisplayName(),
 		DeviceName:  deviceName,
-		RoomId:      uuid.Nil,
+		RoomCode:    "no-room-yet",
 	}
 
 	for _, option := range options {
@@ -43,6 +43,6 @@ func WithConnection(conn *websocket.Conn) UserOption {
 	}
 }
 
-func (u *User) SetRoomId(id uuid.UUID) {
-	u.RoomId = id
+func (u *User) SetRoomCode(code string) {
+	u.RoomCode = code
 }

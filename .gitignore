@@ -24,3 +24,35 @@ go.work.sum
 # editor files
 .vscode/
 .idea/
+
+# Astro build output
+dist/
+.output/
+
+# Node modules
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.production
+
+# macOS-specific files
+.DS_Store
+
+# Editor directories and files
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Temporary files
+*.log
+*.bak
+*.tmp
