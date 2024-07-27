@@ -9,7 +9,12 @@ export default {
     ],
     daisyui: {
         themes: [
-            "light"
-        ]
+            {
+                light: {
+                    ...require('daisyui/src/theming/themes')['light'],
+                    primary: "#7349ff",
+                },
+            },
+        ],
     },
 }
