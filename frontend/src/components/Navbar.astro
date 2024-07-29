@@ -1,11 +1,14 @@
 ---
 import {Image} from 'astro:assets'
+import '@fontsource-variable/gabarito'
 ---
+
 <header class="z-10 relative bg-transparent">
     <nav class="container max-w-5xl flex items-center justify-between px-8 py-4 mx-auto" aria-label="Global">
         <div class="flex lg:flex-1 space-x-1">
             <a class="flex items-center gap-2 shrink-0 " title="Sendfast homepage" href="/">
-                <Image alt="sendfa.st logo" src="/sendfast.png" class="w-8 md:w-10" width="50px" height="50px" loading="eager">
+                <Image alt="sendfa.st logo" src="/sendfast.png" class="w-8 md:w-10" width="50px" height="50px"
+                       loading="eager">
             </a>
             <a class="flex items-center gap-2 shrink-0 " title="Sendfast homepage" href="/">
                 <span class="font-extrabold text-lg">Sendfa.st</span>
@@ -24,3 +27,8 @@ import {Image} from 'astro:assets'
         </div>
     </nav>
 </header>
+<style>
+    header {
+        font-family: 'Gabarito Variable', sans-serif;
+    }
+</style>

@@ -12,6 +12,7 @@
   "dependencies": {
     "@astrojs/check": "^0.8.2",
     "@astrojs/tailwind": "^5.1.0",
+    "@fontsource-variable/gabarito": "^5.0.5",
     "@supabase/supabase-js": "^2.44.4",
     "astro": "^4.12.2",
     "lucide-astro": "^0.414.0",
