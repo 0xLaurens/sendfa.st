@@ -37,7 +37,7 @@ import Navbar from "../components/Navbar.astro";
                         </li>
                     </ul>
 
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary btn-wide">
                         Send Files
                         <Send/>
                     </button>
@@ -148,7 +148,59 @@ import Navbar from "../components/Navbar.astro";
     <section class="bg-base-200 overflow-hidden" id="pricing">
         <div class="py-24 px-8 max-w-5xl mx-auto">
             <div class="relative flex justify-center flex-col lg:flex-row items-center lg:items-stretch gap-8">
-                <div class="relative w-full max-w-lg">
+            </div>
+        </div>
+    </section>
+
+    <!--  FAQ -->
+    <section class="bg-base-200" id="faq">
+        <div class="py-24 px-8 max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row gap-12">
+                <div class="flex flex-col text-left basis-1/2">
+                    <p class="inline-block font-semibold text-primary mb-4">FAQ</p>
+                    <p class="text-3xl md:text-4xl font-extrabold text-base-content">Frequently Asked Questions</p>
+                </div>
+                <div class="basis-1/2">
+                    <div class="collapse collapse-plus">
+                        <input type="radio" name="my-accordion-3" checked="checked"/>
+                        <div class="collapse-title text-xl font-medium">Why do I need sendfa.st</div>
+                        <div class="collapse-content">
+                            <p>
+                                Sendfa.st is a fast and secure way to send files between devices. No registration
+                                required. The files are sent directly between the devices.
+                                No files are stored on any servers.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="collapse collapse-plus">
+                        <input type="radio" name="my-accordion-3"/>
+                        <div class="collapse-title text-xl font-medium">Is sendfa.st secure?</div>
+                        <div class="collapse-content">
+                            <p>
+                                Yes. All the data being sent with Sendfa.st is encrypted. Nor does sendfa.st store any
+                                of the data being sent.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="collapse collapse-plus">
+                        <input type="radio" name="my-accordion-3"/>
+                        <div class="collapse-title text-xl font-medium">Are my files private?</div>
+                        <div class="collapse-content">
+                            <p>
+                                Yes. All the data that a users sent is sent directly via a peer-to-peer connection. This
+                                means
+                                that the data being sent is never stored or received by any servers.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="collapse collapse-plus">
+                        <input type="radio" name="my-accordion-3"/>
+                        <div class="collapse-title text-xl font-medium">What devices are supported?</div>
+                        <div class="collapse-content">
+                            <p>All kinds! From phones to laptops. The device requires a modern browser and a Internet
+                                connection.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
