@@ -9,62 +9,54 @@ const refreshToken = cookies.get('refreshToken')
 if (!accessToken || !refreshToken) {
     redirect('/')
 }
+
+import Navbar from '../components/Navbar.astro'
 ---
 
 <Layout title="Sign in">
-    <!--<h1>Sign in</h1>-->
-    <!--<p>New here? <a href="/register">Create an Account</a></p>-->
-    <!--<form action="/api/auth/signin" method="post" enctype="multipart/form-data">-->
-    <!--    <label for="email">Email</label>-->
-    <!--    <input type="email" id="email" name="email">-->
-    <!--    <label for="password">Password</label>-->
-    <!--    <input type="password" id="password" name="password">-->
-    <!--    <button type="submit">Login</button>-->
-    <!--    <button value="google" name="provider" type="submit">Sign in with Google</button>-->
-    <!--</form>-->
-    <div class="justify-center mx-auto">
-        <div class="flex flex-col gap-4 rounded-box bg-base-200 p-6 max-w-md">
-            <h1 class="text-3xl font-bold self-center">Log in</h1>
+    <section class="bg-base-200 overflow-hidden min-h-screen" id="login">
+        <Navbar/>
+        <div class="py-24 px-8 max-w-5xl mx-auto ">
+            <div class="mx-auto relative max-w-lg w-full">
+                <div class="rounded-2xl p-6 shadow-sm bg-base-100">
+                    <div class="relative flex flex-col h-full gap-5 lg:gap-8 z-10 p-8 rounded-lg">
+                        <div class="flex flex-wrap gap-2">
+                            <div class="flex flex-col justify-end mb-[4px] text-lg "><p class="relative"><span
+                                    class="absolute bg-base-content h-[1.5px] inset-x-0 top-[53%]"></span><span
+                                    class="text-base-content/80"></span></p></div>
+                            <p class="text-5xl tracking-tight font-black">Login</p>
+                            <div class="flex flex-col justify-end mb-[4px]"><p
+                                    class="text-xs text-base-content/60 uppercase font-semibold">
+                            </p></div>
+                        </div>
 
-            <span class="self-center">
-        Don't have an account?
-        <a class="link link-secondary">Register</a>
-    </span>
+                        <form action="/api/auth/signin" method="post" enctype="multipart/form-data">
+                            <label class="form-control">
+                                <div class="label">
+                                    Email
+                                </div>
+                                <input placeholder="example@mail.com" class="input input-bordered">
+                            </label>
 
-            <a class="btn btn-neutral">
-                <i class="fa-brands fa-google text-primary"></i>
-                Log in with Google
-            </a>
+                            <label class="form-control">
+                                <div class="label">
+                                    Password
+                                </div>
+                                <input placeholder="•••••••" type="password" class="input input-bordered">
+                            </label>
+                            <div class="space-y-2 mt-10">
+                                <button type="submit" class="btn btn-primary w-full">
+                                    Login
+                                </button>
+                                <p>Don't have an account? <a href="/register" class="link link-primary link-hover">Register</a>
+                                </p>
+                            </div>
+                        </form>
 
-            <div class="divider">OR</div>
-            <form action="/api/auth/signin" method="post" enctype="multipart/form-data">
 
-                <label class="form-control">
-                    <div class="label">
-                        <span class="label-text">Email</span>
                     </div>
-
-                    <input class="input input-bordered"/>
-                </label>
-
-                <label class="form-control">
-                    <div class="label">
-                        <span class="label-text">Password</span>
-                        <a class="label-text link link-accent">Forgot password?</a>
-                    </div>
-
-                    <input type="password" class="input input-bordered"/>
-                </label>
-
-                <div class="form-control">
-                    <label class="cursor-pointer label self-start gap-2">
-                        <input type="checkbox" class="checkbox"/>
-                        <span class="label-text">Remember me</span>
-                    </label>
                 </div>
-
-                <button class="btn btn-primary">Log in</button>
-            </form>
+            </div>
         </div>
-    </div>
+    </section>
 </Layout>
