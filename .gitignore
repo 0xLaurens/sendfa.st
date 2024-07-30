@@ -56,3 +56,6 @@ pnpm-debug.log*
 *.log
 *.bak
 *.tmp
+
+# cloudflare pages
+.dev.vars

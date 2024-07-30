@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import {Send, Check, Plus, Minus, X} from "lucide-astro";
+import {Send, Check, X} from "lucide-astro";
 import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
 ---
@@ -81,7 +81,7 @@ import Footer from "../components/Footer.astro";
                         <ul class="hidden md:block text-base-content-secondary leading-relaxed space-y-1">
                             <li class="flex items-center justify-center lg:justify-start gap-2">
                                 <Check/>
-                                Unthrottled transfer speed.
+                                Unlimited transfer speed.
                             </li>
                             <li class="flex items-center justify-center lg:justify-start gap-2">
                                 <Check/>
@@ -131,7 +131,7 @@ import Footer from "../components/Footer.astro";
                 <input type="radio" name="my-accordion-3"/>
                 <div class="collapse-title text-xl font-medium">4. Files received! 🎉</div>
                 <div class="collapse-content">
-                    <p>Wait until the files are transferred. Congrats! You've succesfully exchanged files</p>
+                    <p>Wait until the files are transferred. Congrats! You've successfully exchanged files</p>
                 </div>
             </div>
         </div>
@@ -176,7 +176,7 @@ import Footer from "../components/Footer.astro";
                                 </li>
                                 <li class="flex items-center gap-2">
                                     <Check class="h-5"/>
-                                    Unthrottled transfer speed
+                                    Unlimited transfer speed
                                 </li>
                                 <li class="flex items-center gap-2">
                                     <Check class="h-5"/>
@@ -224,7 +224,7 @@ import Footer from "../components/Footer.astro";
                                 </li>
                                 <li class="flex items-center gap-2">
                                     <Check class="h-5"/>
-                                    Unthrottled transfer speed
+                                    Unlimited transfer speed
                                 </li>
                                 <li class="flex items-center gap-2">
                                     <Check class="h-5"/>
@@ -299,6 +299,13 @@ import Footer from "../components/Footer.astro";
                                 means
                                 that the data being sent is never stored or received by any servers.
                             </p>
+                        </div>
+                    </div>
+                    <div class="collapse collapse-plus">
+                        <input type="radio" name="my-accordion-3"/>
+                        <div class="collapse-title text-xl font-medium">How fast can files be transferred?</div>
+                        <div class="collapse-content">
+                            <p>The speed of the file transfer is dependant on the upload speed of the sender and the download speed of the receiver. Sendfa.st does not limit these speeds.</p>
                         </div>
                     </div>
                     <div class="collapse collapse-plus">
