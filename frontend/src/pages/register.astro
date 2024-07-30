@@ -1,15 +1,75 @@
 ---
+export const prerendered = false;
 import Layout from "../layouts/Layout.astro"
+import Navbar from "../components/Navbar.astro";
+import {Image} from 'astro:assets';
 ---
 
 <Layout title="Register">
+    <section class="bg-base-200 overflow-hidden min-h-screen" id="login">
+        <Navbar/>
+        <div class="py-24 px-8 max-w-5xl mx-auto ">
+            <div class="mx-auto relative max-w-lg w-full">
+                <div class="rounded-2xl p-6 shadow-sm bg-base-100">
+                    <div class="relative flex flex-col h-full gap-5 lg:gap-8 z-10 p-8 rounded-lg">
+                        <div class="flex flex-wrap gap-2">
+                            <div class="flex flex-col justify-end mb-[4px] text-lg "><p class="relative"><span
+                                    class="absolute bg-base-content h-[1.5px] inset-x-0 top-[53%]"></span><span
+                                    class="text-base-content/80"></span></p></div>
+                            <p class="text-5xl tracking-tight font-black">Create an account</p>
+                            <div class="flex flex-col justify-end mb-[4px]"><p
+                                    class="text-xs text-base-content/60 uppercase font-semibold">
+                            </p></div>
+                        </div>
+
+
+                        <form action="/api/auth/register" method="post" enctype="multipart/form-data">
+                            <label class="form-control">
+                                <div class="label">
+                                    Username
+                                </div>
+                                <input placeholder="username" class="input input-bordered">
+                            </label>
+                            <label class="form-control">
+                                <div class="label">
+                                    Email
+                                </div>
+                                <input placeholder="example@mail.com" class="input input-bordered">
+                            </label>
+
+                            <label class="form-control">
+                                <div class="label">
+                                    Password
+                                </div>
+                                <input placeholder="•••••••" type="password" class="input input-bordered">
+                            </label>
+                            <div class="space-y-2 mt-10">
+                                <button type="submit" class="btn btn-primary w-full">
+                                    Register
+                                </button>
+                                <button class="btn btn-neutral w-full">
+                                    Register with Google
+                                    <Image loading="eager" alt="google logo" height="50" width="50" class="h-5 w-5"
+                                           src="https://lh3.googleusercontent.com/COxitqgJr1sJnIDe8-jiKhxDx1FrYbtRHKJ9z_hELisAlapwE9LUPh6fcXIfb5vwpbMl4xl9H9TRFPc5NOO8Sb3VSgIBrfRYvW6cUA" />
+                                </button>
+                                <p>Already have an account? <a href="/signin"
+                                                               class="link link-primary link-hover">Login</a>
+                                </p>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
     <h1>Register</h1>
     <p>Already have an account? <a href="/signin">Sign in</a></p>
     <form action="/api/auth/register" method="post">
         <label for="email">Email</label>
-        <input type="email" name="email" id="email" />
+        <input type="email" name="email" id="email"/>
         <label for="password">Password</label>
-        <input type="password" name="password" id="password" />
+        <input type="password" name="password" id="password"/>
         <button type="submit">Register</button>
     </form>
 </Layout>
