@@ -38,10 +38,10 @@ import Footer from "../components/Footer.astro";
                         </li>
                     </ul>
 
-                    <button class="btn btn-primary btn-wide">
+                    <a href="/app/" class="btn btn-primary btn-wide">
                         Send Files
                         <Send/>
-                    </button>
+                    </a>
 
                 </div>
             </div>
@@ -197,7 +197,7 @@ import Footer from "../components/Footer.astro";
                             </ul>
 
                             <div class="space-y-2">
-                                <a class="btn btn-primary/20 w-full my-2 text-black">
+                                <a href="/app" class="btn btn-primary/20 w-full my-2 text-black">
                                     Start sending files
                                     <Send/>
                                 </a>
@@ -245,7 +245,7 @@ import Footer from "../components/Footer.astro";
                             </ul>
 
                             <div class="space-y-2">
-                                <a class="btn btn-primary w-full my-2 text-white">
+                                <a class="btn btn-primary w-full my-2 text-white" href={import.meta.env.SENDFAST_PRO_URL}>
                                     Get Sendfa.st Pro
                                     <Send/>
                                 </a>
