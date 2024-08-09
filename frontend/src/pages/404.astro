@@ -1,0 +1,27 @@
+---
+import Layout from "../layouts/Layout.astro";
+import {House, MessageCircleHeart} from "lucide-astro";
+import {Image} from 'astro:assets'
+---
+
+<Layout title="Sendfast • Page Not Found">
+    <section
+            class="relative bg-base-100 text-base-content h-screen w-full flex flex-col justify-center gap-8 items-center p-10">
+        <div class="p-6 bg-white rounded-xl">
+            <Image loading="eager" height="56" width="56" class="w-56 h-56" src="/404.svg" alt="404 Not found"/>
+        </div>
+        <p class="text-lg md:text-xl font-semibold">No page found! 😿</p>
+        <div class="flex flex-wrap gap-4 justify-center">
+            <a href="/" class="btn btn-sm">
+                <House/>
+                Home
+            </a>
+            <a href=`mailto:${import.meta.env.SUPPORT_EMAIL}` class="btn btn-sm">
+                <MessageCircleHeart/>
+                Support
+            </a>
+            {}
+        </div>
+    </section>
+</Layout>
+

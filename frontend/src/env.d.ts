@@ -4,6 +4,7 @@ interface ImportMetaEnv {
     readonly STRIPE_PUBLIC_KEY: string
     readonly STRIPE_KEY: string
     readonly SENDFAST_PRO_URL: string
+    readonly SUPPORT_EMAIL: string
 }
 
 interface ImportMeta {

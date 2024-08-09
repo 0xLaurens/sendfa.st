@@ -21,7 +21,7 @@ import {Image} from 'astro:assets'
                         LINKS
                     </div>
                     <div class="flex flex-col justify-center items-center md:items-start gap-2 mb-10 text-sm">
-                        <a href="mailto:support@mg.sendfa.st" class="link link-hover">Contact</a>
+                        <a href=`mailto:${import.meta.env.SUPPORT_EMAIL}` class="link link-hover">Contact</a>
                         <a href="/#pricing" class="link link-hover">Pricing</a>
                         <a href="/#faq" class="link link-hover">FAQ</a>
                     </div>
