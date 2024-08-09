@@ -10,7 +10,7 @@ import {Image} from 'astro:assets'
         <h1 class="text-3xl md:text-4xl font-black">Thank you for your purchase! ❤️‍🔥</h1>
         <p>Please check your email (and spam). You should get a email to activate your account!</p>
         <div class="flex flex-wrap gap-4 justify-center">
-            <a href=`mailto:${import.meta.env.SUPPORT_EMAIL}` class="btn btn-sm">
+            <a target="_blank" href=`mailto:${import.meta.env.SUPPORT_EMAIL}?subject=Sendfast payment support needed!` class="btn btn-sm">
                 <MessageCircleHeart/>
                 Support
             </a>
