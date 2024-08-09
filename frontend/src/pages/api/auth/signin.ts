@@ -12,6 +12,8 @@ export const POST: APIRoute = async ({request, cookies, redirect}) => {
         const provider = formData.get("provider")?.toString();
         const validProviders = ["google"];
 
+        console.log(formData);
+
         if (provider && validProviders.includes(provider)) {
             const {data, error} = await supabase.auth.signInWithOAuth({
                 provider: provider as Provider,
