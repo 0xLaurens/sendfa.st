@@ -1,0 +1,20 @@
+---
+import Layout from "../layouts/Layout.astro";
+import {House, MessageCircleHeart} from "lucide-astro";
+import {Image} from 'astro:assets'
+---
+
+<Layout title="Sendfast • Thank you!">
+    <section
+            class="relative bg-base-100 text-base-content h-screen w-full flex flex-col justify-center gap-8 items-center p-10">
+        <h1 class="text-3xl md:text-4xl font-black">Thank you for your purchase! ❤️‍🔥</h1>
+        <p>Please check your email (and spam). You should get a email to activate your account!</p>
+        <div class="flex flex-wrap gap-4 justify-center">
+            <a target="_blank" href=`mailto:${import.meta.env.SUPPORT_EMAIL}?subject=Sendfast payment support needed!` class="btn btn-sm">
+                <MessageCircleHeart/>
+                Support
+            </a>
+        </div>
+    </section>
+</Layout>
+

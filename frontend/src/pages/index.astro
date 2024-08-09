@@ -4,7 +4,7 @@ import {Send, Check, X} from "lucide-astro";
 import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
 ---
-<Layout title="Sendfa.st | seemless file exchange">
+<Layout title="Sendfa.st • quick and easy file transfers">
     <Navbar/>
     <section class="md:min-h-[100vh] bg-base-100 relative overflow-hidden">
         <div class="relative z-10  max-w-5xl mx-auto  flex flex-col items-center justify-center gap-16 lg:gap-20 px-8 py-12 lg:py-32">
@@ -38,10 +38,10 @@ import Footer from "../components/Footer.astro";
                         </li>
                     </ul>
 
-                    <button class="btn btn-primary btn-wide">
+                    <a href="/app/" class="btn btn-primary btn-wide">
                         Send Files
                         <Send/>
-                    </button>
+                    </a>
 
                 </div>
             </div>
@@ -197,7 +197,7 @@ import Footer from "../components/Footer.astro";
                             </ul>
 
                             <div class="space-y-2">
-                                <a class="btn btn-primary/20 w-full my-2 text-black">
+                                <a href="/app" class="btn btn-primary/20 w-full my-2 text-black">
                                     Start sending files
                                     <Send/>
                                 </a>
@@ -228,7 +228,7 @@ import Footer from "../components/Footer.astro";
                                 </li>
                                 <li class="flex items-center gap-2">
                                     <Check class="h-5"/>
-                                    Unlimited devices
+                                    <span class="bg-primary/50 px-2">Unlimited</span> devices
                                 </li>
                                 <li class="flex items-center gap-2">
                                     <Check class="h-5"/>
@@ -245,7 +245,7 @@ import Footer from "../components/Footer.astro";
                             </ul>
 
                             <div class="space-y-2">
-                                <a class="btn btn-primary w-full my-2 text-white">
+                                <a class="btn btn-primary w-full my-2 text-white" href={import.meta.env.SENDFAST_PRO_URL}>
                                     Get Sendfa.st Pro
                                     <Send/>
                                 </a>

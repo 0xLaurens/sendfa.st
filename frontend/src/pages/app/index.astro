@@ -1,0 +1,22 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Navbar from "../../components/Navbar.astro";
+---
+<Layout title="Sendfa.st App">
+    <Navbar/>
+    <section id="app">
+        <div class="relative z-10  max-w-5xl mx-auto  flex flex-col items-center justify-center gap-16 lg:gap-20 px-8 py-12 lg:py-32">
+            <h1 class="text-4xl font-black">Join or create room</h1>
+            <div class="relative flex justify-center flex-col lg:flex-row items-center lg:items-stretch gap-8">
+                <div class="relative max-w-lg w-full">
+                    <button class="btn btn-primary w-full mt-4">Create room</button>
+                </div>
+                <div class="relative max-w-lg w-full">
+                    <label for="room-name" class="text-lg font-bold">Room name</label>
+                    <input id="room-name" type="text" class="w-full border border-gray-300 rounded-lg p-4" placeholder="Room name"/>
+                    <button class="btn btn-primary w-full mt-4">Join room</button>
+                </div>
+            </div>
+        </div>
+    </section>
+</Layout>
