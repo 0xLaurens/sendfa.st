@@ -1,22 +1,25 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import Navbar from "../../components/Navbar.astro";
+import QrButton from "../../components/QrButton.svelte";
+import LinkButton from "../../components/LinkButton.svelte";
+import FileButton from "../../components/FileButton.svelte";
 ---
 <Layout title="Sendfa.st App">
-    <Navbar/>
-    <section id="app">
-        <div class="relative z-10  max-w-5xl mx-auto  flex flex-col items-center justify-center gap-16 lg:gap-20 px-8 py-12 lg:py-32">
-            <h1 class="text-4xl font-black">Join or create room</h1>
-            <div class="relative flex justify-center flex-col lg:flex-row items-center lg:items-stretch gap-8">
-                <div class="relative max-w-lg w-full">
-                    <button class="btn btn-primary w-full mt-4">Create room</button>
-                </div>
-                <div class="relative max-w-lg w-full">
-                    <label for="room-name" class="text-lg font-bold">Room name</label>
-                    <input id="room-name" type="text" class="w-full border border-gray-300 rounded-lg p-4" placeholder="Room name"/>
-                    <button class="btn btn-primary w-full mt-4">Join room</button>
+    <section id="app" class="min-h-[100vh] bg-base-100 relative overflow-hidden">
+        <!--<Navbar/>-->
+        <div class="relative z-10 max-w-5xl mx-auto flex flex-col items-center justify-center gap-16 lg:gap-20 px-8 py-12 lg:py-32 min-h-screen">
+            <div class="relative flex flex-col gap-3 max-w-md items-center justify-center text-center">
+                <p class="text-base-content/70">
+                    This space is a bit empty. Invite your other device using your unique
+                    link or code!
+                </p>
+                <div class="flex justify-center gap-3">
+                    <FileButton client:load/>
+                    <LinkButton client:load/>
+                    <QrButton client:load/>
                 </div>
             </div>
         </div>
     </section>
+    <!--<Room client:load/>-->
 </Layout>
