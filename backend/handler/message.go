@@ -65,13 +65,18 @@ func (mh *MessageHandler) handleWebrtcMessage(c *websocket.Conn, message types.M
 }
 
 func (mh *MessageHandler) handleJoinRoom(c *websocket.Conn, message types.Message) error {
-	var joinPayload types.JoinLeavePayload
-	if err := json.Unmarshal(message.Payload, &joinPayload); err != nil {
+	var codePayload types.RoomCodePayload
+	if err := json.Unmarshal(message.Payload, &codePayload); err != nil {
 		log.Println("Failed to unmarshall the join message", err)
 	}
-	log.Printf("Received join payload: %v", joinPayload)
+	log.Printf("Received join payload: %v", codePayload)
 
-	room, err := mh.roomService.JoinRoom(joinPayload.Code, &joinPayload.User)
+	user, err := mh.userService.GetUserByConn(c)
+	if err != nil {
+		return err
+	}
+
+	room, err := mh.roomService.JoinRoom(codePayload.Code, user)
 	if err != nil {
 		return err
 	}
@@ -86,18 +91,23 @@ func (mh *MessageHandler) handleJoinRoom(c *websocket.Conn, message types.Messag
 
 	return mh.notifier.BroadcastMessage(c, fiber.Map{
 		"type": "USER_JOINED",
-		"user": joinPayload.User,
+		"user": user,
 	}, room.ID)
 }
 
 func (mh *MessageHandler) handleLeaveRoom(c *websocket.Conn, message types.Message) error {
-	var leavePayload types.JoinLeavePayload
+	var leavePayload types.RoomCodePayload
 	if err := json.Unmarshal(message.Payload, &leavePayload); err != nil {
 		log.Println("Failed to unmarshall the leave message", err)
 	}
 	log.Printf("Received leave payload: %v", leavePayload)
 
-	room, err := mh.roomService.LeaveRoom(leavePayload.Code, &leavePayload.User)
+	user, err := mh.userService.GetUserByConn(c)
+	if err != nil {
+		return err
+	}
+
+	room, err := mh.roomService.LeaveRoom(leavePayload.Code, user)
 	if err != nil {
 		return err
 	}
@@ -112,7 +122,7 @@ func (mh *MessageHandler) handleLeaveRoom(c *websocket.Conn, message types.Messa
 
 	return mh.notifier.BroadcastMessage(c, fiber.Map{
 		"type": "USER_LEFT",
-		"user": leavePayload.User,
+		"user": user,
 	}, room.ID)
 }
 
@@ -135,13 +145,13 @@ func (mh *MessageHandler) handleRequestRoom(c *websocket.Conn, message types.Mes
 }
 
 func (mh *MessageHandler) handleRoomExists(c *websocket.Conn, message types.Message) error {
-	var roomExistsPayload types.RoomExistsPayload
-	if err := json.Unmarshal(message.Payload, &roomExistsPayload); err != nil {
+	var roomCodePayload types.RoomCodePayload
+	if err := json.Unmarshal(message.Payload, &roomCodePayload); err != nil {
 		log.Println("Failed to unmarshall the room exists message", err)
 	}
-	log.Printf("Received room exists payload: %v", roomExistsPayload)
+	log.Printf("Received room exists payload: %v", roomCodePayload)
 
-	_, err := mh.roomService.GetRoomByCode(roomExistsPayload.Code)
+	_, err := mh.roomService.GetRoomByCode(roomCodePayload.Code)
 	if err != nil {
 		return mh.notifier.SendToConnection(fiber.Map{
 			"type":   "ROOM_EXISTS",

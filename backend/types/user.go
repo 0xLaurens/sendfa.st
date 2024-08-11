@@ -13,7 +13,8 @@ type User struct {
 	DisplayName string          `json:"display_name"`
 	DeviceName  string          `json:"device_name"`
 	Connection  *websocket.Conn `json:"-"`
-	RoomCode    string          `json:"room_code"`
+	RoomCode    string          `json:"-"`
+	RoomId      uuid.UUID       `json:"-"`
 }
 
 func CreateUser(deviceName string, options ...UserOption) *User {
@@ -22,6 +23,7 @@ func CreateUser(deviceName string, options ...UserOption) *User {
 		DisplayName: utils.GenerateRandomDisplayName(),
 		DeviceName:  deviceName,
 		RoomCode:    "no-room-yet",
+		RoomId:      uuid.Nil,
 	}
 
 	for _, option := range options {
@@ -45,4 +47,8 @@ func WithConnection(conn *websocket.Conn) UserOption {
 
 func (u *User) SetRoomCode(code string) {
 	u.RoomCode = code
+}
+
+func (u *User) SetRoomId(id uuid.UUID) {
+	u.RoomId = id
 }

@@ -27,11 +27,6 @@ type RoomIdPayload struct {
 	RoomID uuid.UUID `json:"roomID"`
 }
 
-type JoinLeavePayload struct {
-	Code string `json:"code"`
-	User User   `json:"user"`
-}
-
-type RoomExistsPayload struct {
+type RoomCodePayload struct {
 	Code string `json:"code"`
 }

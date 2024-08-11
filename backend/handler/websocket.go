@@ -6,6 +6,7 @@ import (
 	"github.com/0xlaurens/filefa.st/types"
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"github.com/mssola/user_agent"
 	"log"
 )
@@ -40,7 +41,13 @@ func (wh *WebsocketHandler) HandleWebsocket(conn *websocket.Conn) error {
 	_ = wh.userService.RegisterUser(user)
 	defer func() {
 		log.Println("User disconnected:", user.ID, user.DisplayName, user.RoomCode)
-		_, _ = wh.roomService.LeaveRoom(user.RoomCode, user)
+		if user.RoomId != uuid.Nil {
+			_ = wh.messageHandler.notifier.BroadcastMessage(nil, fiber.Map{
+				"type": "USER_LEFT",
+				"user": user,
+			}, user.RoomId)
+			_, _ = wh.roomService.LeaveRoom(user.RoomCode, user)
+		}
 		_ = wh.userService.DeleteUser(user)
 		_ = conn.Close()
 	}()

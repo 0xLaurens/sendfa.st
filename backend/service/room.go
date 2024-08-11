@@ -87,6 +87,7 @@ func (r *RoomService) JoinRoom(code string, user *types.User) (*types.Room, erro
 		return nil, ErrorCouldNotJoinRoom
 	}
 	user.SetRoomCode(updatedRoom.Code)
+	user.SetRoomId(updatedRoom.ID)
 
 	r.stopDeletionTimer(updatedRoom.ID)
 
@@ -101,6 +102,7 @@ func (r *RoomService) LeaveRoom(code string, user *types.User) (*types.Room, err
 
 	room.RemoveUser(user)
 	user.SetRoomCode("no-room-yet")
+	user.SetRoomId(uuid.Nil)
 
 	if room.IsEmpty() {
 		r.startDeletionTimer(room)
