@@ -118,7 +118,7 @@ func (r *RoomService) startDeletionTimer(room *types.Room) {
 	r.timerMutex.Lock()
 	defer r.timerMutex.Unlock()
 
-	timer := time.AfterFunc(10*time.Second, func() {
+	timer := time.AfterFunc(60*time.Second, func() {
 		log.Println("Deleting room", room.ID)
 		if room.IsEmpty() {
 			_ = r.DeleteRoom(room.ID)
