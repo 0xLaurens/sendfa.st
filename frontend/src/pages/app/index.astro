@@ -3,10 +3,12 @@ import Layout from "../../layouts/Layout.astro";
 import QrButton from "../../components/QrButton.svelte";
 import LinkButton from "../../components/LinkButton.svelte";
 import FileButton from "../../components/FileButton.svelte";
+import GradientBackdrop from "../../components/GradientBackdrop.astro";
 ---
 <Layout title="Sendfa.st App">
     <section id="app" class="min-h-[100vh] bg-base-100 relative overflow-hidden">
         <!--<Navbar/>-->
+        <GradientBackdrop/>
         <div class="relative z-10 max-w-5xl mx-auto flex flex-col items-center justify-center gap-16 lg:gap-20 px-8 py-12 lg:py-32 min-h-screen">
             <div class="relative flex flex-col gap-3 max-w-md items-center justify-center text-center">
                 <p class="text-base-content/70">

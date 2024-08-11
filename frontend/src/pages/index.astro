@@ -3,10 +3,12 @@ import Layout from '../layouts/Layout.astro';
 import {Send, Check, X} from "lucide-astro";
 import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
+import GradientBackdrop from "../components/GradientBackdrop.astro";
 ---
 <Layout title="Sendfa.st • quick and easy file transfers">
     <Navbar/>
     <section class="md:min-h-[100vh] bg-base-100 relative overflow-hidden">
+        <GradientBackdrop/>
         <div class="relative z-10  max-w-5xl mx-auto  flex flex-col items-center justify-center gap-16 lg:gap-20 px-8 py-12 lg:py-32">
             <div class="relative z-10  max-w-5xl mx-auto  flex flex-col items-center justify-center gap-16 lg:gap-20 px-8 py-12 lg:py-32">
                 <div class="relative flex flex-col gap-10 lg:gap-12 items-center justify-center text-center">
@@ -245,7 +247,8 @@ import Footer from "../components/Footer.astro";
                             </ul>
 
                             <div class="space-y-2">
-                                <a class="btn btn-primary w-full my-2 text-white" href={import.meta.env.SENDFAST_PRO_URL}>
+                                <a class="btn btn-primary w-full my-2 text-white"
+                                   href={import.meta.env.SENDFAST_PRO_URL}>
                                     Get Sendfa.st Pro
                                     <Send/>
                                 </a>
@@ -305,14 +308,16 @@ import Footer from "../components/Footer.astro";
                         <input type="radio" name="my-accordion-3"/>
                         <div class="collapse-title text-xl font-medium">How fast can files be transferred?</div>
                         <div class="collapse-content">
-                            <p>The speed of the file transfer is dependant on the upload speed of the sender and the download speed of the receiver. Sendfa.st does not limit these speeds.</p>
+                            <p>The speed of the file transfer is dependant on the upload speed of the sender and the
+                                download speed of the receiver. Sendfa.st does not limit these speeds.</p>
                         </div>
                     </div>
                     <div class="collapse collapse-plus">
                         <input type="radio" name="my-accordion-3"/>
                         <div class="collapse-title text-xl font-medium">What devices are supported?</div>
                         <div class="collapse-content">
-                            <p>All kinds! From phones to laptops. All the device requires is a modern browser and a Internet
+                            <p>All kinds! From phones to laptops. All the device requires is a modern browser and a
+                                Internet
                                 connection.</p>
                         </div>
                     </div>
@@ -320,5 +325,5 @@ import Footer from "../components/Footer.astro";
             </div>
         </div>
     </section>
-    <Footer />
+    <Footer/>
 </Layout>
