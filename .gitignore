@@ -59,3 +59,6 @@ pnpm-debug.log*
 
 # cloudflare pages
 .dev.vars
+
+# air go reloading
+tmp/
