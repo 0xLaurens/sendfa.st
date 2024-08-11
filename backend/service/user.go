@@ -13,6 +13,7 @@ type UserManagement interface {
 	DeleteUserById(id uuid.UUID) error
 	GetUserById(id uuid.UUID) (*types.User, error)
 	GetUserByConn(conn *websocket.Conn) (*types.User, error)
+	GetAllUsers() []*types.User
 }
 
 type UserService struct {
@@ -79,4 +80,12 @@ func (u *UserService) GetUserByConn(conn *websocket.Conn) (*types.User, error) {
 		return nil, types.ErrorUserNotFound
 	}
 	return user, nil
+}
+
+func (u *UserService) GetAllUsers() []*types.User {
+	var users []*types.User
+	for _, user := range u.usersById {
+		users = append(users, user)
+	}
+	return users
 }

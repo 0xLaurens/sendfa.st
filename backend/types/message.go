@@ -13,6 +13,7 @@ var (
 	LeaveRoom   = "LEAVE_ROOM"
 	RequestRoom = "REQUEST_ROOM"
 	RoomExists  = "ROOM_EXISTS"
+	WhoAmI      = "WHOAMI"
 )
 
 // Message

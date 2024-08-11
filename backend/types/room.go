@@ -15,7 +15,7 @@ type RoomOptions func(r *Room)
 type Room struct {
 	ID        uuid.UUID           `json:"id"`
 	Code      string              `json:"code"`
-	Users     map[*User]bool      `json:"users"`
+	Users     map[*User]bool      `json:"-"`
 	UsersById map[uuid.UUID]*User `json:"-"`
 	mu        sync.RWMutex
 }

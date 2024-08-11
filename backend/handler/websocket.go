@@ -13,12 +13,14 @@ import (
 type WebsocketHandler struct {
 	roomService    service.RoomManagement
 	messageHandler *MessageHandler
+	userService    service.UserManagement
 }
 
-func NewWebsocketHandler(roomService service.RoomManagement) *WebsocketHandler {
+func NewWebsocketHandler(roomService service.RoomManagement, userService service.UserManagement) *WebsocketHandler {
 	return &WebsocketHandler{
 		roomService:    roomService,
-		messageHandler: NewMessageHandler(service.NewWebsocketNotifier(roomService)),
+		messageHandler: NewMessageHandler(service.NewWebsocketNotifier(roomService), roomService, userService),
+		userService:    userService,
 	}
 }
 
@@ -35,8 +37,13 @@ func (wh *WebsocketHandler) HandleWebsocket(conn *websocket.Conn) error {
 
 	user := types.CreateUser(os, types.WithConnection(conn))
 	log.Println("User connected:", user.ID)
-
-	defer conn.Close()
+	_ = wh.userService.RegisterUser(user)
+	defer func() {
+		log.Println("User disconnected:", user.ID, user.DisplayName, user.RoomCode)
+		_, _ = wh.roomService.LeaveRoom(user.RoomCode, user)
+		_ = wh.userService.DeleteUser(user)
+		_ = conn.Close()
+	}()
 
 	conn.WriteJSON(fiber.Map{
 		"type": "IDENTITY",

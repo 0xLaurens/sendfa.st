@@ -14,11 +14,14 @@ import (
 type MessageHandler struct {
 	notifier    service.MessageNotifier
 	roomService service.RoomManagement
+	userService service.UserManagement
 }
 
-func NewMessageHandler(notifier service.MessageNotifier) *MessageHandler {
+func NewMessageHandler(notifier service.MessageNotifier, roomService service.RoomManagement, userService service.UserManagement) *MessageHandler {
 	return &MessageHandler{
-		notifier: notifier,
+		notifier:    notifier,
+		roomService: roomService,
+		userService: userService,
 	}
 }
 
@@ -34,6 +37,8 @@ func (mh *MessageHandler) handleResponse(c *websocket.Conn, message types.Messag
 		return mh.handleRequestRoom(c, message)
 	case types.Answer, types.Candidate, types.Offer:
 		return mh.handleWebrtcMessage(c, message)
+	case types.WhoAmI:
+		return mh.handleWhoAmi(c, message)
 	case "AUTH":
 		{
 			log.Println("Received auth message")
@@ -117,6 +122,12 @@ func (mh *MessageHandler) handleRequestRoom(c *websocket.Conn, message types.Mes
 		return err
 	}
 
+	user, err := mh.userService.GetUserByConn(c)
+	if err != nil {
+		return err
+	}
+	_, _ = mh.roomService.JoinRoom(room.Code, user)
+
 	return mh.notifier.SendToConnection(fiber.Map{
 		"type": "ROOM_CREATED",
 		"room": room,
@@ -141,5 +152,14 @@ func (mh *MessageHandler) handleRoomExists(c *websocket.Conn, message types.Mess
 	return mh.notifier.SendToConnection(fiber.Map{
 		"type":   "ROOM_EXISTS",
 		"exists": true,
+	}, c)
+}
+
+func (mh *MessageHandler) handleWhoAmi(c *websocket.Conn, message types.Message) error {
+	rooms := mh.roomService.GetAllRooms()
+
+	return mh.notifier.SendToConnection(fiber.Map{
+		"type":  "ROOMS",
+		"rooms": rooms,
 	}, c)
 }

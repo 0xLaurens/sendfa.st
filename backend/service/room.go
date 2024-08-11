@@ -49,7 +49,9 @@ var _ RoomManagement = (*RoomService)(nil)
 
 func NewRoomService(store store.RoomStore, codeService CodeManagement) *RoomService {
 	return &RoomService{
-		store: store, codeService: codeService, timers: make(map[uuid.UUID]*time.Timer),
+		store:       store,
+		codeService: codeService,
+		timers:      make(map[uuid.UUID]*time.Timer),
 	}
 }
 
@@ -116,7 +118,7 @@ func (r *RoomService) startDeletionTimer(room *types.Room) {
 	r.timerMutex.Lock()
 	defer r.timerMutex.Unlock()
 
-	timer := time.AfterFunc(1*time.Minute, func() {
+	timer := time.AfterFunc(10*time.Second, func() {
 		log.Println("Deleting room", room.ID)
 		if room.IsEmpty() {
 			_ = r.DeleteRoom(room.ID)
