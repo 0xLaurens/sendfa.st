@@ -1,8 +1,10 @@
-import {atom} from "nanostores";
+import {atom, map, type WritableAtom} from "nanostores";
 import {persistentAtom} from "@nanostores/persistent";
 
-export const roomCode = persistentAtom("roomCode", undefined);
+export const roomCode: WritableAtom<string | undefined> = persistentAtom("roomCode", undefined);
 export const isConnected = atom(false);
+export const users = map({});
+export const identity = atom({});
 
 class WebsocketManager {
     private socket: WebSocket | null = null;
@@ -20,6 +22,10 @@ class WebsocketManager {
 
         this.socket.onclose = () => {
             console.log("Disconnected from websocket server");
+            isConnected.set(false);
+            setTimeout(() => {
+                this.connect();
+            }, 1000);
             this.socket = null;
         }
 
@@ -38,7 +44,7 @@ class WebsocketManager {
         switch (data.type) {
             case "IDENTITY": {
                 console.log("Identity", data.user);
-                if (!this.socket) break;
+                identity.set(data.user);
                 // is there an existing room code in localstorage?
                 let code = roomCode.get();
                 if (code !== undefined) {
