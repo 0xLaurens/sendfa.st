@@ -15,6 +15,7 @@ type RoomOptions func(r *Room)
 type Room struct {
 	ID        uuid.UUID           `json:"id"`
 	Code      string              `json:"code"`
+	UserCount uint8               `json:"user_count"`
 	Users     map[*User]bool      `json:"-"`
 	UsersById map[uuid.UUID]*User `json:"-"`
 	mu        sync.RWMutex
@@ -24,6 +25,7 @@ func CreateRoom(options ...RoomOptions) *Room {
 	room := &Room{
 		ID:        uuid.New(),
 		Code:      "",
+		UserCount: 0,
 		Users:     make(map[*User]bool),
 		UsersById: make(map[uuid.UUID]*User),
 	}
@@ -39,6 +41,7 @@ func (r *Room) AddUser(user *User) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
+	r.UserCount++
 	r.Users[user] = true
 	r.UsersById[user.ID] = user
 }
@@ -47,6 +50,7 @@ func (r *Room) RemoveUser(user *User) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
+	r.UserCount--
 	delete(r.Users, user)
 	delete(r.UsersById, user.ID)
 }
