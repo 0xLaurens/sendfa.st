@@ -16,6 +16,7 @@
     "@astrojs/svelte": "^5.7.0",
     "@astrojs/tailwind": "^5.1.0",
     "@fontsource-variable/gabarito": "^5.0.5",
+    "@nanostores/persistent": "^0.10.2",
     "@stripe/stripe-js": "^4.1.0",
     "@supabase/supabase-js": "^2.44.4",
     "astro": "^4.12.2",

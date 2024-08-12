@@ -155,12 +155,14 @@ func (mh *MessageHandler) handleRoomExists(c *websocket.Conn, message types.Mess
 	if err != nil {
 		return mh.notifier.SendToConnection(fiber.Map{
 			"type":   "ROOM_EXISTS",
+			"code":   roomCodePayload.Code,
 			"exists": false,
 		}, c)
 	}
 
 	return mh.notifier.SendToConnection(fiber.Map{
 		"type":   "ROOM_EXISTS",
+		"code":   roomCodePayload.Code,
 		"exists": true,
 	}, c)
 }

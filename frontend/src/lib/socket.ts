@@ -1,6 +1,7 @@
 import {atom} from "nanostores";
+import {persistentAtom} from "@nanostores/persistent";
 
-export const roomCode = atom<string | null>(null);
+export const roomCode = persistentAtom("roomCode", undefined);
 
 class WebsocketManager {
     private socket: WebSocket | null = null;
@@ -37,11 +38,17 @@ class WebsocketManager {
             case "IDENTITY": {
                 console.log("Identity", data.user);
                 if (!this.socket) break;
-                if (roomCode.get() === null) {
-                    this.socket.send(JSON.stringify({
-                        type: "REQUEST_ROOM",
-                    }));
+                // is there an existing room code in localstorage?
+                let code = roomCode.get();
+                if (code !== undefined) {
+                    // verify if the room still exists
+                    sendRoomExists(this.socket, code);
+                    break;
                 }
+
+                // request a new room
+                sendRequestRoom(this.socket);
+
                 break;
             }
             case "ROOM_CREATED": {
@@ -50,9 +57,37 @@ class WebsocketManager {
                 roomCode.set(room.code);
                 break;
             }
+            case "ROOM_EXISTS": {
+                console.log("Room exists", data.exists);
+                let exists = data.exists;
+                if (!exists) {
+                    sendRequestRoom(this.socket);
+                    break;
+                }
+                roomCode.set(data.code);
+                // TODO: join the room
+
+                break;
+            }
         }
     }
 }
 
+function sendRequestRoom(socket: WebSocket | null) {
+    if (!socket) return;
+    socket.send(JSON.stringify({
+        type: "REQUEST_ROOM"
+    }))
+}
+
+function sendRoomExists(socket: WebSocket | null, code: string) {
+    if (!socket) return;
+    socket.send(JSON.stringify({
+        type: "ROOM_EXISTS",
+        payload: {
+            code: code
+        }
+    }))
+}
 
 export default WebsocketManager;
