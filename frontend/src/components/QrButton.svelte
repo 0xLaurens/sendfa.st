@@ -2,7 +2,7 @@
     import {qr} from "@svelte-put/qr/svg"
     import {QrCode} from "lucide-svelte";
 
-    let roomCode: string = "TEST"
+    export let code: string;
 
     function showModal() {
         let qr = document.getElementById("qr") as HTMLDialogElement
@@ -20,13 +20,13 @@
         <form method="dialog">
             <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
         </form>
-        <p class="text-2xl font-semibold">Room code: <span class="font-black">{roomCode}</span></p>
+        <p class="text-2xl font-semibold">Room code: <span class="font-black">{code}</span></p>
         <div>
             <div>
                 <svg
                         class="h-56 w-56"
                         use:qr={{
-                                data: `${window.location.href}/r/${roomCode}`,
+                                data: `${window.location.href}`
                             }}
                 >
                 </svg>
