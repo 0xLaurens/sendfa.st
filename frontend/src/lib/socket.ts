@@ -1,10 +1,11 @@
 import {atom, map, type WritableAtom} from "nanostores";
 import {persistentAtom} from "@nanostores/persistent";
+import type {User} from "../types/user.ts";
 
 export const roomCode: WritableAtom<string | undefined> = persistentAtom("roomCode", undefined);
 export const isConnected = atom(false);
-export const users = map({});
-export const identity = atom({});
+export const users: WritableAtom<User[]> = atom([]);
+export const identity: WritableAtom<User> = atom({});
 
 class WebsocketManager {
     private socket: WebSocket | null = null;
@@ -78,28 +79,45 @@ class WebsocketManager {
             case "ROOM_JOINED": {
                 console.log("Room joined", data);
                 isConnected.set(true);
+                for (let user of data.users) {
+                    if (user.id === identity.get().id) {
+                        continue;
+                    }
+
+                    users.set([...users.get(), user]);
+                }
                 break;
             }
             case "USER_JOINED": {
                 console.log("User joined", data);
+                // use a set to make sure we don't have duplicates
+                if (!users.get().find(user => user.id === data.user.id)) {
+                    users.set([...users.get(), data.user]);
+                }
+
                 break;
             }
             case "USER_LEFT": {
                 console.log("User left", data);
+                users.set(users.get().filter(user => user.id !== data.user.id));
                 break;
             }
         }
     }
 }
 
-function sendRequestRoom(socket: WebSocket | null) {
+function
+
+sendRequestRoom(socket: WebSocket | null) {
     if (!socket) return;
     socket.send(JSON.stringify({
         type: "REQUEST_ROOM"
     }))
 }
 
-function sendRoomExists(socket: WebSocket | null, code: string) {
+function
+
+sendRoomExists(socket: WebSocket | null, code: string) {
     if (!socket) return;
     socket.send(JSON.stringify({
         type: "ROOM_EXISTS",
@@ -109,7 +127,9 @@ function sendRoomExists(socket: WebSocket | null, code: string) {
     }))
 }
 
-function sendJoinRoom(socket: WebSocket | null, code: string) {
+function
+
+sendJoinRoom(socket: WebSocket | null, code: string) {
     if (!socket) return;
     socket.send(JSON.stringify({
         type: "JOIN_ROOM",

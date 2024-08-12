@@ -1,15 +1,17 @@
 <script lang="ts">
     import {onMount} from "svelte";
-    import WebsocketManager from "../lib/socket.ts";
+    import WebsocketManager, {users} from "../lib/socket.ts";
     import {roomCode, identity, isConnected} from "../lib/socket.ts";
     import FileButton from "./FileButton.svelte";
     import LinkButton from "./LinkButton.svelte";
     import QrButton from "./QrButton.svelte";
     import {Loader2} from "lucide-svelte";
+    import type {User} from "../types/user.ts";
 
     export let code: string;
     let user_identity: string;
     let connected: boolean;
+    let connected_users: User[] = [];
 
     let manager: WebsocketManager
 
@@ -37,6 +39,10 @@
             if (value == null) return
             connected = value
         })
+        users.subscribe(value => {
+            if (value == null) return
+            connected_users = value
+        })
     })
 </script>
 
@@ -45,6 +51,11 @@
         <p>
             {user_identity}
         </p>
+        {#each connected_users as user}
+            <p>
+                {user.display_name}
+            </p>
+        {/each}
         <div class="relative flex flex-col gap-3 max-w-md items-center justify-center text-center">
             <p class="text-2xl font-semibold">
                 Room code: <span class="font-black">{code}</span>

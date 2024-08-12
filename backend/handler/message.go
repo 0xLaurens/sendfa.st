@@ -82,8 +82,9 @@ func (mh *MessageHandler) handleJoinRoom(c *websocket.Conn, message types.Messag
 	}
 
 	err = mh.notifier.SendToConnection(fiber.Map{
-		"type": "ROOM_JOINED",
-		"room": room,
+		"type":  "ROOM_JOINED",
+		"room":  room,
+		"users": room.GetUsers(),
 	}, c)
 	if err != nil {
 		return err

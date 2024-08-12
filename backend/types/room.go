@@ -84,6 +84,19 @@ func (r *Room) DisplayNameUnique(displayName string) bool {
 	return true
 }
 
+func (r *Room) GetUsers() []User {
+	var users []User
+
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	for user := range r.Users {
+		users = append(users, *user)
+	}
+
+	return users
+}
+
 func WithRoomCode(code string) RoomOptions {
 	return func(r *Room) {
 		r.Code = code
