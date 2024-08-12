@@ -2,6 +2,7 @@ import {atom} from "nanostores";
 import {persistentAtom} from "@nanostores/persistent";
 
 export const roomCode = persistentAtom("roomCode", undefined);
+export const isConnected = atom(false);
 
 class WebsocketManager {
     private socket: WebSocket | null = null;
@@ -48,13 +49,13 @@ class WebsocketManager {
 
                 // request a new room
                 sendRequestRoom(this.socket);
-
                 break;
             }
             case "ROOM_CREATED": {
                 console.log("Room created", data.room);
                 let room = data.room;
                 roomCode.set(room.code);
+                isConnected.set(true);
                 break;
             }
             case "ROOM_EXISTS": {
@@ -65,8 +66,20 @@ class WebsocketManager {
                     break;
                 }
                 roomCode.set(data.code);
-                // TODO: join the room
-
+                sendJoinRoom(this.socket, data.code);
+                break;
+            }
+            case "ROOM_JOINED": {
+                console.log("Room joined", data);
+                isConnected.set(true);
+                break;
+            }
+            case "USER_JOINED": {
+                console.log("User joined", data);
+                break;
+            }
+            case "USER_LEFT": {
+                console.log("User left", data);
                 break;
             }
         }
@@ -84,6 +97,16 @@ function sendRoomExists(socket: WebSocket | null, code: string) {
     if (!socket) return;
     socket.send(JSON.stringify({
         type: "ROOM_EXISTS",
+        payload: {
+            code: code
+        }
+    }))
+}
+
+function sendJoinRoom(socket: WebSocket | null, code: string) {
+    if (!socket) return;
+    socket.send(JSON.stringify({
+        type: "JOIN_ROOM",
         payload: {
             code: code
         }
