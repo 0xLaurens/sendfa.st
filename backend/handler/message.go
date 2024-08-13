@@ -35,7 +35,7 @@ func (mh *MessageHandler) handleResponse(c *websocket.Conn, message types.Messag
 		return mh.handleRoomExists(c, message)
 	case types.RequestRoom:
 		return mh.handleRequestRoom(c, message)
-	case types.Answer, types.Candidate, types.Offer:
+	case types.Answer, types.IceCandidate, types.Offer:
 		return mh.handleWebrtcMessage(c, message)
 	case types.WhoAmI:
 		return mh.handleWhoAmi(c, message)
@@ -60,6 +60,7 @@ func (mh *MessageHandler) handleWebrtcMessage(c *websocket.Conn, message types.M
 		log.Println("Failed to unmarshall the room id from the payload", err)
 		return err
 	}
+	log.Println("Received webrtc message", roomIdPayload)
 
 	return mh.notifier.BroadcastMessage(c, message, roomIdPayload.RoomID)
 }

@@ -6,14 +6,14 @@ import (
 )
 
 var (
-	Offer       = "OFFER"
-	Answer      = "ANSWER"
-	Candidate   = "CANDIDATE"
-	JoinRoom    = "JOIN_ROOM"
-	LeaveRoom   = "LEAVE_ROOM"
-	RequestRoom = "REQUEST_ROOM"
-	RoomExists  = "ROOM_EXISTS"
-	WhoAmI      = "WHOAMI"
+	Offer        = "OFFER"
+	Answer       = "ANSWER"
+	IceCandidate = "ICE_CANDIDATE"
+	JoinRoom     = "JOIN_ROOM"
+	LeaveRoom    = "LEAVE_ROOM"
+	RequestRoom  = "REQUEST_ROOM"
+	RoomExists   = "ROOM_EXISTS"
+	WhoAmI       = "WHOAMI"
 )
 
 // Message
@@ -24,7 +24,7 @@ type Message struct {
 }
 
 type RoomIdPayload struct {
-	RoomID uuid.UUID `json:"roomID"`
+	RoomID uuid.UUID `json:"roomId"`
 }
 
 type RoomCodePayload struct {
