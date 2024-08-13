@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {onMount} from "svelte";
+    import {onMount, onDestroy} from "svelte";
     import WebsocketManager, {users} from "../lib/socket.ts";
     import {roomCode, identity, isConnected} from "../lib/socket.ts";
     import FileButton from "./FileButton.svelte";
@@ -31,7 +31,6 @@
         })
 
         identity.subscribe(value => {
-            if (value == null) return
             user_identity = JSON.stringify(value)
         })
 
@@ -40,13 +39,16 @@
             connected = value
         })
         users.subscribe(value => {
-            if (value == null) return
-            connected_users = value
+            connected_users = [...value]
         })
+    })
+
+    onDestroy(() => {
+        manager?.close()
     })
 </script>
 
-{#if code}
+{#if code && connected}
     <div class="relative z-10 max-w-5xl mx-auto flex flex-col items-center justify-center gap-16 lg:gap-20 px-8 py-12 lg:py-32 min-h-screen">
         <p>
             {user_identity}
@@ -76,7 +78,7 @@
     <div class="relative z-10 max-w-5xl mx-auto flex flex-col items-center justify-center gap-16 lg:gap-20 px-8 py-12 lg:py-32 min-h-screen">
         <div class="relative flex gap-3 max-w-md items-center justify-center text-center">
             <p class="text-base-content/70">
-                Creating a room...
+                Connecting to the room...
             </p>
             <Loader2 class="animate-spin"/>
         </div>
