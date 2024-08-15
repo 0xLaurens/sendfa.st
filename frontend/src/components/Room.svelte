@@ -7,6 +7,7 @@
     import QrButton from "./QrButton.svelte";
     import {Loader2} from "lucide-svelte";
     import type {User} from "../types/user.ts";
+    import Toaster from "./Toaster.svelte";
 
     export let code: string | undefined;
     let user_identity: string;
@@ -48,6 +49,7 @@
     })
 </script>
 
+<Toaster/>
 {#if code && connected}
     <div class="relative z-10 max-w-5xl mx-auto flex flex-col items-center justify-center gap-16 lg:gap-20 px-8 py-12 lg:py-32 min-h-screen">
         <p>
