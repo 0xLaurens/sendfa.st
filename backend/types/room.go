@@ -15,7 +15,8 @@ type RoomOptions func(r *Room)
 type Room struct {
 	ID        uuid.UUID           `json:"id"`
 	Code      string              `json:"code"`
-	Users     map[*User]bool      `json:"users"`
+	UserCount uint8               `json:"user_count"`
+	Users     map[*User]bool      `json:"-"`
 	UsersById map[uuid.UUID]*User `json:"-"`
 	mu        sync.RWMutex
 }
@@ -24,6 +25,7 @@ func CreateRoom(options ...RoomOptions) *Room {
 	room := &Room{
 		ID:        uuid.New(),
 		Code:      "",
+		UserCount: 0,
 		Users:     make(map[*User]bool),
 		UsersById: make(map[uuid.UUID]*User),
 	}
@@ -39,6 +41,7 @@ func (r *Room) AddUser(user *User) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
+	r.UserCount++
 	r.Users[user] = true
 	r.UsersById[user.ID] = user
 }
@@ -47,6 +50,7 @@ func (r *Room) RemoveUser(user *User) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
+	r.UserCount--
 	delete(r.Users, user)
 	delete(r.UsersById, user.ID)
 }
@@ -78,6 +82,19 @@ func (r *Room) DisplayNameUnique(displayName string) bool {
 		}
 	}
 	return true
+}
+
+func (r *Room) GetUsers() []User {
+	var users []User
+
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	for user := range r.Users {
+		users = append(users, *user)
+	}
+
+	return users
 }
 
 func WithRoomCode(code string) RoomOptions {

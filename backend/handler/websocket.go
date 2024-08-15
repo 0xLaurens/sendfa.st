@@ -6,6 +6,7 @@ import (
 	"github.com/0xlaurens/filefa.st/types"
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"github.com/mssola/user_agent"
 	"log"
 )
@@ -13,12 +14,14 @@ import (
 type WebsocketHandler struct {
 	roomService    service.RoomManagement
 	messageHandler *MessageHandler
+	userService    service.UserManagement
 }
 
-func NewWebsocketHandler(roomService service.RoomManagement) *WebsocketHandler {
+func NewWebsocketHandler(roomService service.RoomManagement, userService service.UserManagement) *WebsocketHandler {
 	return &WebsocketHandler{
 		roomService:    roomService,
-		messageHandler: NewMessageHandler(service.NewWebsocketNotifier(roomService)),
+		messageHandler: NewMessageHandler(service.NewWebsocketNotifier(roomService), roomService, userService),
+		userService:    userService,
 	}
 }
 
@@ -35,8 +38,19 @@ func (wh *WebsocketHandler) HandleWebsocket(conn *websocket.Conn) error {
 
 	user := types.CreateUser(os, types.WithConnection(conn))
 	log.Println("User connected:", user.ID)
-
-	defer conn.Close()
+	_ = wh.userService.RegisterUser(user)
+	defer func() {
+		log.Println("User disconnected:", user.ID, user.DisplayName, user.RoomCode)
+		if user.RoomId != uuid.Nil {
+			_ = wh.messageHandler.notifier.BroadcastMessage(nil, fiber.Map{
+				"type": "USER_LEFT",
+				"user": user,
+			}, user.RoomId)
+			_, _ = wh.roomService.LeaveRoom(user.RoomCode, user)
+		}
+		_ = wh.userService.DeleteUser(user)
+		_ = conn.Close()
+	}()
 
 	conn.WriteJSON(fiber.Map{
 		"type": "IDENTITY",
