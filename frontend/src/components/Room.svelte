@@ -8,7 +8,7 @@
     import {Loader2} from "lucide-svelte";
     import type {User} from "../types/user.ts";
 
-    export let code: string;
+    export let code: string | undefined;
     let user_identity: string;
     let connected: boolean;
     let connected_users: User[] = [];
