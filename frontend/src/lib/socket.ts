@@ -2,7 +2,14 @@ import {atom, type WritableAtom} from "nanostores";
 import {persistentAtom} from "@nanostores/persistent";
 import type {User} from "../types/user.ts";
 import type {Room} from "../types/room.ts";
-import {createRtcOffer, handleIceCandidate, handleRtcAnswer, handleRtcOffer} from "./webrtc.ts";
+import {
+    closeAllWebRtcConnections,
+    closeWebRtcConnection,
+    createRtcOffer,
+    handleIceCandidate,
+    handleRtcAnswer,
+    handleRtcOffer
+} from "./webrtc.ts";
 
 export const roomCode: WritableAtom<string | undefined> = persistentAtom("roomCode", undefined);
 export const isConnected = atom(false);
@@ -27,6 +34,7 @@ class WebsocketManager {
         this.socket.onclose = () => {
             console.log("Disconnected from websocket server");
             isConnected.set(false);
+            closeAllWebRtcConnections()
             setTimeout(() => {
                 this.connect();
             }, 1000);
@@ -36,9 +44,9 @@ class WebsocketManager {
             console.error("Websocket error", error);
         }
 
-        this.socket.onmessage = (event) => {
+        this.socket.onmessage = async (event) => {
             let data = JSON.parse(event.data);
-            this.handleMessages(data);
+            await this.handleMessages(data);
         }
     }
 
@@ -105,6 +113,7 @@ class WebsocketManager {
             }
             case "USER_LEFT": {
                 users.set(users.get().filter(user => user.id !== data.user.id));
+                await closeWebRtcConnection(data.user.id);
                 break;
             }
             case "OFFER": {
@@ -153,7 +162,6 @@ function sendJoinRoom(socket: WebSocket | null, code: string) {
 export function sendWebRtcMessage(socket: WebSocket | null, type: string, payload: any) {
     if (!socket) return;
     const message = JSON.stringify({type, payload});
-    console.log("Sending WebRTC message", message);
     socket.send(message);
 }
 

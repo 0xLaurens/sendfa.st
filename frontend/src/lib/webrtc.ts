@@ -26,7 +26,7 @@ async function _setupPeerConnectionListeners(connection: Connection, socket: Web
                 roomId: room.get().id,
                 candidate: event.candidate,
                 from: identity.get().id,
-                to: "target",
+                to: connection.target,
             }
 
             sendWebRtcMessage(socket, "ICE_CANDIDATE", payload);
@@ -40,7 +40,7 @@ async function _setupPeerConnectionListeners(connection: Connection, socket: Web
     connection.peerConnection.ondatachannel = (event) => {
         connection.dataChannel = event.channel;
         connection.dataChannel.binaryType = "arraybuffer";
-        
+
         _setupDataChannelListeners(connection);
     }
 
@@ -52,7 +52,8 @@ async function _setupPeerConnectionListeners(connection: Connection, socket: Web
 export async function createRtcOffer(socket: WebSocket | null, target: string) {
     if (connections.get().has(target)) return;
     let connection: Connection = {
-        peerConnection: new RTCPeerConnection({iceServers: [{urls: "stun:stun.l.google.com:19302"}]})
+        peerConnection: new RTCPeerConnection({iceServers: [{urls: "stun:stun.l.google.com:19302"}]}),
+        target
     };
     connections.get().set(target, connection);
     connection.dataChannel = connection.peerConnection.createDataChannel("files");
@@ -79,7 +80,8 @@ export async function createRtcOffer(socket: WebSocket | null, target: string) {
 export async function handleRtcOffer(socket: WebSocket | null, data: any) {
     console.log("Handle offer", data);
     let connection: Connection = {
-        peerConnection: new RTCPeerConnection({iceServers: [{urls: "stun:stun.l.google.com:19302"}]})
+        peerConnection: new RTCPeerConnection({iceServers: [{urls: "stun:stun.l.google.com:19302"}]}),
+        target: data.payload.from
     };
     connections.get().set(data.payload.from, connection);
 
@@ -118,4 +120,21 @@ export async function handleIceCandidate(data: any) {
     }
 
     await connection.peerConnection.addIceCandidate(data.payload.candidate).catch(console.error);
+}
+
+export async function closeWebRtcConnection(target: string) {
+    const connection = connections.get().get(target);
+    if (!connection) return;
+
+    connection.peerConnection.close();
+    connection.dataChannel?.close();
+    connections.get().delete(target);
+}
+
+export function closeAllWebRtcConnections() {
+    connections.get().forEach((connection, target) => {
+        connection.peerConnection.close();
+        connection.dataChannel?.close();
+        connections.get().delete(target);
+    });
 }
