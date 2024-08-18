@@ -15,7 +15,11 @@
     import ErrorIcon from "./ErrorIcon.svelte";
 </script>
 
-<div class="fixed left-0 right-0 top-4 mx-auto flex flex-col gap-4 z-50 w-max h-max">
+<div class="fixed left-0 right-0 top-4 mx-auto flex flex-col gap-4 z-50 w-max h-max"
+     role="alert"
+     aria-live="assertive"
+     aria-atomic="true"
+>
     {#each $toasts as toast (toast.id)}
         <div class="card card-compact card-bordered z-10 bg-base-100 shadow-xl w-96 transition-popup">
             <div class="card-body flex flex-row">
