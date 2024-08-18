@@ -8,6 +8,7 @@
         console.log("Copied to clipboard")
         const toast: ToastData = {
             id: Date.now(),
+            type: "success",
             title: "Copied to clipboard",
             description: "The link has been copied to your clipboard",
             color: "green"
