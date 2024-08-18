@@ -15,26 +15,32 @@
         QR
     </button>
 </div>
-<dialog class="modal" id="qr">
+<dialog class="modal" id="qr" aria-labelledby="modal-title" aria-describedby="modal-description">
     <div class="modal-box w-auto text-center flex flex-col gap-3">
         <form method="dialog">
-            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            <button
+                    class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                    aria-label="Close dialog">
+                ✕
+            </button>
         </form>
-        <p class="text-2xl font-semibold">Room code: <span class="font-black">{code}</span></p>
-        <div>
+
+        <p id="modal-title" class="text-2xl font-semibold">
+            Room code: <span class="font-black">{code}</span>
+        </p>
+
+        <div id="modal-description">
             <div>
-                <svg
-                        class="h-56 w-56"
-                        use:qr={{
-                                data: `${window.location.href}`
-                            }}
-                >
+                <svg class="h-56 w-56" use:qr="{{ data: `${window.location.href}` }}">
                 </svg>
             </div>
-            <p class="w-56 text-wrap text-center">Scan the QR code to connect your device.</p>
+            <p class="w-56 text-wrap text-center">
+                Scan the QR code to connect your device.
+            </p>
         </div>
     </div>
+
     <form method="dialog" class="modal-backdrop">
-        <button>Close</button>
+        <button aria-label="Close dialog">Close</button>
     </form>
 </dialog>
