@@ -78,6 +78,7 @@ class WebsocketManager {
                 room.set(data.room);
                 roomCode.set(data.room.code);
                 isConnected.set(true);
+                users.set([])
                 break;
             }
             case "ROOM_EXISTS": {
