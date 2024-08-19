@@ -1,7 +1,9 @@
 <script lang="ts">
+    import FileItem from "./FileItem.svelte";
+
     let user = "Alice";
     let files = {
-        length: 2
+        length: 3
     }
 
     function showFileDialog() {
@@ -25,7 +27,6 @@
     }
 </script>
 
-<button class="btn btn-neutral btn-sm" on:click={showFileDialog}>File dialog</button>
 <dialog class="modal" id="file-dialog" aria-labelledby="modal-title" aria-describedby="modal-description">
     <div class="modal-box w-auto text-center flex flex-col gap-3">
         <form method="dialog">
@@ -41,20 +42,9 @@
         </p>
 
         <div id="modal-description">
-            <div class="flex flex-col gap-3">
-                <div class="flex justify-between">
-                    <p>File 1</p>
-                    <p>1.2 MB</p>
-                </div>
-                <div class="flex justify-between">
-                    <p>File 2</p>
-                    <p>3.4 MB</p>
-                </div>
-                <div class="flex justify-between">
-                    <p>File 3</p>
-                    <p>5.6 MB</p>
-                </div>
-            </div>
+            <FileItem />
+            <FileItem />
+            <FileItem />
         </div>
 
         <div class="divider"></div>
