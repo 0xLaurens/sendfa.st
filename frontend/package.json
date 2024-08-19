@@ -23,6 +23,7 @@
     "lucide-astro": "^0.414.0",
     "lucide-svelte": "^0.427.0",
     "nanostores": "^0.11.2",
+    "streamsaver": "^2.0.6",
     "stripe": "^16.6.0",
     "svelte": "^4.2.18",
     "tailwindcss": "^3.4.6",
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "@svelte-put/qr": "^1.2.1",
+    "@types/streamsaver": "^2.0.4",
     "daisyui": "^4.12.10"
   }
 }

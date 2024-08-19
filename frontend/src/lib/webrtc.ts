@@ -1,8 +1,9 @@
 import {atom} from "nanostores";
 import type {Connection} from "../types/connection.ts";
 import {identity, room, sendWebRtcMessage} from "./socket.ts";
+import {buildFile} from "./file.ts";
 
-const connections = atom(new Map<string, Connection>());
+export const connections = atom(new Map<string, Connection>());
 
 async function _setupDataChannelListeners(connection: Connection) {
     if (!connection.dataChannel) return;
@@ -16,6 +17,7 @@ async function _setupDataChannelListeners(connection: Connection) {
 
     connection.dataChannel.onmessage = (event) => {
         console.log("Data channel message", event.data);
+        buildFile(event.data);
     }
 }
 
