@@ -1,7 +1,7 @@
 <script lang="ts">
     import {FileUp} from "lucide-svelte";
     import {onMount} from 'svelte';
-    import {sendFileToAll} from "../lib/file.ts";
+    import {createFilesOffers} from "../lib/file.ts";
 
     let isDragging: boolean = false;
     let dragCounter: number = 0;
@@ -44,10 +44,7 @@
         const files = event.dataTransfer?.files;
         if (files) {
             console.log('Dropped files:', files);
-            const file = files.item(0)
-            if (file) {
-                sendFileToAll(file);
-            }
+            createFilesOffers(files)
         }
     }
 

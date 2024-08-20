@@ -9,7 +9,6 @@
     import {Loader2} from "lucide-svelte";
     import type {User} from "../types/user.ts";
     import Toaster from "./Toaster.svelte";
-    import FileItem from "./FileItem.svelte";
 
     export let code: string | undefined;
     let user_identity: string;

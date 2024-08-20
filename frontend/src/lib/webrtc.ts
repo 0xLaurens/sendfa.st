@@ -1,7 +1,8 @@
 import {atom} from "nanostores";
 import type {Connection} from "../types/connection.ts";
 import {identity, room, sendWebRtcMessage} from "./socket.ts";
-import {buildFile} from "./file.ts";
+import {addIncomingFileOffer, buildFile} from "./file.ts";
+import {FileOfferType} from "../types/file.ts";
 
 export const connections = atom(new Map<string, Connection>());
 
@@ -17,7 +18,22 @@ async function _setupDataChannelListeners(connection: Connection) {
 
     connection.dataChannel.onmessage = (event) => {
         console.log("Data channel message", event.data);
-        buildFile(event.data);
+        if (typeof event.data === "string") {
+            const data = JSON.parse(event.data);
+            switch (data.type) {
+                case FileOfferType.Offer:
+                    addIncomingFileOffer(data);
+                    break;
+                case FileOfferType.AcceptOffer:
+
+                    break;
+                case FileOfferType.DenyOffer:
+            }
+        }
+
+        if (event.data instanceof ArrayBuffer) {
+            buildFile(event.data);
+        }
     }
 }
 

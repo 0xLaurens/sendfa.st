@@ -133,6 +133,10 @@ class WebsocketManager {
     }
 }
 
+export function findUserById(id: string) {
+    return users.get().find(user => user.id === id);
+}
+
 function sendRequestRoom(socket: WebSocket | null) {
     if (!socket) return;
     socket.send(JSON.stringify({
