@@ -1,8 +1,19 @@
 <script lang="ts">
     import {Link} from "lucide-svelte"
+    import {addToast} from "../lib/toast.ts"
+    import type {ToastData} from "./Toaster.svelte";
 
     function CopyToClipboard() {
         navigator.clipboard.writeText(window.location.href)
+        console.log("Copied to clipboard")
+        const toast: ToastData = {
+            id: Date.now(),
+            type: "success",
+            title: "Copied to clipboard",
+            description: "The link has been copied to your clipboard",
+            color: "green"
+        }
+        addToast(toast)
     }
 </script>
 

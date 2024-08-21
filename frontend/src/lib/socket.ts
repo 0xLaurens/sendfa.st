@@ -1,14 +1,20 @@
-import {atom, map, type MapStore, type WritableAtom} from "nanostores";
+import {atom, type WritableAtom} from "nanostores";
 import {persistentAtom} from "@nanostores/persistent";
 import type {User} from "../types/user.ts";
-import WebRTCPeer from "./webrtc.ts";
 import type {Room} from "../types/room.ts";
+import {
+    closeAllWebRtcConnections,
+    closeWebRtcConnection,
+    createRtcOffer,
+    handleIceCandidate,
+    handleRtcAnswer,
+    handleRtcOffer
+} from "./webrtc.ts";
 
 export const roomCode: WritableAtom<string | undefined> = persistentAtom("roomCode", undefined);
 export const isConnected = atom(false);
 export const users: WritableAtom<User[]> = atom([]);
 export const identity: WritableAtom<User> = atom({});
-export const peers: MapStore<Record<string, WebRTCPeer>> = map<Record<string, WebRTCPeer>>({});
 export const room: WritableAtom<Room> = atom({});
 
 class WebsocketManager {
@@ -28,6 +34,7 @@ class WebsocketManager {
         this.socket.onclose = () => {
             console.log("Disconnected from websocket server");
             isConnected.set(false);
+            closeAllWebRtcConnections()
             setTimeout(() => {
                 this.connect();
             }, 1000);
@@ -37,9 +44,9 @@ class WebsocketManager {
             console.error("Websocket error", error);
         }
 
-        this.socket.onmessage = (event) => {
+        this.socket.onmessage = async (event) => {
             let data = JSON.parse(event.data);
-            this.handleMessages(data);
+            await this.handleMessages(data);
         }
     }
 
@@ -51,10 +58,9 @@ class WebsocketManager {
     }
 
     async handleMessages(data: any) {
-        console.log("message type:", data.type);
+        console.log("message type:", data.type, "data:", data);
         switch (data.type) {
             case "IDENTITY": {
-                console.log("Identity", data.user);
                 identity.set(data.user);
                 // is there an existing room code in localstorage?
                 let code = roomCode.get();
@@ -69,14 +75,13 @@ class WebsocketManager {
                 break;
             }
             case "ROOM_CREATED": {
-                console.log("Room created", data.room);
                 room.set(data.room);
                 roomCode.set(data.room.code);
                 isConnected.set(true);
+                users.set([])
                 break;
             }
             case "ROOM_EXISTS": {
-                console.log("Room exists", data.exists);
                 let exists = data.exists;
                 if (!exists) {
                     sendRequestRoom(this.socket);
@@ -87,7 +92,6 @@ class WebsocketManager {
                 break;
             }
             case "ROOM_JOINED": {
-                console.log("Room joined", data);
                 isConnected.set(true);
                 room.set(data.room);
                 for (let user of data.users) {
@@ -100,52 +104,37 @@ class WebsocketManager {
                 break;
             }
             case "USER_JOINED": {
-                console.log("User joined", data);
                 // use a set to make sure we don't have duplicates
                 if (!users.get().find(user => user.id === data.user.id)) {
                     users.set([...users.get(), data.user]);
-                    if (peers.get()[data.user.id] == null) {
-                        let peer = new WebRTCPeer(room.get().id, identity.get().id, data.user.id, this.socket!);
-                        await peer.createOffer();
-                        peers.setKey(data.user.id, peer);
-                    }
+                    await createRtcOffer(this.socket, data.user.id);
                 }
 
                 break;
             }
             case "USER_LEFT": {
-                console.log("User left", data);
                 users.set(users.get().filter(user => user.id !== data.user.id));
-                let peer = peers.get()[data.user.id];
-                if (peer) {
-                    peer.close();
-                }
+                await closeWebRtcConnection(data.user.id);
                 break;
             }
             case "OFFER": {
-                console.log("Offer", data);
-                let peer = new WebRTCPeer(room.get().id, data.from, data.to, this.socket!);
-                await peer.handleOffer(data.payload.offer);
-                peers.setKey(data.from, peer);
+                await handleRtcOffer(this.socket, data);
                 break;
             }
             case "ANSWER": {
-                console.log("Answer", data);
-                let peer = peers.get()[data.from];
-                if (peer) {
-                    await peer.handleAnswer(data.payload.answer);
-                }
+                await handleRtcAnswer(data);
+                break;
             }
             case "ICE_CANDIDATE": {
-                console.log("ICE candidate", data);
-                let peer = peers.get()[data.from];
-                if (peer) {
-                    await peer.handleIceCandidate(data.payload.candidate);
-                }
+                await handleIceCandidate(data);
                 break;
             }
         }
     }
+}
+
+export function findUserById(id: string) {
+    return users.get().find(user => user.id === id);
 }
 
 function sendRequestRoom(socket: WebSocket | null) {
@@ -173,6 +162,12 @@ function sendJoinRoom(socket: WebSocket | null, code: string) {
             code: code
         }
     }))
+}
+
+export function sendWebRtcMessage(socket: WebSocket | null, type: string, payload: any) {
+    if (!socket) return;
+    const message = JSON.stringify({type, payload});
+    socket.send(message);
 }
 
 export default WebsocketManager;

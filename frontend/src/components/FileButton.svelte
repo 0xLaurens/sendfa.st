@@ -1,10 +1,97 @@
 <script lang="ts">
     import {FileUp} from "lucide-svelte";
+    import {onMount} from 'svelte';
+    import {createFilesOffers} from "../lib/file.ts";
 
+    let isDragging: boolean = false;
+    let dragCounter: number = 0;
+    let debounceTimer: ReturnType<typeof setTimeout>;
+
+    function debounce<T extends (...args: any[]) => void>(func: T, delay: number): (...args: Parameters<T>) => void {
+        return (...args: Parameters<T>) => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => func(...args), delay);
+        };
+    }
+
+    const setDragging = debounce((value: boolean) => {
+        isDragging = value;
+    }, 100);
+
+    function handleDragEnter(event: DragEvent): void {
+        event.preventDefault();
+        dragCounter++;
+        setDragging(true);
+    }
+
+    function handleDragLeave(event: DragEvent): void {
+        event.preventDefault();
+        dragCounter--;
+        if (dragCounter === 0) {
+            setDragging(false);
+        }
+    }
+
+    function handleDragOver(event: DragEvent): void {
+        event.preventDefault();
+    }
+
+    function handleDrop(event: DragEvent): void {
+        event.preventDefault();
+        dragCounter = 0;
+        setDragging(false);
+        // Handle the dropped files here
+        const files = event.dataTransfer?.files;
+        if (files) {
+            console.log('Dropped files:', files);
+            createFilesOffers(files)
+        }
+    }
+
+    function handleFiles(event: any): void {
+        const files = (event.target as HTMLInputElement).files;
+        if (files || files) {
+            console.log('Selected files:', files);
+            createFilesOffers(files)
+        }
+    }
+
+    onMount(() => {
+        return () => {
+            clearTimeout(debounceTimer);
+        };
+    });
 </script>
+
+<svelte:window
+        class="z-50"
+        on:dragenter={handleDragEnter}
+        on:dragleave={handleDragLeave}
+        on:dragover={handleDragOver}
+        on:drop={handleDrop}
+/>
+
+{#if isDragging}
+    <div class="fixed inset-0 bg-primary bg-opacity-75 z-50 flex items-center justify-center">
+        <div class="relative w-full h-full max-w-[85vw] max-h-[85vh] m-8">
+            <!-- Top-left corner -->
+            <div class="absolute top-0 left-0 w-16 h-16 border-t-[16px] border-l-[16px] border-white rounded-tl-3xl"></div>
+            <!-- Top-right corner -->
+            <div class="absolute top-0 right-0 w-16 h-16 border-t-[16px] border-r-[16px] border-white rounded-tr-3xl"></div>
+            <!-- Bottom-left corner -->
+            <div class="absolute bottom-0 left-0 w-16 h-16 border-b-[16px] border-l-[16px] border-white rounded-bl-3xl"></div>
+            <!-- Bottom-right corner -->
+            <div class="absolute bottom-0 right-0 w-16 h-16 border-b-[16px] border-r-[16px] border-white rounded-br-3xl"></div>
+
+            <div class="flex items-center justify-center h-full">
+                <h3 class="text-4xl lg:text-6xl  font-black text-white text-center">Drop files anywhere.</h3>
+            </div>
+        </div>
+    </div>
+{/if}
 
 <label for="files" class="btn btn-sm">
     <FileUp/>
     File(s)
 </label>
-<input class="hidden" id="files" type="file">
+<input on:change={handleFiles} class="hidden" id="files" type="file">

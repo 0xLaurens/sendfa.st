@@ -8,6 +8,6 @@ const {code} = Astro.params
 <Layout title="Sendfa.st">
     <section id="app" class="min-h-[100vh] bg-base-100 relative overflow-hidden">
         <GradientBackdrop/>
-        <Room code={code} client:load/>
+        <Room code={code} client:only="svelte"/>
     </section>
 </Layout>
