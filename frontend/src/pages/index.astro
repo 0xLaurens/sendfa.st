@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import {Send, Check, X} from "lucide-astro";
+import {Send, Check, X, Zap, Shield, MonitorSmartphone} from "lucide-astro";
 import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
 import GradientBackdrop from "../components/GradientBackdrop.astro";
@@ -49,6 +49,43 @@ import GradientBackdrop from "../components/GradientBackdrop.astro";
             </div>
         </div>
     </section>
+
+    <section class="bg-base-100 text-base-content" id="why-sendfast">
+        <div class="max-w-5xl mx-auto px-8 py-16 md:py-32">
+            <h2 class="text-center font-extrabold text-4xl md:text-5xl tracking-tight mb-12 md:mb-20">Why Use
+                Sendfast?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="card card-bordered">
+                    <div class="card-body items-center">
+                        <div class="space-y-3">
+                            <Zap class="h-16 w-16"/>
+                        </div>
+                        <p class="text-2xl font-bold">Lightning Fast</p>
+                        <p class="text-center">Transfer files as fast as your wifi can handle.</p>
+                    </div>
+                </div>
+                <div class="card card-bordered">
+                    <div class="card-body items-center">
+                        <div class="space-y-3">
+                            <Shield class="h-16 w-16"/>
+                        </div>
+                        <p class="text-2xl font-bold">Secure & Private</p>
+                        <p class="text-center">Your data is fully end-to-end encrypted, sent straight to the other device</p>
+                    </div>
+                </div>
+                <div class="card card-bordered">
+                    <div class="card-body items-center">
+                        <div class="space-y-3">
+                            <MonitorSmartphone class="h-16 w-16"/>
+                        </div>
+                        <p class="text-2xl font-bold">Cross platform</p>
+                        <p class="text-center">Works seamlessly across all devices and operating systems.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section class="bg-base-100 text-base-content" id="features">
         <div class="max-w-5xl mx-auto px-8 py-16 md:py-32">
             <h2 class="text-center font-extrabold text-4xl md:text-5xl tracking-tight mb-12 md:mb-20">Tired emailing
