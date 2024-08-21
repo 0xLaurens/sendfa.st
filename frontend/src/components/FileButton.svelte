@@ -48,6 +48,14 @@
         }
     }
 
+    function handleFiles(event: any): void {
+        const files = (event.target as HTMLInputElement).files;
+        if (files || files) {
+            console.log('Selected files:', files);
+            createFilesOffers(files)
+        }
+    }
+
     onMount(() => {
         return () => {
             clearTimeout(debounceTimer);
@@ -86,4 +94,4 @@
     <FileUp/>
     File(s)
 </label>
-<input class="hidden" id="files" type="file">
+<input on:change={handleFiles} class="hidden" id="files" type="file">

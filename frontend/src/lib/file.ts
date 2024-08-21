@@ -132,6 +132,8 @@ function filesToMessage(files: FileList): FileMessage[] {
 }
 
 export function createFilesOffers(files: FileList) {
+    if (files.length === 0) return;
+
     for (const [target, connection] of connections.get()) {
         if (connection.peerConnection.connectionState === "connected" && connection.dataChannel) {
             createFilesOffer(files, target)
