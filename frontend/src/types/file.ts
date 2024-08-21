@@ -3,6 +3,7 @@ export type FileOffer = {
     type: FileOfferType
     from: string
     to: string
+    currentFile: number
     files: FileMessage[]
 }
 

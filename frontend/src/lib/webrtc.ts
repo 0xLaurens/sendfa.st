@@ -1,7 +1,7 @@
 import {atom} from "nanostores";
 import type {Connection} from "../types/connection.ts";
 import {identity, room, sendWebRtcMessage} from "./socket.ts";
-import {addIncomingFileOffer, buildFile} from "./file.ts";
+import {addIncomingFileOffer, buildFile, sendFile} from "./file.ts";
 import {FileOfferType} from "../types/file.ts";
 
 export const connections = atom(new Map<string, Connection>());
@@ -25,9 +25,12 @@ async function _setupDataChannelListeners(connection: Connection) {
                     addIncomingFileOffer(data);
                     break;
                 case FileOfferType.AcceptOffer:
-
+                    console.log("The offer was accepted :)");
+                    sendFile(data);
                     break;
                 case FileOfferType.DenyOffer:
+                    console.log("The offer was denied :(");
+                    break;
             }
         }
 

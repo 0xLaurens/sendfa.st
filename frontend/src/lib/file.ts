@@ -7,8 +7,7 @@ import {atom, type WritableAtom} from "nanostores";
 
 const incomingFileOffers: WritableAtom<FileOffer[]> = atom([])
 export const currentFileOffer: WritableAtom<FileOffer | null> = atom(null)
-const outgoingFileOffers = atom(Map<string, FileOffer>)
-const offeredFiles = atom(new Map<string, File>)
+const offeredFiles = atom(new Map<string, FileList>)
 
 export function addIncomingFileOffer(offer: FileOffer) {
     console.log("Adding incoming file offer", offer);
@@ -27,7 +26,15 @@ export function acceptIncomingFileOffer() {
             connection.dataChannel.send(JSON.stringify(offer))
         }
     }
-    currentFileOffer.set(null)
+}
+
+function nextFileOffer() {
+    incomingFileOffers.set(incomingFileOffers.get().slice(1))
+    if (incomingFileOffers.get().length > 0) {
+        currentFileOffer.set(incomingFileOffers.get()[0])
+    } else {
+        currentFileOffer.set(null)
+    }
 }
 
 export function denyIncomingFileOffer() {
@@ -47,33 +54,31 @@ let stream: WritableStream<Uint8Array> | null
 let writer: WritableStreamDefaultWriter<Uint8Array> | null
 let accSize = 0
 
-export async function sendFileToAll(file: File) {
-    console.log("Sending file to all", file);
-    for (const [target, connection] of connections.get()) {
-        if (connection.peerConnection.connectionState === "connected" && connection.dataChannel) {
-            await sendFile(file, connection.dataChannel)
-        }
-    }
-}
 
-async function sendFile(file: File, dc: RTCDataChannel) {
+export async function sendFile(fileOffer: FileOffer) {
+    const connection = connections.get().get(fileOffer.to)
+    if (!connection || !connection.dataChannel) return
+
+    const file = offeredFiles.get().get(fileOffer.id)?.[fileOffer.currentFile]
+    if (!file) return;
+
     const stream = file.stream()
     const reader = stream.getReader()
 
     const CHUNK_SIZE = 16384 // 16KiB chrome being chrome
-    dc.bufferedAmountLowThreshold = 1048576 // 1mb
+    connection.dataChannel.bufferedAmountLowThreshold = 1048576 // 1mb
 
     const readChunk = async () => {
         const {value} = await reader.read()
         if (!value) return
         let buf = value
         while (buf.byteLength) {
-            while (dc.bufferedAmount > dc.bufferedAmountLowThreshold) {
-                await new Promise(resolve => dc.onbufferedamountlow = resolve)
+            while (connection.dataChannel!.bufferedAmount > connection.dataChannel!.bufferedAmountLowThreshold) {
+                await new Promise(resolve => connection.dataChannel!.onbufferedamountlow = resolve)
             }
             const chunk = buf.slice(0, CHUNK_SIZE)
             buf = buf.slice(CHUNK_SIZE)
-            dc.send(chunk)
+            connection.dataChannel!.send(chunk)
         }
         await readChunk()
     }
@@ -83,20 +88,33 @@ async function sendFile(file: File, dc: RTCDataChannel) {
 
 export async function buildFile(chunk: ArrayBuffer) {
     console.log("Building file", chunk.byteLength);
+    const offer = currentFileOffer.get()
+    if (!offer) {
+        console.error("No current file offer")
+        return
+    };
+
+    const file = offer.files[offer.currentFile]
+
     if (!stream) {
-        stream = StreamSaver.createWriteStream("demo.mp4", {size: 296136554})
+        stream = StreamSaver.createWriteStream(file.name, {size: file.size})
         writer = stream.getWriter()
     }
 
     const buffer = new Uint8Array(chunk)
     await writer?.write(buffer).catch(console.error)
-
+    console.log("accSize", accSize, "Filesize", file.size)
     accSize += buffer.byteLength
-    if (accSize === 296136554) {
+    if (accSize === file.size) {
         await writer?.close().catch(console.error)
         stream = null
         writer = null
         accSize = 0
+        //TODO: request next file
+        if (offer.currentFile === offer.files.length - 1) {
+            currentFileOffer.set(null)
+            nextFileOffer()
+        }
     }
 }
 
@@ -128,8 +146,10 @@ function createFilesOffer(files: FileList, target: string) {
         type: FileOfferType.Offer,
         files: messages,
         from: identity.get().id,
+        currentFile: 0,
         to: target,
     }
+    offeredFiles.get().set(offer.id, files)
 
     const connection = connections.get().get(target)
     if (connection && connection.dataChannel) {
