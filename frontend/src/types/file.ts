@@ -18,5 +18,10 @@ export type FileMessage = {
     name: string
     size: number
     mime: string
+}
+
+export type FileProgress = {
+    id: string
+    currentFile: number
     progress: number
 }

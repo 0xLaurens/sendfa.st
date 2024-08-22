@@ -135,7 +135,6 @@ function filesToMessage(files: FileList): FileMessage[] {
             name: files[i].name,
             size: files[i].size,
             mime: files[i].type,
-            progress: 0
         })
     }
     return messages

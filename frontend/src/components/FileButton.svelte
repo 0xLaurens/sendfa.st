@@ -90,7 +90,7 @@
     </div>
 {/if}
 
-<label for="files" class="btn btn-sm">
+<label for="files" class="btn btn-sm bg-base-100">
     <FileUp/>
     File(s)
 </label>
