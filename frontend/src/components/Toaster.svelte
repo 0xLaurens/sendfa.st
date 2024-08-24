@@ -6,7 +6,6 @@
         type: "success" | "error"
         title: string
         description: string
-        color: string
     }
 
 </script>
