@@ -20,29 +20,31 @@
          aria-live="assertive"
          aria-atomic="true"
     >
-        {#each $toasts as toast (toast.id)}
-            <div class="card card-compact card-bordered z-10 bg-base-100 shadow-xl w-96 transition-popup">
-                <div class="card-body flex flex-row">
-                    <div class="my-auto px-2">
-                        {#if toast.type === "success"}
-                            <CheckmarkIcon/>
-                        {/if}
-                        {#if toast.type === "error"}
-                            <ErrorIcon/>
-                        {/if}
-                    </div>
-                    <div>
+        <div class="flex flex-col space-y-2">
+            {#each $toasts as toast (toast.id)}
+                <div class="card card-compact card-bordered z-10 bg-base-100 shadow-xl w-96 transition-popup">
+                    <div class="card-body flex flex-row">
+                        <div class="my-auto px-2">
+                            {#if toast.type === "success"}
+                                <CheckmarkIcon/>
+                            {/if}
+                            {#if toast.type === "error"}
+                                <ErrorIcon/>
+                            {/if}
+                        </div>
                         <div>
-                            <h3 class="font-bold text-lg">
-                                {toast.title}
-                            </h3>
                             <div>
-                                {toast.description}
+                                <h3 class="font-bold text-lg">
+                                    {toast.title}
+                                </h3>
+                                <div>
+                                    {toast.description}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        {/each}
+            {/each}
+        </div>
     </div>
 </div>
