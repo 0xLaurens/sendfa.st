@@ -2,6 +2,8 @@
     import {FileUp} from "lucide-svelte";
     import {onMount} from 'svelte';
     import {createFilesOffers} from "../lib/file.ts";
+    import {addToast} from "../lib/toast.ts";
+    import type {ToastData} from "./Toaster.svelte";
 
     let isDragging: boolean = false;
     let dragCounter: number = 0;
@@ -40,11 +42,18 @@
         event.preventDefault();
         dragCounter = 0;
         setDragging(false);
-        // Handle the dropped files here
         const files = event.dataTransfer?.files;
         if (files) {
             console.log('Dropped files:', files);
-            createFilesOffers(files)
+            const toast: ToastData = {
+                type: "success",
+                id: Date.now(),
+                title: "Files added",
+                description: `You have added ${files.length} files`,
+            }
+            addToast(toast);
+
+            createFilesOffers(files);
         }
     }
 
@@ -64,7 +73,7 @@
 </script>
 
 <svelte:window
-        class="z-50"
+        class="z-50 w-scree h-screen"
         on:dragenter={handleDragEnter}
         on:dragleave={handleDragLeave}
         on:dragover={handleDragOver}
@@ -72,7 +81,12 @@
 />
 
 {#if isDragging}
-    <div class="fixed inset-0 bg-primary bg-opacity-75 z-50 flex items-center justify-center">
+    <div class="fixed inset-0 bg-primary bg-opacity-75 z-50 flex items-center justify-center"
+         on:click={() => {setDragging(false)}}
+         role="button"
+         tabindex="0"
+         on:keydown={(e) => {if (e.key === "Escape") setDragging(false)}}
+    >
         <div class="relative w-full h-full max-w-[85vw] max-h-[85vh] m-8">
             <!-- Top-left corner -->
             <div class="absolute top-0 left-0 w-16 h-16 border-t-[16px] border-l-[16px] border-white rounded-tl-3xl"></div>
