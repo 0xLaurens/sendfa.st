@@ -1,7 +1,7 @@
 // With `output: 'hybrid'` configured:
+export const prerender = false;
 import type {Provider} from "@supabase/supabase-js";
 
-export const prerender = false;
 import type {APIRoute} from "astro";
 import {supabase} from "../../../lib/supabase";
 

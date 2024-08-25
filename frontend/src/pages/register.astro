@@ -3,10 +3,12 @@ export const prerender = false;
 import Layout from "../layouts/Layout.astro"
 import Navbar from "../components/Navbar.astro";
 import {Image} from 'astro:assets';
+import Toaster from "../components/Toaster.svelte"
 ---
 
+<Toaster/>
 <Layout title="Sendfast • Register">
-    <section class="bg-base-200 overflow-hidden min-h-screen" id="login">
+    <section class="bg-base-200 overflow-hidden min-h-screen" id="register">
         <Navbar/>
         <div class="py-24 px-8 max-w-5xl mx-auto ">
             <div class="mx-auto relative max-w-lg w-full">
@@ -23,7 +25,7 @@ import {Image} from 'astro:assets';
                         </div>
 
 
-                        <form action="/api/auth/register" method="post" enctype="multipart/form-data">
+                        <form action="/api/auth/register" method="post">
                             <label class="form-control">
                                 <span class="label">Username</span>
                                 <input placeholder="username" class="input input-bordered" name="username">
@@ -59,3 +61,30 @@ import {Image} from 'astro:assets';
         </div>
     </section>
 </Layout>
+
+<script>
+    import {addToast} from "../lib/toast";
+    import type {ToastData} from "../types/toast";
+
+    document.getElementById('register').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target as HTMLFormElement;
+        const formData = new FormData(form);
+        try {
+            const res = await fetch(form.action, {
+                method: form.method,
+                body: JSON.stringify(Object.fromEntries(formData)),
+            });
+            if (!res.ok) {
+                const data = await res.json();
+                const toast: ToastData = {
+                    description: data.error, id: Date.now(), title: "Error", type: 'error'
+                }
+
+                addToast(toast);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    });
+</script>
