@@ -1,15 +1,5 @@
 <script lang="ts" context="module">
     import toasts from "../lib/toast.ts";
-
-    export type ToastData = {
-        id: number
-        type: "success" | "error"
-        title: string
-        description: string
-    }
-
-</script>
-<script>
     import CheckmarkIcon from "./CheckmarkIcon.svelte";
     import ErrorIcon from "./ErrorIcon.svelte";
 </script>

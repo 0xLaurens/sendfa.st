@@ -3,7 +3,7 @@
     import {onMount} from 'svelte';
     import {createFilesOffers} from "../lib/file.ts";
     import {addToast} from "../lib/toast.ts";
-    import type {ToastData} from "./Toaster.svelte";
+    import type {ToastData} from "../types/toast.ts";
 
     let isDragging: boolean = false;
     let dragCounter: number = 0;

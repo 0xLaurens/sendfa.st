@@ -1,5 +1,5 @@
 import {atom} from "nanostores";
-import type {ToastData} from "../components/Toaster.svelte";
+import type {ToastData} from "../types/toast";
 
 const toasts = atom<ToastData[]>([]);
 
