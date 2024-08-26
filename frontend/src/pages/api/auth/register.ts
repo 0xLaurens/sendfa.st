@@ -51,5 +51,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
         }), { status: 500 });
     }
 
-    return redirect("/signin");
+    return new Response(JSON.stringify({
+        message: "Sign up successful",
+    }), { status: 200 });
 };

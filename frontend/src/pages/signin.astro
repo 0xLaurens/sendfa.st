@@ -13,7 +13,6 @@ if (!accessToken || !refreshToken) {
     redirect('/')
 }
 ---
-
 <Layout title="Sendfast • Sign in">
     <section class="bg-base-200 overflow-hidden min-h-screen" id="login">
         <Navbar/>
@@ -61,3 +60,34 @@ if (!accessToken || !refreshToken) {
         </div>
     </section>
 </Layout>
+
+<script>
+    import {addToast} from "../lib/toast";
+
+    document.getElementById("login").addEventListener("submit", async (e) => {
+        e.preventDefault()
+        const form = e.target as HTMLFormElement
+        const formData = new FormData(form)
+        try {
+            const res = await fetch(form.action, {
+                method: form.method,
+                body: JSON.stringify(Object.fromEntries(formData)),
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                console.error(data.error)
+                return addToast({
+                    description: data.error, id: Date.now(), title: "Error", type: 'error'
+                });
+            }
+            //
+            // addToast({
+            //     description: "Login successful", id: Date.now(), title: "Success", type: 'success'
+            // });
+        } catch (e) {
+            console.error(e)
+        }
+
+    })
+</script>

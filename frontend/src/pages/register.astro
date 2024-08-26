@@ -6,7 +6,6 @@ import {Image} from 'astro:assets';
 import Toaster from "../components/Toaster.svelte"
 ---
 
-<Toaster/>
 <Layout title="Sendfast • Register">
     <section class="bg-base-200 overflow-hidden min-h-screen" id="register">
         <Navbar/>
@@ -64,7 +63,6 @@ import Toaster from "../components/Toaster.svelte"
 
 <script>
     import {addToast} from "../lib/toast";
-    import type {ToastData} from "../types/toast";
 
     document.getElementById('register').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -75,14 +73,17 @@ import Toaster from "../components/Toaster.svelte"
                 method: form.method,
                 body: JSON.stringify(Object.fromEntries(formData)),
             });
-            if (!res.ok) {
-                const data = await res.json();
-                const toast: ToastData = {
-                    description: data.error, id: Date.now(), title: "Error", type: 'error'
-                }
+            const data = await res.json();
+            console.log(data);
 
-                addToast(toast);
-            }
+            if (!res.ok) return addToast({
+                description: data.error, id: Date.now(), title: "Error", type: 'error'
+            });
+
+            addToast({
+                description: "Registration successful", id: Date.now(), title: "Success", type: 'success'
+            });
+
         } catch (error) {
             console.log(error);
         }
