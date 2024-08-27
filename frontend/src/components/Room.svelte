@@ -8,7 +8,6 @@
     import QrButton from "./QrButton.svelte";
     import {Loader2} from "lucide-svelte";
     import type {User} from "../types/user.ts";
-    import Toaster from "./Toaster.svelte";
     import AppNavigation from "./AppNavigation.svelte";
 
     export let code: string | undefined;
@@ -52,7 +51,6 @@
     })
 </script>
 
-<Toaster/>
 <FileDialog/>
 <AppNavigation/>
 {#if code && connected}
