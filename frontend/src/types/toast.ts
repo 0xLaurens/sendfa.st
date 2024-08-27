@@ -4,4 +4,5 @@ export type ToastData = {
     type: "success" | "error"
     title: string
     description: string
+    duration?: number
 }
