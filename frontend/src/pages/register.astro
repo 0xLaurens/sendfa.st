@@ -81,9 +81,9 @@ import Toaster from "../components/Toaster.svelte"
             });
 
             addToast({
-                description: "Registration successful", id: Date.now(), title: "Success", type: 'success'
-            });
-
+                description: "Registration successful, please verify your email", id: Date.now(), title: "Success", type: 'success'
+            }, 15000);
+            window.location.href = '/signin';
         } catch (error) {
             console.log(error);
         }
