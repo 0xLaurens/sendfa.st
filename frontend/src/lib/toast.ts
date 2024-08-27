@@ -8,17 +8,31 @@ const toasts: WritableAtom<ToastData[]> = persistentAtom("toats", [], {
     decode: JSON.parse,
 });
 
+const timers = atom(new Map<number, NodeJS.Timeout>());
+
 export function addToast(toast: ToastData, duration = 3000) {
     toast.id = Date.now();
+    toast.duration = duration;
     toasts.set([...toasts.get(), toast]);
 
-    setTimeout(() => {
+    timers.get().set(toast.id, setTimeout(() => {
         closeToast(toast.id);
-    }, duration)
+    }, toast.duration));
 }
 
 export function closeToast(id: number) {
     toasts.set(toasts.get().filter((toast) => toast.id !== id));
 }
+
+export function triggerTimeouts() {
+    toasts.get().forEach((toast) => {
+        if (!timers.get().has(toast.id)) {
+            timers.get().set(toast.id, setTimeout(() => {
+                closeToast(toast.id);
+            }, toast.duration || 3000));
+        }
+    });
+}
+
 
 export default toasts;

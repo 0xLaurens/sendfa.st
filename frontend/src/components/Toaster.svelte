@@ -1,7 +1,12 @@
-<script lang="ts" context="module">
-    import toasts from "../lib/toast.ts";
+<script lang="ts">
+    import {onMount} from "svelte";
+    import toasts, {triggerTimeouts} from "../lib/toast.ts";
     import CheckmarkIcon from "./CheckmarkIcon.svelte";
     import ErrorIcon from "./ErrorIcon.svelte";
+
+    onMount(() => {
+        triggerTimeouts();
+    })
 </script>
 
 <div class="flex justify-center items-center">
