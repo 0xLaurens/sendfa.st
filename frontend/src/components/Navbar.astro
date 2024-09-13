@@ -7,20 +7,19 @@ import '@fontsource-variable/gabarito'
     <nav class="container max-w-5xl flex items-center justify-between px-8 py-4 mx-auto" aria-label="Global">
         <div class="flex lg:flex-1 space-x-1">
             <a class="flex gap-2 justify-center md:justify-start items-center" aria-current="page" href="/#">
-                <Image src="/sendfast.png" loading="eager" height="50" width="50" alt="Sendfast logo" class="w-8 md:w-10"/>
+                <Image src="/sendfast.png" loading="eager" height="50" width="50" alt="Sendfast logo"
+                       class="w-8 md:w-10"/>
                 <span class="font-bold text-lg">Sendfa.st</span>
             </a>
         </div>
         <div class="hidden lg:flex lg:justify-center lg:gap-12 lg:items-center">
             <a class="link link-hover" title="Pricing" href="/#features">Features</a>
-            <a class="link link-hover" title="Pricing" href="/#pricing">Pricing</a>
             <a class="link link-hover" title="FAQ" href="/#faq">FAQ</a>
         </div>
         <div class="flex justify-end flex-1 space-x-3">
-            <a class="btn btn-sm btn-primary" href={import.meta.env.SENDFAST_PRO_URL}>
-                Go Pro
+            <a class="btn btn-sm btn-primary" href="/app">
+                Send files
             </a>
-            <a class="btn btn-sm" href="/signin">Login</a>
         </div>
     </nav>
 </header>
