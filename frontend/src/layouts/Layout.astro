@@ -1,4 +1,5 @@
 ---
+import Toaster from "../components/Toaster.svelte";
 interface Props {
     title: string;
 }
@@ -20,6 +21,7 @@ const {title} = Astro.props;
 </head>
 <body>
 <main class="min-h-screen">
+    <Toaster client:only="svelte"/>
     <slot/>
 </main>
 </body>

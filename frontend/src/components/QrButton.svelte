@@ -10,7 +10,7 @@
     }
 </script>
 <div class="tooltip tooltip-bottom" data-tip="Show QR code">
-    <button class="btn btn-sm" on:click={showModal}>
+    <button class="btn btn-sm bg-base-100" on:click={showModal}>
         <QrCode/>
         QR
     </button>

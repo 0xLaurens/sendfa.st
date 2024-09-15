@@ -1,8 +1,12 @@
 <script lang="ts">
     import {FileUp} from "lucide-svelte";
     import {onMount} from 'svelte';
-    import {createFilesOffers} from "../lib/file.ts";
+    import {createFilesOffer, createFilesOffers} from "../lib/file.ts";
+    import {addToast} from "../lib/toast.ts";
+    import type {ToastData} from "../types/toast.ts";
+    import type {User} from "../types/user.ts";
 
+    let filesToSend: FileList | null = null;
     let isDragging: boolean = false;
     let dragCounter: number = 0;
     let debounceTimer: ReturnType<typeof setTimeout>;
@@ -40,20 +44,61 @@
         event.preventDefault();
         dragCounter = 0;
         setDragging(false);
-        // Handle the dropped files here
         const files = event.dataTransfer?.files;
         if (files) {
-            console.log('Dropped files:', files);
-            createFilesOffers(files)
+            handleFilesSelected(files);
         }
     }
 
     function handleFiles(event: any): void {
         const files = (event.target as HTMLInputElement).files;
         if (files || files) {
-            console.log('Selected files:', files);
-            createFilesOffers(files)
+            handleFilesSelected(files);
         }
+    }
+
+    function handleFilesSelected(files: FileList) {
+        if (!files) return
+        console.log('Selected files:', files);
+        filesToSend = files;
+        const toast: ToastData = {
+            type: "success",
+            id: Date.now(),
+            title: "Files selected",
+            duration: 5000,
+            description: `You have selected ${files.length} files to send. Press on the user(s) to send the files to them.`,
+        }
+        addToast(toast);
+    }
+
+    function handleUserSelected(user: User) {
+        if (!filesToSend) {
+            const toast: ToastData = {
+                type: "error",
+                id: Date.now(),
+                title: "No files selected",
+                duration: 5000,
+                description: "You have not selected any files to send. Please select some files first.",
+            }
+            addToast(toast);
+            return;
+        }
+        createFilesOffer(filesToSend, user.id);
+    }
+
+    function handleSendToAllUsers() {
+        if (!filesToSend) {
+            const toast: ToastData = {
+                type: "error",
+                id: Date.now(),
+                title: "No files selected",
+                duration: 5000,
+                description: "You have not selected any files to send. Please select some files first.",
+            }
+            addToast(toast);
+            return;
+        }
+        createFilesOffers(filesToSend);
     }
 
     onMount(() => {
@@ -64,7 +109,7 @@
 </script>
 
 <svelte:window
-        class="z-50"
+        class="z-50 w-scree h-screen"
         on:dragenter={handleDragEnter}
         on:dragleave={handleDragLeave}
         on:dragover={handleDragOver}
@@ -72,7 +117,12 @@
 />
 
 {#if isDragging}
-    <div class="fixed inset-0 bg-primary bg-opacity-75 z-50 flex items-center justify-center">
+    <div class="fixed inset-0 bg-primary bg-opacity-75 z-50 flex items-center justify-center"
+         on:click={() => {setDragging(false)}}
+         role="button"
+         tabindex="0"
+         on:keydown={(e) => {if (e.key === "Escape") setDragging(false)}}
+    >
         <div class="relative w-full h-full max-w-[85vw] max-h-[85vh] m-8">
             <!-- Top-left corner -->
             <div class="absolute top-0 left-0 w-16 h-16 border-t-[16px] border-l-[16px] border-white rounded-tl-3xl"></div>
@@ -90,8 +140,8 @@
     </div>
 {/if}
 
-<label for="files" class="btn btn-sm">
+<label for="files" class="btn btn-sm bg-base-100">
     <FileUp/>
     File(s)
 </label>
-<input on:change={handleFiles} class="hidden" id="files" type="file">
+<input on:change={handleFiles} class="hidden" id="files" type="file" multiple>

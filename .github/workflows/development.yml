@@ -14,7 +14,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ">=1.22.5"
-        run: go version
       - name: Cache Go modules
         uses: actions/cache@v2
         with:
@@ -26,7 +25,11 @@ jobs:
             ${{ runner.os }}-go-me: Run tests
 
       - name: Install dependencies
-        run: go mod tidy
+        run:
+          cd backend/
+          go mod tidy
 
       - name: Run tests
-        run: go test -v ./...
+        run:
+          cd backend/
+          go test -v ./...

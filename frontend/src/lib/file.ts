@@ -54,6 +54,13 @@ let stream: WritableStream<Uint8Array> | null
 let writer: WritableStreamDefaultWriter<Uint8Array> | null
 let accSize = 0
 
+export function requestNextFile(offer: FileOffer) {
+    offer.type = FileOfferType.RequestNextFile
+    const connection = connections.get().get(offer.from)
+    if (connection && connection.dataChannel) {
+        connection.dataChannel.send(JSON.stringify(offer))
+    }
+}
 
 export async function sendFile(fileOffer: FileOffer) {
     const connection = connections.get().get(fileOffer.to)
@@ -92,7 +99,7 @@ export async function buildFile(chunk: ArrayBuffer) {
     if (!offer) {
         console.error("No current file offer")
         return
-    };
+    }
 
     const file = offer.files[offer.currentFile]
 
@@ -110,10 +117,13 @@ export async function buildFile(chunk: ArrayBuffer) {
         stream = null
         writer = null
         accSize = 0
-        //TODO: request next file
         if (offer.currentFile === offer.files.length - 1) {
             currentFileOffer.set(null)
             nextFileOffer()
+        }
+        if (offer.currentFile < offer.files.length - 1) {
+            offer.currentFile++
+            requestNextFile(offer)
         }
     }
 }
@@ -125,7 +135,6 @@ function filesToMessage(files: FileList): FileMessage[] {
             name: files[i].name,
             size: files[i].size,
             mime: files[i].type,
-            progress: 0
         })
     }
     return messages
@@ -141,7 +150,7 @@ export function createFilesOffers(files: FileList) {
     }
 }
 
-function createFilesOffer(files: FileList, target: string) {
+export function createFilesOffer(files: FileList, target: string) {
     const messages = filesToMessage(files)
     const offer: FileOffer = {
         id: uuid(),

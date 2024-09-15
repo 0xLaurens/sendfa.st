@@ -31,6 +31,10 @@ async function _setupDataChannelListeners(connection: Connection) {
                 case FileOfferType.DenyOffer:
                     console.log("The offer was denied :(");
                     break;
+                case FileOfferType.RequestNextFile:
+                    console.log("Requesting next file");
+                    sendFile(data);
+                    break;
             }
         }
 
