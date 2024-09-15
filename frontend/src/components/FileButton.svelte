@@ -1,9 +1,10 @@
 <script lang="ts">
     import {FileUp} from "lucide-svelte";
     import {onMount} from 'svelte';
-    import {createFilesOffers} from "../lib/file.ts";
+    import {createFilesOffer, createFilesOffers} from "../lib/file.ts";
     import {addToast} from "../lib/toast.ts";
     import type {ToastData} from "../types/toast.ts";
+    import type {User} from "../types/user.ts";
 
     let filesToSend: FileList | null = null;
     let isDragging: boolean = false;
@@ -68,6 +69,36 @@
             description: `You have selected ${files.length} files to send. Press on the user(s) to send the files to them.`,
         }
         addToast(toast);
+    }
+
+    function handleUserSelected(user: User) {
+        if (!filesToSend) {
+            const toast: ToastData = {
+                type: "error",
+                id: Date.now(),
+                title: "No files selected",
+                duration: 5000,
+                description: "You have not selected any files to send. Please select some files first.",
+            }
+            addToast(toast);
+            return;
+        }
+        createFilesOffer(filesToSend, user.id);
+    }
+
+    function handleSendToAllUsers() {
+        if (!filesToSend) {
+            const toast: ToastData = {
+                type: "error",
+                id: Date.now(),
+                title: "No files selected",
+                duration: 5000,
+                description: "You have not selected any files to send. Please select some files first.",
+            }
+            addToast(toast);
+            return;
+        }
+        createFilesOffers(filesToSend);
     }
 
     onMount(() => {

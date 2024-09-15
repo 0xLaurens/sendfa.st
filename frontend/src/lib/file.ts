@@ -150,7 +150,7 @@ export function createFilesOffers(files: FileList) {
     }
 }
 
-function createFilesOffer(files: FileList, target: string) {
+export function createFilesOffer(files: FileList, target: string) {
     const messages = filesToMessage(files)
     const offer: FileOffer = {
         id: uuid(),
