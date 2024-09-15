@@ -52,7 +52,7 @@
 </script>
 
 <FileDialog/>
-<AppNavigation/>
+<!--<AppNavigation/>-->
 {#if code && connected}
     <div class="relative z-10 max-w-5xl mx-auto flex flex-col items-center justify-center gap-16 lg:gap-20 px-8 py-12 lg:py-32 min-h-screen">
         <div class="relative flex flex-col gap-3 max-w-md items-center justify-center text-center">

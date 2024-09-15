@@ -5,6 +5,7 @@
     import {addToast} from "../lib/toast.ts";
     import type {ToastData} from "../types/toast.ts";
 
+    let filesToSend: FileList | null = null;
     let isDragging: boolean = false;
     let dragCounter: number = 0;
     let debounceTimer: ReturnType<typeof setTimeout>;
@@ -44,25 +45,29 @@
         setDragging(false);
         const files = event.dataTransfer?.files;
         if (files) {
-            console.log('Dropped files:', files);
-            const toast: ToastData = {
-                type: "success",
-                id: Date.now(),
-                title: "Files added",
-                description: `You have added ${files.length} files`,
-            }
-            addToast(toast);
-
-            createFilesOffers(files);
+            handleFilesSelected(files);
         }
     }
 
     function handleFiles(event: any): void {
         const files = (event.target as HTMLInputElement).files;
         if (files || files) {
-            console.log('Selected files:', files);
-            createFilesOffers(files)
+            handleFilesSelected(files);
         }
+    }
+
+    function handleFilesSelected(files: FileList) {
+        if (!files) return
+        console.log('Selected files:', files);
+        filesToSend = files;
+        const toast: ToastData = {
+            type: "success",
+            id: Date.now(),
+            title: "Files selected",
+            duration: 5000,
+            description: `You have selected ${files.length} files to send. Press on the user(s) to send the files to them.`,
+        }
+        addToast(toast);
     }
 
     onMount(() => {
@@ -108,4 +113,4 @@
     <FileUp/>
     File(s)
 </label>
-<input on:change={handleFiles} class="hidden" id="files" type="file">
+<input on:change={handleFiles} class="hidden" id="files" type="file" multiple>
