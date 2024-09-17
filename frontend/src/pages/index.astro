@@ -4,9 +4,13 @@ import {Users, Zap, Shield, MonitorSmartphone, Twitter, Heart, Upload, Image, Ha
 import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
 import GradientBackdrop from "../components/GradientBackdrop.astro";
+import ScreenDropzone from "../components/ScreenDropzone.svelte";
 
 const tweet = "I just used sendfa.st to send files between my devices. It's fast, secure and no registration required. Check it out at https://sendfa.st";
 ---
+
+<ScreenDropzone client:only="svelte"/>
+
 <Layout title="Sendfa.st • quick and easy file transfers">
     <Navbar/>
     <section class="md:min-h-[100vh] bg-base-100 relative overflow-hidden">
@@ -363,7 +367,7 @@ const tweet = "I just used sendfa.st to send files between my devices. It's fast
                         <p class="text-2xl font-bold">Share</p>
                         <p class="text-center">Please help us by sharing the platform with friends, family and
                             colleagues!</p>
-                        <a class="btn btn-square mt-3" target="_blank" href=`https://x.com/intent/tweet?text=${tweet}`>
+                        <a aria-label="twitter/x social media post" class="btn btn-square mt-3" target="_blank" href=`https://x.com/intent/tweet?text=${tweet}`>
                             <Twitter/>
                         </a>
                     </div>
