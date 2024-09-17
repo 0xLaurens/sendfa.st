@@ -5,6 +5,7 @@ import {identity} from "./socket.ts";
 import {uuid} from "@supabase/supabase-js/dist/main/lib/helpers";
 import {atom, type WritableAtom} from "nanostores";
 
+export const filesUploaded: WritableAtom<FileList | null> = atom(null)
 const incomingFileOffers: WritableAtom<FileOffer[]> = atom([])
 export const currentFileOffer: WritableAtom<FileOffer | null> = atom(null)
 const offeredFiles = atom(new Map<string, FileList>)
