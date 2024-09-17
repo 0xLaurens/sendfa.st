@@ -1,5 +1,4 @@
 import {atom, type WritableAtom} from "nanostores";
-import {persistentAtom} from "@nanostores/persistent";
 import type {User} from "../types/user.ts";
 import type {Room} from "../types/room.ts";
 import {
@@ -11,7 +10,7 @@ import {
     handleRtcOffer
 } from "./webrtc.ts";
 
-export const roomCode: WritableAtom<string | undefined> = persistentAtom("roomCode", undefined);
+export const roomCode: WritableAtom<string | undefined> = atom(undefined);
 export const isConnected = atom(false);
 export const users: WritableAtom<User[]> = atom([]);
 export const identity: WritableAtom<User> = atom({});
