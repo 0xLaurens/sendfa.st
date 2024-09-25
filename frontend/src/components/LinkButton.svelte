@@ -3,8 +3,10 @@
     import {addToast} from "../lib/toast.ts"
     import type {ToastData} from "../types/toast.ts";
 
+    export let link: string = ""
+
     function CopyToClipboard() {
-        navigator.clipboard.writeText(window.location.href)
+        navigator.clipboard.writeText(link)
         console.log("Copied to clipboard")
         const toast: ToastData = {
             id: Date.now(),
@@ -17,8 +19,7 @@
 </script>
 
 <div class="tooltip tooltip-bottom" data-tip="Copy the link">
-    <button on:click={CopyToClipboard} class="btn btn-sm bg-base-100">
+    <button on:click={CopyToClipboard} class="btn btn-square bg-base-100">
         <Link/>
-        Link
     </button>
 </div>

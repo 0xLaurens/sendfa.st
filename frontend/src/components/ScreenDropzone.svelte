@@ -4,6 +4,7 @@
     import type {ToastData} from "../types/toast.ts";
     import {filesUploaded} from "../lib/file.ts";
 
+
     let isDragging: boolean = false;
     let dragCounter: number = 0;
     let debounceTimer: ReturnType<typeof setTimeout>;
@@ -57,8 +58,8 @@
             duration: 5000,
             description: `You have selected ${files.length} files to send. Press on the user(s) to send the files to them.`,
         }
-        filesUploaded.set(files);
         addToast(toast);
+        filesUploaded.set(files);
     }
 
     onMount(() => {

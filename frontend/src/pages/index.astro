@@ -1,15 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import {Users, Zap, Shield, MonitorSmartphone, Twitter, Heart, Upload, Image, Handshake, HandMetal} from "lucide-astro";
+import {Users, Zap, Shield, MonitorSmartphone, Twitter, Heart, Image, Handshake, HandMetal} from "lucide-astro";
 import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
 import GradientBackdrop from "../components/GradientBackdrop.astro";
 import ScreenDropzone from "../components/ScreenDropzone.svelte";
+import LandingFileZone from "../components/LandingFileZone.svelte";
 
 const tweet = "I just used sendfa.st to send files between my devices. It's fast, secure and no registration required. Check it out at https://sendfa.st";
 ---
 
-<ScreenDropzone client:only="svelte"/>
+<!--<ScreenDropzone client:only="svelte"/>-->
 
 <Layout title="Sendfa.st - quick and easy file transfers">
     <Navbar/>
@@ -49,22 +50,7 @@ const tweet = "I just used sendfa.st to send files between my devices. It's fast
                             </ul>
                         </div>
                     </div>
-                    <div class="hidden sm:flex flex-col max-w-md">
-                        <div class="card card-bordered card-compact bg-base-100 min-w-md h-96 w-96 hover:scale-105 transition">
-                            <div class="card-body flex items-center justify-center gap-8 w-full">
-                                <div>
-                                    <Upload class="h-16 w-16"/>
-                                </div>
-                                <div class="space-y-4">
-                                    <button class="btn btn-primary btn-wide shadow-xl">Upload file(s)</button>
-                                    <p class="font-semibold">Or drop file(s)</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex sm:hidden flex-col">
-                        <button class="btn btn-primary btn-wide">Upload file(s)</button>
-                    </div>
+                    <LandingFileZone client:only="svelte"/>
                 </div>
             </div>
         </div>

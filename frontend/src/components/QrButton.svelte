@@ -2,7 +2,7 @@
     import {qr} from "@svelte-put/qr/svg"
     import {QrCode} from "lucide-svelte";
 
-    export let code: string;
+    export let link: string;
 
     function showModal() {
         let qr = document.getElementById("qr") as HTMLDialogElement
@@ -10,9 +10,8 @@
     }
 </script>
 <div class="tooltip tooltip-bottom" data-tip="Show QR code">
-    <button class="btn btn-sm bg-base-100" on:click={showModal}>
+    <button class="btn btn-square bg-base-100" on:click={showModal}>
         <QrCode/>
-        QR
     </button>
 </div>
 <dialog class="modal" id="qr" aria-labelledby="modal-title" aria-describedby="modal-description">
@@ -26,16 +25,16 @@
         </form>
 
         <p id="modal-title" class="text-2xl font-semibold">
-            Room code: <span class="font-black">{code}</span>
+            Scan the QR
         </p>
 
         <div id="modal-description">
             <div>
-                <svg class="h-56 w-56" use:qr="{{ data: `${window.location.href}` }}">
+                <svg class="h-56 w-56" use:qr="{{ data: link }}">
                 </svg>
             </div>
             <p class="w-56 text-wrap text-center">
-                Scan the QR code to connect your device.
+                Scan the QR code to start downloading the file that device.
             </p>
         </div>
     </div>
