@@ -11,38 +11,53 @@ const tweet = "I just used sendfa.st to send files between my devices. It's fast
 
 <ScreenDropzone client:only="svelte"/>
 
-<Layout title="Sendfa.st • quick and easy file transfers">
+<Layout title="Sendfa.st - quick and easy file transfers">
     <Navbar/>
     <section class="md:min-h-[100vh] bg-base-100 relative overflow-hidden">
         <GradientBackdrop/>
         <div class="relative z-10 max-w-6xl mx-auto flex flex-col items-center justify-center gap-16 lg:gap-20 px-8 py-12 lg:py-32">
             <div class="relative z-10 mx-auto flex flex-col items-center justify-center gap-16 lg:gap-20 px-8 py-12 lg:py-32">
                 <div class="relative flex flex-col lg:flex-row gap-10 lg:gap-12 items-center justify-center text-center">
-                    <!--<div class="flex flex-col justify-center items-center text-xs text-base-content-secondary/60  max-w-2xl space-y-56">-->
-                    <!--    <h1 class="font-extrabold text-4xl lg:text-6xl tracking-tight md:-mb-4">-->
-                    <!--        Send files with ease,-->
-                    <!--        fast and secure.-->
-                    <!--    </h1>-->
-                    <!--    <p class="flex justify-center items-center text-base-content-secondary/60 max-w-lg">-->
-                    <!--        Send files with ease, fast and secure. No registration required. Connect with your devices-->
-                    <!--        and-->
-                    <!--        send-->
-                    <!--        files with a single click.-->
-                    <!--    </p>-->
-                    <!--</div>-->
-                    <div class="flex flex-col">
-                        <h1 class="font-extrabold m-0 text-4xl md:text-5xl textcenter md:!text-left">Send files with
+                    <div class="flex flex-col gap-3">
+                        <h1 class="font-extrabold m-0 text-4xl md:text-5xl text-center lg:text-left">Send files with
                             ease, fast and secure.</h1>
+                        <div>
+                            <p class="text-center lg:text-left text-base-content/80 text-lg md:text-xl">Send files
+                                between your devices
+                                without
+                                any hassle. </p>
+                        </div>
+                        <div class="mx-auto lg:mx-0">
+                            <ul class="flex flex-wrap gap-x-5 gap-y-3">
+                                <li class="flex items-center gap-2">
+                                    <Zap class="h-5"/>
+                                    Fast
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <MonitorSmartphone class="h-5"/>
+                                    Cross-platform
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <Shield class="h-5"/>
+                                    Secure
+                                </li>
+
+                                <li class="flex items-center gap-2">
+                                    <Handshake class="h-5"/>
+                                    Free
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                     <div class="hidden sm:flex flex-col max-w-md">
-                        <div class="card card-bordered card-compact bg-base-100 min-w-md h-96 w-96">
+                        <div class="card card-bordered card-compact bg-base-100 min-w-md h-96 w-96 hover:scale-105 transition">
                             <div class="card-body flex items-center justify-center gap-8 w-full">
                                 <div>
                                     <Upload class="h-16 w-16"/>
                                 </div>
                                 <div class="space-y-4">
-                                    <button class="btn btn-primary btn-wide">Upload file(s)</button>
-                                    <p class="font-semibold text-xl">Or drop file(s)</p>
+                                    <button class="btn btn-primary btn-wide shadow-xl">Upload file(s)</button>
+                                    <p class="font-semibold">Or drop file(s)</p>
                                 </div>
                             </div>
                         </div>
@@ -50,27 +65,6 @@ const tweet = "I just used sendfa.st to send files between my devices. It's fast
                     <div class="flex sm:hidden flex-col">
                         <button class="btn btn-primary btn-wide">Upload file(s)</button>
                     </div>
-
-                    <!--<ul class="hidden md:block text-base-content-secondary leading-relaxed space-y-1">-->
-                    <!--    <li class="flex items-center justify-center lg:justify-start gap-2">-->
-                    <!--        <Check/>-->
-                    <!--        Fast and secure-->
-                    <!--    </li>-->
-                    <!--    <li class="flex items-center justify-center lg:justify-start gap-2">-->
-                    <!--        <Check/>-->
-                    <!--        No file size limit-->
-                    <!--    </li>-->
-                    <!--    <li class="flex items-center justify-center lg:justify-start gap-2">-->
-                    <!--        <Check/>-->
-                    <!--        No registration required-->
-                    <!--    </li>-->
-                    <!--</ul>-->
-
-                    <!--<a href="/app" class="btn btn-primary btn-wide">-->
-                    <!--    Send Files-->
-                    <!--    <Send/>-->
-                    <!--</a>-->
-
                 </div>
             </div>
         </div>
@@ -367,7 +361,8 @@ const tweet = "I just used sendfa.st to send files between my devices. It's fast
                         <p class="text-2xl font-bold">Share</p>
                         <p class="text-center">Please help us by sharing the platform with friends, family and
                             colleagues!</p>
-                        <a aria-label="twitter/x social media post" class="btn btn-square mt-3" target="_blank" href=`https://x.com/intent/tweet?text=${tweet}`>
+                        <a aria-label="twitter/x social media post" class="btn btn-square mt-3" target="_blank"
+                           href=`https://x.com/intent/tweet?text=${tweet}`>
                             <Twitter/>
                         </a>
                     </div>
