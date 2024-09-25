@@ -69,34 +69,4 @@
     });
 </script>
 
-<svelte:window
-        class="z-50 w-scree h-screen"
-        on:dragenter={handleDragEnter}
-        on:dragleave={handleDragLeave}
-        on:dragover={handleDragOver}
-        on:drop={handleDrop}
-/>
 
-{#if isDragging}
-    <div class="fixed inset-0 bg-primary bg-opacity-75 z-50 flex items-center justify-center"
-         on:click={() => {setDragging(false)}}
-         role="button"
-         tabindex="0"
-         on:keydown={(e) => {if (e.key === "Escape") setDragging(false)}}
-    >
-        <div class="relative w-full h-full max-w-[85vw] max-h-[85vh] m-8">
-            <!-- Top-left corner -->
-            <div class="absolute top-0 left-0 w-16 h-16 border-t-[16px] border-l-[16px] border-white rounded-tl-3xl"></div>
-            <!-- Top-right corner -->
-            <div class="absolute top-0 right-0 w-16 h-16 border-t-[16px] border-r-[16px] border-white rounded-tr-3xl"></div>
-            <!-- Bottom-left corner -->
-            <div class="absolute bottom-0 left-0 w-16 h-16 border-b-[16px] border-l-[16px] border-white rounded-bl-3xl"></div>
-            <!-- Bottom-right corner -->
-            <div class="absolute bottom-0 right-0 w-16 h-16 border-b-[16px] border-r-[16px] border-white rounded-br-3xl"></div>
-
-            <div class="flex items-center justify-center h-full">
-                <h3 class="text-4xl lg:text-6xl  font-black text-white text-center">Drop files anywhere.</h3>
-            </div>
-        </div>
-    </div>
-{/if}

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {LinkIcon, QrCodeIcon, UploadIcon, XIcon} from "lucide-svelte";
+    import {UploadIcon, XIcon} from "lucide-svelte";
     import type {ToastData} from "../types/toast.ts";
     import {addToast} from "../lib/toast.ts";
     import {formatFileSize} from "../util/filesize.js";
@@ -8,6 +8,8 @@
 
     let filesToSend: FileList | null = null;
     let link: string = "https://sendfa.st/r/14724459-9db4-4128-be1a-e15b372716b4";
+    let isDragging: boolean = false;
+    let debounceTimer: ReturnType<typeof setTimeout>;
 
     function handleFiles(event: any): void {
         const files = (event.target as HTMLInputElement).files;
@@ -17,7 +19,7 @@
     }
 
     function handleFilesSelected(files: FileList) {
-        if (!files) return
+        if (!files || files.length === 0) return
         console.log('Selected files:', files);
         filesToSend = files;
         const toast: ToastData = {
@@ -31,15 +33,92 @@
     }
 
     function cancelUpload() {
-        filesToSend = null;
+        setTimeout(() => {
+            filesToSend = null;
+        }, 100)
+    }
+
+    let dragCounter: number = 0;
+
+    function debounce<T extends (...args: any[]) => void>(func: T, delay: number): (...args: Parameters<T>) => void {
+        return (...args: Parameters<T>) => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => func(...args), delay);
+        };
+    }
+
+    const setDragging = debounce((value: boolean) => {
+        isDragging = value;
+    }, 100);
+
+    function handleDragEnter(event: DragEvent): void {
+        event.preventDefault();
+        dragCounter++;
+        setDragging(true);
+    }
+
+    function handleDragLeave(event: DragEvent): void {
+        event.preventDefault();
+        dragCounter--;
+        if (dragCounter === 0) {
+            setDragging(false);
+        }
+    }
+
+    function handleDragOver(event: DragEvent): void {
+        event.preventDefault();
+    }
+
+    function handleDrop(event: DragEvent): void {
+        event.preventDefault();
+        dragCounter = 0;
+        setDragging(false);
+        const files = event.dataTransfer?.files;
+        if (files) {
+            handleFilesSelected(files);
+        }
     }
 </script>
 
+
+<svelte:window
+        class="z-50 h-screen w-screen absolute bg-red-500"
+        on:dragenter={handleDragEnter}
+        on:dragleave={handleDragLeave}
+        on:dragover={handleDragOver}
+        on:drop={handleDrop}
+/>
+
+{#if isDragging}
+    <div class="fixed inset-0 bg-primary bg-opacity-75 z-50 flex items-center justify-center"
+         on:click={() => {setDragging(false)}}
+         role="button"
+         tabindex="0"
+         on:keydown={(e) => {if (e.key === "Escape") setDragging(false)}}
+    >
+        <div class="relative w-full h-full max-w-[85vw] max-h-[85vh] m-8">
+            <!-- Top-left corner -->
+            <div class="absolute top-0 left-0 w-16 h-16 border-t-[16px] border-l-[16px] border-white rounded-tl-3xl"></div>
+            <!-- Top-right corner -->
+            <div class="absolute top-0 right-0 w-16 h-16 border-t-[16px] border-r-[16px] border-white rounded-tr-3xl"></div>
+            <!-- Bottom-left corner -->
+            <div class="absolute bottom-0 left-0 w-16 h-16 border-b-[16px] border-l-[16px] border-white rounded-bl-3xl"></div>
+            <!-- Bottom-right corner -->
+            <div class="absolute bottom-0 right-0 w-16 h-16 border-b-[16px] border-r-[16px] border-white rounded-br-3xl"></div>
+
+            <div class="flex items-center justify-center h-full">
+                <h3 class="text-4xl lg:text-6xl  font-black text-white text-center">Drop files anywhere.</h3>
+            </div>
+        </div>
+    </div>
+{/if}
+
 <div class="hidden sm:flex flex-col max-w-md">
     <label for="files"
-           class="card card-bordered card-compact bg-base-100 min-w-md min-h-96 w-96 transition-transform duration-200" class:hover:scale-105={!filesToSend}>
+           class="card card-bordered card-compact bg-base-100 min-w-md min-h-96 w-96 transition-transform duration-200"
+           class:hover:scale-105={!filesToSend}>
         <div class="card-body flex items-center justify-center gap-8 w-full">
-            {#if !filesToSend}
+            {#if !filesToSend || filesToSend.length === 0}
                 <div>
                     <UploadIcon class="h-16 w-16"/>
                 </div>
@@ -48,7 +127,7 @@
                     <p class="font-semibold">Or drop file(s)</p>
                 </div>
             {/if}
-            {#if filesToSend}
+            {#if filesToSend && filesToSend.length > 0}
                 <div class="flex flex-col gap-16">
                     <div class="text-left">
                         {#if filesToSend.length > 1}
@@ -57,13 +136,15 @@
                             <h2 class="text-xl font-semibold">{filesToSend.item(0)?.name}</h2>
                         {/if}
                         <p>
-                            Total size: {formatFileSize(Array.from(filesToSend).reduce((total, file) => total + file.size, 0))}</p>
+                            Total
+                            size: {formatFileSize(Array.from(filesToSend).reduce((total, file) => total + file.size, 0))}</p>
                         <div class="flex flex-row gap-2 items-center justify-center pt-5">
                             <input class="input input-bordered"
                                    value="https://sendfa.st/r/14724459-9db4-4128-be1a-e15b372716b4">
-                            <QrButton {link} />
-                            <LinkButton {link} />
+                            <QrButton {link}/>
+                            <LinkButton {link}/>
                         </div>
+                        <p class="text-wrap pt-3 font-bold">Make sure to keep this page open whilst sending!</p>
                         <p class="text-wrap pt-2">
                             Share the link or scan the QR code to start downloading the file on another device.
                         </p>
