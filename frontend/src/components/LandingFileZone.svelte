@@ -69,11 +69,11 @@
                         </p>
                     </div>
                     <div class="flex flex-col gap-3">
-                        <label  for="files" class="btn btn-neutral w-full">
+                        <label for="change-files" class="btn btn-neutral w-full">
                             <UploadIcon class="h-5 w-5"/>
                             Change upload
                         </label>
-                        <input on:change={handleFiles} class="hidden" id="files" type="file"/>
+                        <input on:change={handleFiles} class="hidden" id="change-files" type="file" multiple/>
                         <button on:click={cancelUpload} class="btn w-full">
                             <XIcon class="h-5 w-5"/>
                             Cancel upload
