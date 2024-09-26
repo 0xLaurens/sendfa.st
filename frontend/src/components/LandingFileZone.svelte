@@ -5,11 +5,27 @@
     import {formatFileSize} from "../util/filesize.js";
     import QrButton from "./QrButton.svelte";
     import LinkButton from "./LinkButton.svelte";
+    import WebsocketManager, {roomId} from "../lib/socket.ts";
+    import {onDestroy, onMount} from "svelte";
 
     let filesToSend: FileList | null = null;
-    let link: string = "https://sendfa.st/r/14724459-9db4-4128-be1a-e15b372716b4";
+    let link: string = "dummy.com";
     let isDragging: boolean = false;
     let debounceTimer: ReturnType<typeof setTimeout>;
+    let manager: WebsocketManager;
+
+    onMount(() => {
+        manager = new WebsocketManager("ws://localhost:7331/api/websocket");
+        roomId.listen(value => {
+            if (value == null) return;
+            console.log("Setting room code to", value);
+            link = `${window.location.href}r/${value}`;
+        })
+    })
+
+    onDestroy(() => {
+        manager.close();
+    })
 
     function handleFiles(event: any): void {
         const files = (event.target as HTMLInputElement).files;
@@ -29,12 +45,14 @@
             duration: 5000,
             description: `You have selected ${files.length} files to send.`,
         }
+        manager.connect();
         addToast(toast);
     }
 
     function cancelUpload() {
         setTimeout(() => {
             filesToSend = null;
+            manager.close();
         }, 100)
     }
 
@@ -89,7 +107,7 @@
         on:drop={handleDrop}
 />
 
-{#if isDragging}
+{#if isDragging && !filesToSend}
     <div class="fixed inset-0 bg-primary bg-opacity-75 z-50 flex items-center justify-center"
          on:click={() => {setDragging(false)}}
          role="button"
@@ -133,14 +151,14 @@
                         {#if filesToSend.length > 1}
                             <h2 class="text-xl font-semibold">Multiple files ({filesToSend.length})</h2>
                         {:else}
-                            <h2 class="text-xl font-semibold">{filesToSend.item(0)?.name}</h2>
+                            <h2 class="text-xl font-semibold text-wrap">{filesToSend.item(0)?.name}</h2>
                         {/if}
                         <p>
                             Total
                             size: {formatFileSize(Array.from(filesToSend).reduce((total, file) => total + file.size, 0))}</p>
                         <div class="flex flex-row gap-2 items-center justify-center pt-5">
                             <input class="input input-bordered"
-                                   value="https://sendfa.st/r/14724459-9db4-4128-be1a-e15b372716b4">
+                                   value="{link}">
                             <QrButton {link}/>
                             <LinkButton {link}/>
                         </div>

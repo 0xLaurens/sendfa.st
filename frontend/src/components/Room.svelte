@@ -8,7 +8,6 @@
     import QrButton from "./QrButton.svelte";
     import {Loader2} from "lucide-svelte";
     import type {User} from "../types/user.ts";
-    import AppNavigation from "./AppNavigation.svelte";
 
     export let code: string | undefined;
     let user_identity: string;
@@ -73,7 +72,7 @@
             <div class="flex justify-center gap-3">
                 <FileButton/>
                 <LinkButton/>
-                <QrButton code={code}/>
+                <QrButton link={code}/>
             </div>
         </div>
     </div>

@@ -15,6 +15,7 @@ export const isConnected = atom(false);
 export const users: WritableAtom<User[]> = atom([]);
 export const identity: WritableAtom<User> = atom({});
 export const room: WritableAtom<Room> = atom({});
+export const roomId: WritableAtom<string | undefined> = atom(undefined);
 
 class WebsocketManager {
     private socket: WebSocket | null = null;
@@ -62,10 +63,11 @@ class WebsocketManager {
             case "IDENTITY": {
                 identity.set(data.user);
                 // is there an existing room code in localstorage?
-                let code = roomCode.get();
-                if (code !== undefined) {
+                // let code = roomCode.get();
+                let id= roomId.get();
+                if (id !== undefined) {
                     // verify if the room still exists
-                    sendRoomExists(this.socket, code);
+                    sendRoomExists(this.socket, id);
                     break;
                 }
 
@@ -76,6 +78,7 @@ class WebsocketManager {
             case "ROOM_CREATED": {
                 room.set(data.room);
                 roomCode.set(data.room.code);
+                roomId.set(data.room.id);
                 isConnected.set(true);
                 users.set([])
                 break;
@@ -86,6 +89,7 @@ class WebsocketManager {
                     sendRequestRoom(this.socket);
                     break;
                 }
+                roomId.set(data.id);
                 roomCode.set(data.code);
                 sendJoinRoom(this.socket, data.code);
                 break;
