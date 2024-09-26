@@ -12,22 +12,18 @@ func SetupRoomStore() RoomStore {
 
 func TestRoomShouldBeAddedToBothMaps(t *testing.T) {
 	repo := SetupRoomStore()
-	room := types.CreateRoom("test")
+	room := types.CreateRoom()
 	err := repo.CreateRoom(room)
 	assert.NoError(t, err)
 
 	roomFromMap, err := repo.GetRoomById(room.ID)
 	assert.NoError(t, err)
 	assert.Equal(t, room, roomFromMap)
-
-	roomFromCodeMap, err := repo.GetRoomByCode(room.Code)
-	assert.NoError(t, err)
-	assert.Equal(t, room, roomFromCodeMap)
 }
 
 func TestRoomShouldBeDeletedFromBothMaps(t *testing.T) {
 	repo := SetupRoomStore()
-	room := types.CreateRoom("test")
+	room := types.CreateRoom()
 	err := repo.CreateRoom(room)
 	assert.NoError(t, err)
 
@@ -37,27 +33,18 @@ func TestRoomShouldBeDeletedFromBothMaps(t *testing.T) {
 	roomFromMap, err := repo.GetRoomById(room.ID)
 	assert.Error(t, err)
 	assert.Nil(t, roomFromMap)
-
-	roomFromCodeMap, err := repo.GetRoomByCode(room.Code)
-	assert.Error(t, err)
-	assert.Nil(t, roomFromCodeMap)
 }
 
 func TestRoomShouldBeUpdatedInBothMaps(t *testing.T) {
 	repo := SetupRoomStore()
-	room := types.CreateRoom("test")
+	room := types.CreateRoom()
 	err := repo.CreateRoom(room)
 	assert.NoError(t, err)
 
-	room.Code = "updated"
 	err = repo.CreateRoom(room)
 	assert.NoError(t, err)
 
 	roomFromMap, err := repo.GetRoomById(room.ID)
 	assert.NoError(t, err)
 	assert.Equal(t, room, roomFromMap)
-
-	roomFromCodeMap, err := repo.GetRoomByCode(room.Code)
-	assert.NoError(t, err)
-	assert.Equal(t, room, roomFromCodeMap)
 }
