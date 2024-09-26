@@ -23,20 +23,18 @@ var (
 type RoomManagement interface {
 	GetAllRooms() []*types.Room
 	GetRoomById(id uuid.UUID) (*types.Room, error)
-	GetRoomByCode(code string) (*types.Room, error)
 
-	JoinRoom(code string, user *types.User) (*types.Room, error)
-	LeaveRoom(code string, user *types.User) (*types.Room, error)
+	JoinRoom(roomId uuid.UUID, user *types.User) (*types.Room, error)
+	LeaveRoom(roomId uuid.UUID, user *types.User) (*types.Room, error)
 
-	CreateRoom(customCode ...string) (*types.Room, error)
+	CreateRoom() (*types.Room, error)
 	DeleteRoom(id uuid.UUID) error
 }
 
 type RoomService struct {
-	store       store.RoomStore
-	codeService CodeManagement
-	timers      map[uuid.UUID]*time.Timer
-	timerMutex  sync.RWMutex
+	store      store.RoomStore
+	timers     map[uuid.UUID]*time.Timer
+	timerMutex sync.RWMutex
 }
 
 func (r *RoomService) GetAllRooms() []*types.Room {
@@ -49,9 +47,8 @@ var _ RoomManagement = (*RoomService)(nil)
 
 func NewRoomService(store store.RoomStore, codeService CodeManagement) *RoomService {
 	return &RoomService{
-		store:       store,
-		codeService: codeService,
-		timers:      make(map[uuid.UUID]*time.Timer),
+		store:  store,
+		timers: make(map[uuid.UUID]*time.Timer),
 	}
 }
 
@@ -63,16 +60,8 @@ func (r *RoomService) GetRoomById(id uuid.UUID) (*types.Room, error) {
 	return room, nil
 }
 
-func (r *RoomService) GetRoomByCode(code string) (*types.Room, error) {
-	room, err := r.store.GetRoomByCode(code)
-	if err != nil {
-		return nil, ErrorRoomNotFound
-	}
-	return room, nil
-}
-
-func (r *RoomService) JoinRoom(code string, user *types.User) (*types.Room, error) {
-	room, err := r.store.GetRoomByCode(code)
+func (r *RoomService) JoinRoom(roomId uuid.UUID, user *types.User) (*types.Room, error) {
+	room, err := r.store.GetRoomById(roomId)
 	if err != nil {
 		return nil, ErrorRoomNotFound
 	}
@@ -94,14 +83,13 @@ func (r *RoomService) JoinRoom(code string, user *types.User) (*types.Room, erro
 	return updatedRoom, nil
 }
 
-func (r *RoomService) LeaveRoom(code string, user *types.User) (*types.Room, error) {
-	room, err := r.store.GetRoomByCode(code)
+func (r *RoomService) LeaveRoom(roomId uuid.UUID, user *types.User) (*types.Room, error) {
+	room, err := r.store.GetRoomById(roomId)
 	if err != nil {
 		return nil, ErrorRoomNotFound
 	}
 
 	room.RemoveUser(user)
-	user.SetRoomCode("no-room-yet")
 	user.SetRoomId(uuid.Nil)
 
 	if room.IsEmpty() {
@@ -141,16 +129,8 @@ func (r *RoomService) stopDeletionTimer(roomId uuid.UUID) {
 	}
 }
 
-func (r *RoomService) CreateRoom(customCode ...string) (*types.Room, error) {
-	if len(customCode) == 0 {
-		code, err := r.codeService.GenerateCode()
-		if err != nil {
-			return nil, ErrorGenerateCode
-		}
-		customCode = append(customCode, code)
-	}
-
-	room := types.CreateRoom(types.WithRoomCode(customCode[0]))
+func (r *RoomService) CreateRoom() (*types.Room, error) {
+	room := types.CreateRoom()
 	err := r.store.CreateRoom(room)
 	if err != nil {
 		return nil, ErrorCouldNotCreateRoom

@@ -26,7 +26,3 @@ type Message struct {
 type RoomIdPayload struct {
 	RoomID uuid.UUID `json:"roomId"`
 }
-
-type RoomCodePayload struct {
-	Code string `json:"code"`
-}

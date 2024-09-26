@@ -46,7 +46,7 @@ func (wh *WebsocketHandler) HandleWebsocket(conn *websocket.Conn) error {
 				"type": "USER_LEFT",
 				"user": user,
 			}, user.RoomId)
-			_, _ = wh.roomService.LeaveRoom(user.RoomCode, user)
+			_, _ = wh.roomService.LeaveRoom(user.RoomId, user)
 		}
 		_ = wh.userService.DeleteUser(user)
 		_ = conn.Close()

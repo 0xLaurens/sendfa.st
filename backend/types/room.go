@@ -14,7 +14,6 @@ type RoomOptions func(r *Room)
 
 type Room struct {
 	ID        uuid.UUID           `json:"id"`
-	Code      string              `json:"code"`
 	UserCount uint8               `json:"user_count"`
 	Users     map[*User]bool      `json:"-"`
 	UsersById map[uuid.UUID]*User `json:"-"`
@@ -24,7 +23,6 @@ type Room struct {
 func CreateRoom(options ...RoomOptions) *Room {
 	room := &Room{
 		ID:        uuid.New(),
-		Code:      "",
 		UserCount: 0,
 		Users:     make(map[*User]bool),
 		UsersById: make(map[uuid.UUID]*User),
@@ -95,10 +93,4 @@ func (r *Room) GetUsers() []User {
 	}
 
 	return users
-}
-
-func WithRoomCode(code string) RoomOptions {
-	return func(r *Room) {
-		r.Code = code
-	}
 }

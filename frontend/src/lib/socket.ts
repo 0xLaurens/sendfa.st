@@ -77,7 +77,6 @@ class WebsocketManager {
             }
             case "ROOM_CREATED": {
                 room.set(data.room);
-                roomCode.set(data.room.code);
                 roomId.set(data.room.id);
                 isConnected.set(true);
                 users.set([])
@@ -90,8 +89,7 @@ class WebsocketManager {
                     break;
                 }
                 roomId.set(data.id);
-                roomCode.set(data.code);
-                sendJoinRoom(this.socket, data.code);
+                sendJoinRoom(this.socket, data.id);
                 break;
             }
             case "ROOM_JOINED": {
@@ -147,22 +145,22 @@ function sendRequestRoom(socket: WebSocket | null) {
     }))
 }
 
-function sendRoomExists(socket: WebSocket | null, code: string) {
+function sendRoomExists(socket: WebSocket | null, roomId: string) {
     if (!socket) return;
     socket.send(JSON.stringify({
         type: "ROOM_EXISTS",
         payload: {
-            code: code
+            roomId: roomId
         }
     }))
 }
 
-function sendJoinRoom(socket: WebSocket | null, code: string) {
+function sendJoinRoom(socket: WebSocket | null, roomId: string) {
     if (!socket) return;
     socket.send(JSON.stringify({
         type: "JOIN_ROOM",
         payload: {
-            code: code
+            roomId: roomId
         }
     }))
 }
