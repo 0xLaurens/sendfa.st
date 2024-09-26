@@ -45,7 +45,7 @@ type RoomOptions func(r *RoomService)
 
 var _ RoomManagement = (*RoomService)(nil)
 
-func NewRoomService(store store.RoomStore, codeService CodeManagement) *RoomService {
+func NewRoomService(store store.RoomStore) *RoomService {
 	return &RoomService{
 		store:  store,
 		timers: make(map[uuid.UUID]*time.Timer),
@@ -66,16 +66,11 @@ func (r *RoomService) JoinRoom(roomId uuid.UUID, user *types.User) (*types.Room,
 		return nil, ErrorRoomNotFound
 	}
 
-	if !room.DisplayNameUnique(user.DisplayName) {
-		return nil, ErrorDisplayNameInUse
-	}
-
 	room.AddUser(user)
 	updatedRoom, err := r.store.UpdateRoom(room.ID, room)
 	if err != nil {
 		return nil, ErrorCouldNotJoinRoom
 	}
-	user.SetRoomCode(updatedRoom.Code)
 	user.SetRoomId(updatedRoom.ID)
 
 	r.stopDeletionTimer(updatedRoom.ID)

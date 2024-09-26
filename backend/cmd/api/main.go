@@ -19,10 +19,8 @@ func main() {
 }
 
 func SetupWebsocketHandler() *handler.WebsocketHandler {
-	codeStore := store.NewCodeStoreInMemory()
-	codeService := service.NewCodeService(codeStore)
 	roomStore := store.NewRoomStoreInMemory()
 	userService := service.NewUserService()
-	roomService := service.NewRoomService(roomStore, codeService)
+	roomService := service.NewRoomService(roomStore)
 	return handler.NewWebsocketHandler(roomService, userService)
 }
