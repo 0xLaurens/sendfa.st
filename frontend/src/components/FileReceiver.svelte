@@ -3,7 +3,7 @@
     import {
         FileAudioIcon,
         FileIcon,
-        FileVideoIcon,
+        FileVideoIcon, HeartIcon,
         ImageIcon,
         Loader2Icon,
         ShareIcon,
@@ -12,12 +12,13 @@
     import type {FileOffer} from "../types/file.ts";
     import {onDestroy, onMount} from "svelte";
     import WebsocketManager, {isConnected, roomId} from "../lib/socket.ts";
-    import {acceptIncomingFileOffer, currentFileOffer} from "../lib/file.ts";
+    import {acceptIncomingFileOffer, currentFileOffer, downloadFinished} from "../lib/file.ts";
     import {truncateFileName} from "../util/truncate.js";
 
     let offer: FileOffer | null;
     let manager: WebsocketManager;
     let connected = false;
+    let downloadIsFinished = false;
 
     export let RoomId: undefined | string;
 
@@ -34,6 +35,12 @@
             console.log('Received file offer:', value)
             if (value == null) return
             offer = value
+        })
+
+        downloadFinished.subscribe(value => {
+            if (value) {
+                downloadIsFinished = value
+            }
         })
     })
 
@@ -59,62 +66,73 @@
             </div>
             <div>
                 <p class="text-2xl sm:text-3xl font-bold modal-title">File transfer</p>
-                {#if offer && connected}
-                    <p class="text-gray-500 modal-description">The following files are available for you to
-                        download:</p>
-                {/if}
             </div>
         </div>
-        <div>
-            {#if !connected}
-                <div class="flex flex-row gap-3">
-                    <Loader2Icon class="animate-spin"/>
-                    <p class="text-base-content/70 text-lg">Setting up the connection</p>
-                </div>
-            {:else}
-                {#if offer}
-                    <ul class="space-y-2">
-                        {#each offer.files as file}
-                            <li class="flex flex-col py-2">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center space-x-3">
-                                        {#if file.mime.startsWith("image/")}
-                                            <ImageIcon class="h-5 w-5"/>
-                                        {/if}
-                                        {#if file.mime.startsWith("audio/")}
-                                            <FileAudioIcon class="h-5 w-5"/>
-                                        {/if}
-                                        {#if file.mime.startsWith("video/")}
-                                            <FileVideoIcon class="h-5 w-5"/>
-                                        {/if}
-                                        {#if !file.mime.startsWith("image/") && !file.mime.startsWith("audio/") && !file.mime.startsWith("video/")}
-                                            <FileIcon class="h-5 w-5"/>
-                                        {/if}
-                                        <span class="font-medium">{truncateFileName(file.name)}</span>
-                                    </div>
-                                    <span class="text-gray-500 text-sm">{formatFileSize(file.size)}</span>
-                                </div>
-                                <div>
-                                    <progress class="w-full progress" value="0" max="100"></progress>
-                                </div>
-                            </li>
-                        {/each}
-                    </ul>
-                    <div class="mt-4">
-                        <span class="text-gray-500">Total size: {formatFileSize(offer.files.reduce((acc, file) => acc + file.size, 0))}</span>
+        {#if downloadIsFinished}
+            <div>
+                <p class="text-xl">Download finished!</p>
+                <p class="text-gray-500">Please consider donating! It helps the platform running ❤️</p>
+
+            </div>
+        {:else}
+            <div>
+                {#if !connected}
+                    <div class="flex flex-row gap-3">
+                        <Loader2Icon class="animate-spin"/>
+                        <p class="text-base-content/70 text-lg">Setting up the connection</p>
                     </div>
                 {:else}
-                    <div class="text-center">
-                        <p class="text-base-content/70 text-lg">No files received yet.</p>
-                    </div>
+                    {#if offer}
+                        <ul class="space-y-2">
+                            {#each offer.files as file}
+                                <li class="flex flex-col py-2">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-3">
+                                            {#if file.mime.startsWith("image/")}
+                                                <ImageIcon class="h-5 w-5"/>
+                                            {/if}
+                                            {#if file.mime.startsWith("audio/")}
+                                                <FileAudioIcon class="h-5 w-5"/>
+                                            {/if}
+                                            {#if file.mime.startsWith("video/")}
+                                                <FileVideoIcon class="h-5 w-5"/>
+                                            {/if}
+                                            {#if !file.mime.startsWith("image/") && !file.mime.startsWith("audio/") && !file.mime.startsWith("video/")}
+                                                <FileIcon class="h-5 w-5"/>
+                                            {/if}
+                                            <span class="font-medium">{truncateFileName(file.name)}</span>
+                                        </div>
+                                        <span class="text-gray-500 text-sm">{formatFileSize(file.size)}</span>
+                                    </div>
+                                    <div>
+                                        <progress class="w-full progress" value="0" max="100"></progress>
+                                    </div>
+                                </li>
+                            {/each}
+                        </ul>
+                        <div class="mt-4">
+                            <span class="text-gray-500">Total size: {formatFileSize(offer.files.reduce((acc, file) => acc + file.size, 0))}</span>
+                        </div>
+                    {:else}
+                        <div class="text-center">
+                            <p class="text-base-content/70 text-lg">No files received yet.</p>
+                        </div>
+                    {/if}
                 {/if}
-            {/if}
-        </div>
+            </div>
+        {/if}
         <div class="flex flex-col gap-3">
-            <button disabled="{!connected || !offer}" on:click={acceptFiles} class="btn btn-neutral w-full">
-                <UploadIcon class="h-5 w-5"/>
-                Start download
-            </button>
+            {#if downloadIsFinished}
+                <a href="/donate" class="btn btn-primary w-full">
+                    <HeartIcon class="h-5 w-5"/>
+                    Donate
+                </a>
+            {:else}
+                <button disabled="{!connected || !offer}" on:click={acceptFiles} class="btn btn-neutral w-full">
+                    <UploadIcon class="h-5 w-5"/>
+                    Start download
+                </button>
+            {/if}
         </div>
     </div>
 </div>
