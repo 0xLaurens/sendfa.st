@@ -1,6 +1,7 @@
 ---
 import {Image} from 'astro:assets'
 import '@fontsource-variable/gabarito'
+import {Heart} from 'lucide-astro'
 ---
 
 <header class="z-10 relative bg-transparent">
@@ -18,8 +19,9 @@ import '@fontsource-variable/gabarito'
             <a class="link link-hover" title="FAQ" href="/#faq">FAQ</a>
         </div>
         <div class="flex justify-end flex-1 space-x-3">
-            <a class="btn btn-sm btn-primary" href="/app">
-                Send files
+            <a class="btn btn-sm btn-primary" href="/donate">
+                <Heart class="h-5 w-5"/>
+                Donate
             </a>
         </div>
     </nav>
