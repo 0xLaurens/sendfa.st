@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/0xlaurens/filefa.st/types"
 	"github.com/gofiber/contrib/websocket"
 	"github.com/google/uuid"
 )
@@ -27,12 +28,13 @@ func (w *WebsocketNotifier) BroadcastMessage(sender *websocket.Conn, json interf
 		return err
 	}
 
-	for user := range room.Users {
+	room.ForEachUser(func(user *types.User) {
 		if user.Connection == sender {
-			continue
+			return
 		}
 		_ = user.Connection.WriteJSON(json)
-	}
+	})
+
 	return nil
 }
 

@@ -11,6 +11,6 @@ export default defineConfig({
   output: "hybrid",
   integrations: [sitemap(), tailwind(), svelte()],
   adapter: cloudflare({
-    imageService: "compile"
+    imageService: "cloudflare"
   })
 });

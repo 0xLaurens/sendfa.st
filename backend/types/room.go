@@ -70,18 +70,6 @@ func (r *Room) IsEmpty() bool {
 	return len(r.Users) == 0
 }
 
-func (r *Room) DisplayNameUnique(displayName string) bool {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	for user := range r.Users {
-		if user.DisplayName == displayName {
-			return false
-		}
-	}
-	return true
-}
-
 func (r *Room) GetUsers() []User {
 	var users []User
 
@@ -93,4 +81,13 @@ func (r *Room) GetUsers() []User {
 	}
 
 	return users
+}
+
+func (r *Room) ForEachUser(fn func(user *User)) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	for user := range r.Users {
+		fn(user)
+	}
 }
