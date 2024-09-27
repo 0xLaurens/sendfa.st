@@ -13,6 +13,7 @@
     import {onDestroy, onMount} from "svelte";
     import WebsocketManager, {isConnected, roomId} from "../lib/socket.ts";
     import {acceptIncomingFileOffer, currentFileOffer} from "../lib/file.ts";
+    import {truncateFileName} from "../util/truncate.js";
 
     let offer: FileOffer | null;
     let manager: WebsocketManager;
@@ -74,23 +75,28 @@
                 {#if offer}
                     <ul class="space-y-2">
                         {#each offer.files as file}
-                            <li class="flex items-center justify-between py-2">
-                                <div class="flex items-center space-x-3">
-                                    {#if file.mime.startsWith("image/")}
-                                        <ImageIcon class="h-5 w-5"/>
-                                    {/if}
-                                    {#if file.mime.startsWith("audio/")}
-                                        <FileAudioIcon class="h-5 w-5"/>
-                                    {/if}
-                                    {#if file.mime.startsWith("video/")}
-                                        <FileVideoIcon class="h-5 w-5"/>
-                                    {/if}
-                                    {#if !file.mime.startsWith("image/") && !file.mime.startsWith("audio/") && !file.mime.startsWith("video/")}
-                                        <FileIcon class="h-5 w-5"/>
-                                    {/if}
-                                    <span class="font-medium">{file.name}</span>
+                            <li class="flex flex-col py-2">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        {#if file.mime.startsWith("image/")}
+                                            <ImageIcon class="h-5 w-5"/>
+                                        {/if}
+                                        {#if file.mime.startsWith("audio/")}
+                                            <FileAudioIcon class="h-5 w-5"/>
+                                        {/if}
+                                        {#if file.mime.startsWith("video/")}
+                                            <FileVideoIcon class="h-5 w-5"/>
+                                        {/if}
+                                        {#if !file.mime.startsWith("image/") && !file.mime.startsWith("audio/") && !file.mime.startsWith("video/")}
+                                            <FileIcon class="h-5 w-5"/>
+                                        {/if}
+                                        <span class="font-medium">{truncateFileName(file.name)}</span>
+                                    </div>
+                                    <span class="text-gray-500 text-sm">{formatFileSize(file.size)}</span>
                                 </div>
-                                <span class="text-gray-500 text-sm">{formatFileSize(file.size)}</span>
+                                <div>
+                                    <progress class="w-full progress" value="0" max="100"></progress>
+                                </div>
                             </li>
                         {/each}
                     </ul>

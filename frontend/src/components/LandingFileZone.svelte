@@ -8,13 +8,13 @@
     import WebsocketManager, {roomId} from "../lib/socket.ts";
     import {onDestroy, onMount} from "svelte";
     import {filesUploaded} from "../lib/file.ts";
+    import {truncateFileName} from "../util/truncate.js";
 
     let filesToSend: FileList | null = null;
     let link: string = "dummy.com";
     let isDragging: boolean = false;
     let debounceTimer: ReturnType<typeof setTimeout>;
     let manager: WebsocketManager;
-    let usersWithOffers: Set<string> = new Set();
 
     onMount(() => {
         manager = new WebsocketManager("ws://localhost:7331/api/websocket");
@@ -155,7 +155,7 @@
                         {#if filesToSend.length > 1}
                             <h2 class="text-xl font-semibold">Multiple files ({filesToSend.length})</h2>
                         {:else}
-                            <h2 class="text-xl font-semibold text-wrap">{filesToSend.item(0)?.name}</h2>
+                            <h2 class="text-xl font-semibold text-wrap">{truncateFileName(filesToSend.item(0)?.name)}</h2>
                         {/if}
                         <p>
                             Total

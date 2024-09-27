@@ -22,7 +22,7 @@ export type FileMessage = {
 }
 
 export type FileProgress = {
-    id: string
     currentFile: number
+    size: number
     progress: number
 }
