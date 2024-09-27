@@ -66,6 +66,7 @@ func (mh *MessageHandler) handleWebrtcMessage(c *websocket.Conn, message types.M
 }
 
 func (mh *MessageHandler) handleJoinRoom(c *websocket.Conn, message types.Message) error {
+	log.Printf("Received join room message, handling it %v", message)
 	var roomIdPayload types.RoomIdPayload
 	if err := json.Unmarshal(message.Payload, &roomIdPayload); err != nil {
 		log.Println("Failed to unmarshall the join message", err)

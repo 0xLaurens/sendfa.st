@@ -1,0 +1,11 @@
+---
+export const prerender = false
+const {roomId} = Astro.params
+import FileReceiver from '../../components/FileReceiver.svelte'
+---
+
+<section id="Receive files">
+    <h1>Room ID: {roomId}</h1>
+    <p>Room page</p>
+    <FileReceiver RoomId={roomId} client:only="svelte" />
+</section>

@@ -10,7 +10,6 @@ import {
     handleRtcOffer
 } from "./webrtc.ts";
 
-export const roomCode: WritableAtom<string | undefined> = atom(undefined);
 export const isConnected = atom(false);
 export const users: WritableAtom<User[]> = atom([]);
 export const identity: WritableAtom<User> = atom({});
@@ -85,11 +84,12 @@ class WebsocketManager {
             case "ROOM_EXISTS": {
                 let exists = data.exists;
                 if (!exists) {
+                    console.log("Room does not exist, creating a new one", data);
                     sendRequestRoom(this.socket);
                     break;
                 }
-                roomId.set(data.id);
-                sendJoinRoom(this.socket, data.id);
+                roomId.set(data.roomId);
+                sendJoinRoom(this.socket, data.roomId);
                 break;
             }
             case "ROOM_JOINED": {
