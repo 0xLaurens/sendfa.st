@@ -7,12 +7,14 @@
     import LinkButton from "./LinkButton.svelte";
     import WebsocketManager, {roomId} from "../lib/socket.ts";
     import {onDestroy, onMount} from "svelte";
+    import {filesUploaded} from "../lib/file.ts";
 
     let filesToSend: FileList | null = null;
     let link: string = "dummy.com";
     let isDragging: boolean = false;
     let debounceTimer: ReturnType<typeof setTimeout>;
     let manager: WebsocketManager;
+    let usersWithOffers: Set<string> = new Set();
 
     onMount(() => {
         manager = new WebsocketManager("ws://localhost:7331/api/websocket");
@@ -38,6 +40,7 @@
         if (!files || files.length === 0) return
         console.log('Selected files:', files);
         filesToSend = files;
+        filesUploaded.set(files);
         const toast: ToastData = {
             type: "success",
             id: Date.now(),
@@ -52,6 +55,7 @@
     function cancelUpload() {
         setTimeout(() => {
             filesToSend = null;
+            filesUploaded.set(null);
             manager.close();
         }, 100)
     }
