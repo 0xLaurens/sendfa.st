@@ -17,6 +17,7 @@ export enum FileOfferType {
 
 export type FileMessage = {
     name: string
+    accSize?: number
     size: number
     mime: string
 }

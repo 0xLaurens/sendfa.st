@@ -9,37 +9,29 @@
     })
 </script>
 
-<div class="flex justify-center items-center">
-    <div class="fixed top-0 left-0 right-0 flex justify-center items-start p-4 z-50"
-         role="alert"
-         aria-live="assertive"
-         aria-atomic="true"
-    >
-        <div class="flex flex-col space-y-2">
-            {#each $toasts as toast (toast.id)}
-                <div class="card card-compact card-bordered z-10 bg-base-100 shadow-xl w-96 transition-popup">
-                    <div class="card-body flex flex-row">
-                        <div class="my-auto px-2">
-                            {#if toast.type === "success"}
-                                <CheckmarkIcon/>
-                            {/if}
-                            {#if toast.type === "error"}
-                                <ErrorIcon/>
-                            {/if}
-                        </div>
+<div class="toast toast-top toast-center sm:toast-end z-50 w-full sm:w-auto">
+    {#each $toasts as toast (toast.id)}
+        <div class="card card-compact card-bordered bg-base-100 shadow-xl w-full sm:w-96 transition-popup">
+            <div class="card-body flex flex-row">
+                <div class="my-auto px-2">
+                    {#if toast.type === "success"}
+                        <CheckmarkIcon/>
+                    {/if}
+                    {#if toast.type === "error"}
+                        <ErrorIcon/>
+                    {/if}
+                </div>
+                <div>
+                    <div>
+                        <h3 class="font-bold text-lg">
+                            {toast.title}
+                        </h3>
                         <div>
-                            <div>
-                                <h3 class="font-bold text-lg">
-                                    {toast.title}
-                                </h3>
-                                <div>
-                                    {toast.description}
-                                </div>
-                            </div>
+                            {toast.description}
                         </div>
                     </div>
                 </div>
-            {/each}
+            </div>
         </div>
-    </div>
+    {/each}
 </div>

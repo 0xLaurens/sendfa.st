@@ -13,7 +13,7 @@
     import {onDestroy, onMount} from "svelte";
     import WebsocketManager, {isConnected, roomId} from "../lib/socket.ts";
     import {acceptIncomingFileOffer, currentFileOffer, downloadFinished} from "../lib/file.ts";
-    import {truncateFileName} from "../util/truncate.js";
+    import {truncateFileName} from "../util/truncate.ts";
 
     let offer: FileOffer | null;
     let manager: WebsocketManager;
@@ -32,7 +32,6 @@
         manager.connect();
 
         currentFileOffer.subscribe(value => {
-            console.log('Received file offer:', value)
             if (value == null) return
             offer = value
         })
@@ -105,7 +104,8 @@
                                         <span class="text-gray-500 text-sm">{formatFileSize(file.size)}</span>
                                     </div>
                                     <div>
-                                        <progress class="w-full progress" value="0" max="100"></progress>
+                                        <progress class="w-full progress" value="{file.accSize ? file.accSize : 0}" max="{file.size}"></progress>
+                                        {file.accSize}
                                     </div>
                                 </li>
                             {/each}

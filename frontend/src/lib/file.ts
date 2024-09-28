@@ -115,6 +115,10 @@ export async function buildFile(chunk: ArrayBuffer) {
     await writer?.write(buffer).catch(console.error)
     console.log("accSize", accSize, "Filesize", file.size)
     accSize += buffer.byteLength
+    file.accSize = accSize
+    offer.files[offer.currentFile] = file
+    currentFileOffer.set(offer)
+
     if (accSize === file.size) {
         await writer?.close().catch(console.error)
         stream = null
