@@ -15,6 +15,7 @@ export const users: WritableAtom<User[]> = atom([]);
 export const identity: WritableAtom<User> = atom({});
 export const room: WritableAtom<Room> = atom({});
 export const roomId: WritableAtom<string | undefined> = atom(undefined);
+export const roomExists: WritableAtom<boolean> = atom(true);
 
 class WebsocketManager {
     private socket: WebSocket | null = null;
@@ -84,8 +85,9 @@ class WebsocketManager {
             case "ROOM_EXISTS": {
                 let exists = data.exists;
                 if (!exists) {
-                    console.log("Room does not exist, creating a new one", data);
-                    sendRequestRoom(this.socket);
+                    // console.log("Room does not exist, creating a new one", data);
+                    // sendRequestRoom(this.socket);
+                    roomExists.set(false);
                     break;
                 }
                 roomId.set(data.roomId);
