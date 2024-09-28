@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {UploadIcon, XIcon} from "lucide-svelte";
+    import {UploadIcon, X, XIcon} from "lucide-svelte";
     import type {ToastData} from "../types/toast.ts";
     import {addToast} from "../lib/toast.ts";
     import {formatFileSize} from "../util/filesize.js";
@@ -195,3 +195,43 @@
     <input on:change={handleFiles} class="hidden" id="files" type="file"
            disabled="{filesToSend && filesToSend?.length > 0}" multiple>
 </div>
+{#if filesToSend && filesToSend.length > 0}
+    <div class="modal modal-open flex sm:hidden justify-center content-center z-50">
+        <div class="modal-box card card-bordered card-compact bg-base-100">
+            <button class="self-end" on:click={cancelUpload} aria-label="close menu and cancel"><XIcon class="h-5 w-5"/></button>
+            <div class="flex flex-col gap-16">
+                <div class="text-left">
+                    {#if filesToSend.length > 1}
+                        <h2 class="text-xl font-semibold">Multiple files ({filesToSend.length})</h2>
+                    {:else}
+                        <h2 class="text-xl font-semibold text-wrap">{truncateFileName(filesToSend.item(0)?.name)}</h2>
+                    {/if}
+                    <p>
+                        Total
+                        size: {formatFileSize(Array.from(filesToSend).reduce((total, file) => total + file.size, 0))}</p>
+                    <div class="flex flex-row gap-2 items-center justify-center pt-5">
+                        <input class="input input-bordered w-3/4"
+                               value="{link}">
+                        <QrButton {link}/>
+                        <LinkButton {link}/>
+                    </div>
+                    <p class="text-wrap pt-3 font-bold">Make sure to keep this page open whilst sending!</p>
+                    <p class="text-wrap pt-2">
+                        Share the link or scan the QR code to start downloading the file on another device.
+                    </p>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <label for="change-files" class="btn btn-neutral w-full">
+                        <UploadIcon class="h-5 w-5"/>
+                        Change upload
+                    </label>
+                    <input on:change={handleFiles} class="hidden" id="change-files" type="file" multiple/>
+                    <button on:click={cancelUpload} class="btn w-full">
+                        <XIcon class="h-5 w-5"/>
+                        Cancel upload
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{/if}
