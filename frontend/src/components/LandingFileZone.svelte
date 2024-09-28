@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {UploadIcon, X, XIcon} from "lucide-svelte";
+    import {ShareIcon, UploadIcon, X, XIcon} from "lucide-svelte";
     import type {ToastData} from "../types/toast.ts";
     import {addToast} from "../lib/toast.ts";
     import {formatFileSize} from "../util/filesize.js";
@@ -8,7 +8,9 @@
     import WebsocketManager, {roomId} from "../lib/socket.ts";
     import {onDestroy, onMount} from "svelte";
     import {filesUploaded} from "../lib/file.ts";
-    import {truncateFileName} from "../util/truncate.js";
+    import {truncateFileName} from "../util/truncate.ts";
+    import {qr} from "@svelte-put/qr/svg"
+    import ShareButton from "./ShareButton.svelte";
 
     let filesToSend: FileList | null = null;
     let link: string = "dummy.com";
@@ -198,8 +200,10 @@
 {#if filesToSend && filesToSend.length > 0}
     <div class="modal modal-open flex sm:hidden justify-center content-center z-50">
         <div class="modal-box card card-bordered card-compact bg-base-100">
-            <button class="self-end" on:click={cancelUpload} aria-label="close menu and cancel"><XIcon class="h-5 w-5"/></button>
-            <div class="flex flex-col gap-16">
+            <button class="self-end" on:click={cancelUpload} aria-label="close menu and cancel">
+                <XIcon class="h-5 w-5"/>
+            </button>
+            <div class="flex flex-col gap-6">
                 <div class="text-left">
                     {#if filesToSend.length > 1}
                         <h2 class="text-xl font-semibold">Multiple files ({filesToSend.length})</h2>
@@ -212,13 +216,13 @@
                     <div class="flex flex-row gap-2 items-center justify-center pt-5">
                         <input class="input input-bordered w-3/4"
                                value="{link}">
-                        <QrButton {link}/>
-                        <LinkButton {link}/>
+                        <ShareButton {link}/>
                     </div>
                     <p class="text-wrap pt-3 font-bold">Make sure to keep this page open whilst sending!</p>
                     <p class="text-wrap pt-2">
                         Share the link or scan the QR code to start downloading the file on another device.
                     </p>
+                    <svg class="h-32 w-32 mx-auto" use:qr="{{ data: link }}" />
                 </div>
                 <div class="flex flex-col gap-3">
                     <label for="change-files" class="btn btn-neutral w-full">
