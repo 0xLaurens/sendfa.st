@@ -31,7 +31,7 @@
     }
 </script>
 
-<div class="tooltip tooltip-bottom" data-tip="Copy the link">
+<div class="tooltip tooltip-bottom" data-tip="Share link">
     <button on:click={ShareLink} class="btn btn-square bg-base-100">
         <Share2Icon />
     </button>
