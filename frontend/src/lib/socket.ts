@@ -16,6 +16,7 @@ export const identity: WritableAtom<User> = atom({});
 export const room: WritableAtom<Room> = atom({});
 export const roomId: WritableAtom<string | undefined> = atom(undefined);
 export const roomExists: WritableAtom<boolean> = atom(true);
+export const downloadCancelled: WritableAtom<boolean> = atom(false);
 
 class WebsocketManager {
     private socket: WebSocket | null = null;
@@ -48,6 +49,10 @@ class WebsocketManager {
             let data = JSON.parse(event.data);
             await this.handleMessages(data);
         }
+    }
+
+    getWebSocket(): WebSocket | null {
+        return this.socket;
     }
 
     close() {
@@ -96,6 +101,7 @@ class WebsocketManager {
             }
             case "ROOM_JOINED": {
                 isConnected.set(true);
+                downloadCancelled.set(false);
                 room.set(data.room);
                 for (let user of data.users) {
                     if (user.id === identity.get().id) {
@@ -132,6 +138,11 @@ class WebsocketManager {
                 await handleIceCandidate(data);
                 break;
             }
+            case "CANCEL_DOWNLOAD": {
+                console.log("Download cancelled");
+                downloadCancelled.set(true);
+                break;
+            }
         }
     }
 }
@@ -163,6 +174,16 @@ function sendJoinRoom(socket: WebSocket | null, roomId: string) {
         type: "JOIN_ROOM",
         payload: {
             roomId: roomId
+        }
+    }))
+}
+
+export function sendCancelDownload(socket: WebSocket | null) {
+    if (!socket) return;
+    socket.send(JSON.stringify({
+        type: "CANCEL_DOWNLOAD",
+        payload: {
+            roomId: roomId.get()
         }
     }))
 }

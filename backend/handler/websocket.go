@@ -40,7 +40,6 @@ func (wh *WebsocketHandler) HandleWebsocket(conn *websocket.Conn) error {
 	log.Println("User connected:", user.ID)
 	_ = wh.userService.RegisterUser(user)
 	defer func() {
-		log.Println("User disconnected:", user.ID, user.DisplayName, user.RoomCode)
 		if user.RoomId != uuid.Nil {
 			_ = wh.messageHandler.notifier.BroadcastMessage(nil, fiber.Map{
 				"type": "USER_LEFT",

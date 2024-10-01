@@ -27,6 +27,8 @@ func NewMessageHandler(notifier service.MessageNotifier, roomService service.Roo
 
 func (mh *MessageHandler) handleResponse(c *websocket.Conn, message types.Message) error {
 	switch message.Type {
+	case types.CancelDownload:
+		return mh.handleCancelDownload(c, message)
 	case types.JoinRoom:
 		return mh.handleJoinRoom(c, message)
 	case types.LeaveRoom:
@@ -177,4 +179,13 @@ func (mh *MessageHandler) handleWhoAmi(c *websocket.Conn, message types.Message)
 		"type":  "ROOMS",
 		"rooms": rooms,
 	}, c)
+}
+
+func (mh *MessageHandler) handleCancelDownload(c *websocket.Conn, message types.Message) error {
+	var roomIdPayload types.RoomIdPayload
+	if err := json.Unmarshal(message.Payload, &roomIdPayload); err != nil {
+		log.Println("Failed to unmarshall the cancel download message", err)
+		return err
+	}
+	return mh.notifier.BroadcastMessage(c, message, roomIdPayload.RoomID)
 }

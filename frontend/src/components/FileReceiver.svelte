@@ -1,6 +1,7 @@
 <script lang="ts">
     import {formatFileSize} from "../util/filesize.ts";
     import {
+        CircleXIcon,
         FileAudioIcon,
         FileIcon,
         FileVideoIcon, FrownIcon, HeartIcon,
@@ -11,15 +12,13 @@
     } from "lucide-svelte";
     import type {FileOffer} from "../types/file.ts";
     import {onDestroy, onMount} from "svelte";
-    import WebsocketManager, {isConnected, roomExists, roomId} from "../lib/socket.ts";
+    import WebsocketManager, {downloadCancelled, isConnected, roomExists, roomId} from "../lib/socket.ts";
     import {acceptIncomingFileOffer, currentFileOffer, downloadFinished} from "../lib/file.ts";
     import {truncateFileName} from "../util/truncate.ts";
 
     let offer: FileOffer | null;
     let manager: WebsocketManager;
-    let connected = false;
-    let downloadIsFinished = false;
-    let invalidLink = false;
+
 
     export let RoomId: undefined | string;
 
@@ -36,30 +35,16 @@
             if (value == null) return
             offer = value
         })
-
-        downloadFinished.subscribe(value => {
-            if (value) {
-                downloadIsFinished = value
-            }
-        })
-        roomExists.subscribe(value => {
-            if (!value) {
-                invalidLink = true;
-            }
-        })
     })
 
     onDestroy(() => {
         manager?.close();
     })
 
-    isConnected.listen(value => {
-        connected = value;
-    })
-
     function acceptFiles() {
         acceptIncomingFileOffer()
     }
+
 </script>
 
 <!--{#if RoomId && connected}-->
@@ -74,20 +59,20 @@
             </div>
         </div>
 
-        {#if downloadIsFinished}
+        {#if $downloadFinished}
             <div>
                 <p class="text-xl">Download finished!</p>
                 <p class="text-gray-500">Please consider donating! It helps the platform running ❤️</p>
 
             </div>
-        {:else if !connected && !invalidLink}
+        {:else if !$isConnected && !$roomExists}
             <div>
                 <div class="flex flex-row gap-3">
                     <Loader2Icon class="animate-spin"/>
                     <p class="text-base-content/70 text-lg">Setting up the connection</p>
                 </div>
             </div>
-        {:else if offer}
+        {:else if offer && !$downloadCancelled}
             <ul class="space-y-2">
                 {#each offer.files as file}
                     <li class="flex flex-col py-2">
@@ -120,12 +105,20 @@
             <div class="mt-4">
                 <span class="text-gray-500">Total size: {formatFileSize(offer.files.reduce((acc, file) => acc + file.size, 0))}</span>
             </div>
-        {:else if invalidLink}
+        {:else if !$roomExists}
             <div>
                 <FrownIcon class="w-32 h-32 mx-auto"/>
                 <p class="text-xl">Invalid link</p>
                 <p class="text-gray-500">The link you received is incorrect. Please try again. <a
                         class="link link-primary" href="/">Return to homepage</a></p>
+            </div>
+        {:else if $downloadCancelled}
+            <div>
+                <CircleXIcon class="w-32 h-32 mx-auto"/>
+                <p class="text-xl">Download cancelled</p>
+                <p class="text-gray-500">The download has been cancelled by the sender. <a class="link link-primary"
+                                                                                           href="/">Return to
+                    homepage</a></p>
             </div>
         {:else}
             <div class="text-center">
@@ -133,13 +126,13 @@
             </div>
         {/if}
         <div class="flex flex-col gap-3">
-            {#if downloadIsFinished}
+            {#if $downloadFinished}
                 <a href="/donate" class="btn btn-primary w-full">
                     <HeartIcon class="h-5 w-5"/>
                     Donate
                 </a>
             {:else}
-                <button disabled="{!connected || !offer}" on:click={acceptFiles} class="btn btn-neutral w-full">
+                <button disabled="{!$isConnected || !offer}" on:click={acceptFiles} class="btn btn-neutral w-full">
                     <UploadIcon class="h-5 w-5"/>
                     Start download
                 </button>
@@ -147,13 +140,3 @@
         </div>
     </div>
 </div>
-<!--{:else}-->
-<!--    <div class="relative z-10 max-w-5xl mx-auto flex flex-col items-center justify-center gap-16 lg:gap-20 px-8 py-12 lg:py-32 min-h-screen">-->
-<!--        <div class="relative flex gap-3 max-w-md items-center justify-center text-center">-->
-<!--            <p class="text-base-content/70">-->
-<!--                Connecting to the room...-->
-<!--            </p>-->
-<!--            <Loader2Icon class="animate-spin"/>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--{/if}-->

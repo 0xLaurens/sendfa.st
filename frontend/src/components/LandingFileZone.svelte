@@ -5,7 +5,7 @@
     import {formatFileSize} from "../util/filesize.js";
     import QrButton from "./QrButton.svelte";
     import LinkButton from "./LinkButton.svelte";
-    import WebsocketManager, {roomId} from "../lib/socket.ts";
+    import WebsocketManager, {roomId, sendCancelDownload} from "../lib/socket.ts";
     import {onDestroy, onMount} from "svelte";
     import {filesUploaded} from "../lib/file.ts";
     import {truncateFileName} from "../util/truncate.ts";
@@ -56,6 +56,7 @@
 
     function cancelUpload() {
         setTimeout(() => {
+            sendCancelDownload(manager.getWebSocket());
             filesToSend = null;
             filesUploaded.set(null);
             manager.close();
