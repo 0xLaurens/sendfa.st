@@ -12,10 +12,10 @@ The files that are shared directly transferred from one device to another withou
 - Open-source 📂
 
 ## How it works
-1. Users connect to the same room by sharing the room ID.
-2. The users are connected to each other using WebRTC.
-3. The sender selects the file to share and the receiver accepts the file.
-4. The file is transferred directly from the sender to the receiver.
+1. Sender selects the files he wants to send
+2. The sender shares a unique link with receiver.
+3. Receiver connects using the unique link
+4. Receiver accepts files and receives the files.
 
 ## Get started
 
