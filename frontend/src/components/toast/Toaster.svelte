@@ -1,6 +1,6 @@
 <script lang="ts">
     import {onMount} from "svelte";
-    import toasts, {triggerTimeouts} from "../lib/toast.ts";
+    import toasts, {triggerTimeouts} from "../../lib/toast.ts";
     import CheckmarkIcon from "./CheckmarkIcon.svelte";
     import ErrorIcon from "./ErrorIcon.svelte";
 
