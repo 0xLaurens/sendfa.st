@@ -46,10 +46,8 @@
     }
 
 </script>
-
-<!--{#if RoomId && connected}-->
-<div class="card max-w-lg w-full flex flex-col gap-3 space-y-6 bg-base-100">
-    <div class="card-body gap-16">
+<div class="card h-screen bg-base-100 w-screen sm:w-full sm:h-auto max-w-lg gap-3 space-y-6">
+    <div class="card-body flex-col justify-between h-full md:h-auto gap-16">
         <div class="flex items-center space-x-4">
             <div class="bg-gray-100 p-2 rounded-full">
                 <ShareIcon class="h-6 w-6"/>
@@ -58,7 +56,6 @@
                 <p class="text-2xl sm:text-3xl font-bold modal-title">File transfer</p>
             </div>
         </div>
-
         {#if $downloadFinished}
             <div>
                 <p class="text-xl">Download finished!</p>
@@ -73,37 +70,38 @@
                 </div>
             </div>
         {:else if offer && !$downloadCancelled}
-            <ul class="space-y-2">
-                {#each offer.files as file}
-                    <li class="flex flex-col py-2">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                {#if file.mime.startsWith("image/")}
-                                    <ImageIcon class="h-5 w-5"/>
-                                {/if}
-                                {#if file.mime.startsWith("audio/")}
-                                    <FileAudioIcon class="h-5 w-5"/>
-                                {/if}
-                                {#if file.mime.startsWith("video/")}
-                                    <FileVideoIcon class="h-5 w-5"/>
-                                {/if}
-                                {#if !file.mime.startsWith("image/") && !file.mime.startsWith("audio/") && !file.mime.startsWith("video/")}
-                                    <FileIcon class="h-5 w-5"/>
-                                {/if}
-                                <span class="font-medium">{truncateFileName(file.name)}</span>
+            <div>
+                <ul class="space-y-2">
+                    {#each offer.files as file}
+                        <li class="flex flex-col py-2">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    {#if file.mime.startsWith("image/")}
+                                        <ImageIcon class="h-5 w-5"/>
+                                    {/if}
+                                    {#if file.mime.startsWith("audio/")}
+                                        <FileAudioIcon class="h-5 w-5"/>
+                                    {/if}
+                                    {#if file.mime.startsWith("video/")}
+                                        <FileVideoIcon class="h-5 w-5"/>
+                                    {/if}
+                                    {#if !file.mime.startsWith("image/") && !file.mime.startsWith("audio/") && !file.mime.startsWith("video/")}
+                                        <FileIcon class="h-5 w-5"/>
+                                    {/if}
+                                    <span class="font-medium">{truncateFileName(file.name)}</span>
+                                </div>
+                                <span class="text-gray-500 text-sm">{formatFileSize(file.size)}</span>
                             </div>
-                            <span class="text-gray-500 text-sm">{formatFileSize(file.size)}</span>
-                        </div>
-                        <div>
-                            <progress class="w-full progress" value="{file.accSize ? file.accSize : 0}"
-                                      max="{file.size}"></progress>
-                            {file.accSize}
-                        </div>
-                    </li>
-                {/each}
-            </ul>
-            <div class="mt-4">
-                <span class="text-gray-500">Total size: {formatFileSize(offer.files.reduce((acc, file) => acc + file.size, 0))}</span>
+                            <div>
+                                <progress class="w-full progress" value="{file.accSize ? file.accSize : 0}"
+                                          max="{file.size}"></progress>
+                            </div>
+                        </li>
+                    {/each}
+                </ul>
+                <div class="mt-4">
+                    <span class="text-gray-500">Total size: {formatFileSize(offer.files.reduce((acc, file) => acc + file.size, 0))}</span>
+                </div>
             </div>
         {:else if !$roomExists}
             <div>
