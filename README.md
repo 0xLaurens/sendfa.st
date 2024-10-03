@@ -2,6 +2,8 @@
 Sendfa.st 💫 is a peer-to-peer file sharing service that enables users to share files quickly and securely. 
 The files that are shared directly transferred from one device to another without any intermediate server. The application is built using [WebRTC](https://webrtc.org/) and [Websockets](https://developer.mozilla.org/en-US/docs/web/API/WebSocket).
 
+![Screenshot 2024-10-03 at 13-32-42 Sendfa st - quick and easy file transfers](https://github.com/user-attachments/assets/c0911efd-8962-4d77-a30b-113b9b8028b8)
+
 ## Features
 - No file size limit ♾️ 
 - No registration required 🤖
