@@ -59,6 +59,9 @@ class WebsocketManager {
         if (this.socket) {
             this.socket.close();
         }
+        roomId.set(undefined);
+        isConnected.set(false);
+        users.set([]);
         this.socket = null;
     }
 
