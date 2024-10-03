@@ -36,9 +36,11 @@ class WebsocketManager {
             console.log("Disconnected from websocket server");
             isConnected.set(false);
             closeAllWebRtcConnections()
-            setTimeout(() => {
-                this.connect();
-            }, 1000);
+            if (roomId.get() !== undefined) {
+                setTimeout(() => {
+                    this.connect();
+                }, 1000);
+            }
         }
 
         this.socket.onerror = (error) => {
