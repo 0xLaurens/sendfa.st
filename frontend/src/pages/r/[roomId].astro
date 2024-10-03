@@ -1,0 +1,16 @@
+---
+import GradientBackdrop from "../../components/GradientBackdrop.astro";
+export const prerender = false
+const {roomId} = Astro.params
+import FileReceiver from '../../components/FileReceiver.svelte'
+import Layout from "../../layouts/Layout.astro";
+---
+<Layout title="Sendfast • Receive files">
+    <section class="md:min-h-[100vh] bg-base-100 relative overflow-hidden min-h-screen justify-center content-center"
+             id="Receive files">
+        <GradientBackdrop/>
+        <div class="max-w-6xl flex flex-col items-center justify-center mx-auto">
+            <FileReceiver RoomId={roomId} client:only="svelte"/>
+        </div>
+    </section>
+</Layout>

@@ -5,9 +5,11 @@ import {identity} from "./socket.ts";
 import {uuid} from "@supabase/supabase-js/dist/main/lib/helpers";
 import {atom, type WritableAtom} from "nanostores";
 
+export const filesUploaded: WritableAtom<FileList | null> = atom(null)
 const incomingFileOffers: WritableAtom<FileOffer[]> = atom([])
 export const currentFileOffer: WritableAtom<FileOffer | null> = atom(null)
 const offeredFiles = atom(new Map<string, FileList>)
+export const downloadFinished: WritableAtom<boolean> = atom(false)
 
 export function addIncomingFileOffer(offer: FileOffer) {
     console.log("Adding incoming file offer", offer);
@@ -33,6 +35,7 @@ function nextFileOffer() {
     if (incomingFileOffers.get().length > 0) {
         currentFileOffer.set(incomingFileOffers.get()[0])
     } else {
+        downloadFinished.set(true)
         currentFileOffer.set(null)
     }
 }
@@ -112,12 +115,17 @@ export async function buildFile(chunk: ArrayBuffer) {
     await writer?.write(buffer).catch(console.error)
     console.log("accSize", accSize, "Filesize", file.size)
     accSize += buffer.byteLength
+    file.accSize = accSize
+    offer.files[offer.currentFile] = file
+    currentFileOffer.set(offer)
+
     if (accSize === file.size) {
         await writer?.close().catch(console.error)
         stream = null
         writer = null
         accSize = 0
         if (offer.currentFile === offer.files.length - 1) {
+            downloadFinished.set(true)
             currentFileOffer.set(null)
             nextFileOffer()
         }

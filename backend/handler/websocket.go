@@ -40,13 +40,12 @@ func (wh *WebsocketHandler) HandleWebsocket(conn *websocket.Conn) error {
 	log.Println("User connected:", user.ID)
 	_ = wh.userService.RegisterUser(user)
 	defer func() {
-		log.Println("User disconnected:", user.ID, user.DisplayName, user.RoomCode)
 		if user.RoomId != uuid.Nil {
 			_ = wh.messageHandler.notifier.BroadcastMessage(nil, fiber.Map{
 				"type": "USER_LEFT",
 				"user": user,
 			}, user.RoomId)
-			_, _ = wh.roomService.LeaveRoom(user.RoomCode, user)
+			_, _ = wh.roomService.LeaveRoom(user.RoomId, user)
 		}
 		_ = wh.userService.DeleteUser(user)
 		_ = conn.Close()

@@ -1,7 +1,7 @@
 import {atom} from "nanostores";
 import type {Connection} from "../types/connection.ts";
 import {identity, room, sendWebRtcMessage} from "./socket.ts";
-import {addIncomingFileOffer, buildFile, sendFile} from "./file.ts";
+import {addIncomingFileOffer, buildFile, createFilesOffer, filesUploaded, sendFile} from "./file.ts";
 import {FileOfferType} from "../types/file.ts";
 
 export const connections = atom(new Map<string, Connection>());
@@ -10,6 +10,13 @@ async function _setupDataChannelListeners(connection: Connection) {
     if (!connection.dataChannel) return;
     connection.dataChannel.onopen = () => {
         console.log("Data channel opened");
+        let isReceiver = filesUploaded.get() === null;
+        if (!isReceiver) return;
+        const payload = {
+            userId: identity.get().id,
+            type: FileOfferType.ReadyForOffer
+        }
+        connection.dataChannel?.send(JSON.stringify(payload));
     }
 
     connection.dataChannel.onclose = () => {
@@ -34,6 +41,12 @@ async function _setupDataChannelListeners(connection: Connection) {
                 case FileOfferType.RequestNextFile:
                     console.log("Requesting next file");
                     sendFile(data);
+                    break;
+                case FileOfferType.ReadyForOffer:
+                    console.log("The other party is ready to receive files");
+                    let files = filesUploaded.get();
+                    if (!files) return;
+                    createFilesOffer(files, data.userId)
                     break;
             }
         }

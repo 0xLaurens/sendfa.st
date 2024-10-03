@@ -1,9 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import {Send, Check, Users, Zap, Shield, MonitorSmartphone, Twitter, Heart} from "lucide-astro";
+import {Users, Zap, Shield, MonitorSmartphone, Twitter, Heart, Image, Handshake, HandMetal} from "lucide-astro";
 import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
 import GradientBackdrop from "../components/GradientBackdrop.astro";
+import LandingFileZone from "../components/LandingFileZone.svelte";
 
 const tweet = "I just used sendfa.st to send files between my devices. It's fast, secure and no registration required. Check it out at https://sendfa.st";
 ---
@@ -11,51 +12,49 @@ const tweet = "I just used sendfa.st to send files between my devices. It's fast
     <Navbar/>
     <section class="md:min-h-[100vh] bg-base-100 relative overflow-hidden">
         <GradientBackdrop/>
-        <div class="relative z-10  max-w-5xl mx-auto  flex flex-col items-center justify-center gap-16 lg:gap-20 px-8 py-12 lg:py-32">
-            <div class="relative z-10  max-w-5xl mx-auto  flex flex-col items-center justify-center gap-16 lg:gap-20 px-8 py-12 lg:py-32">
-                <div class="relative flex flex-col gap-10 lg:gap-12 items-center justify-center text-center">
-                    <div class="flex justify-center items-center text-xs text-base-content-secondary/60  max-w-2xl">
-                        <h1 class="font-extrabold text-4xl lg:text-6xl tracking-tight md:-mb-4">
-                            Send files with ease,
-                            fast and secure.
-                        </h1>
+        <div class="relative z-10 max-w-6xl mx-auto flex flex-col items-center justify-center gap-16 lg:gap-20 px-8 py-12 lg:py-32">
+            <div class="relative z-10 mx-auto flex flex-col items-center justify-center gap-16 lg:gap-20 px-8 py-12 lg:py-32">
+                <div class="relative flex flex-col lg:flex-row gap-10 lg:gap-12 items-center justify-center text-center">
+                    <div class="flex flex-col gap-3">
+                        <h1 class="font-extrabold m-0 text-4xl md:text-5xl text-center lg:text-left">Send files with
+                            ease, fast and secure.</h1>
+                        <div>
+                            <p class="text-center lg:text-left text-base-content/80 text-lg md:text-xl">Send files
+                                between your devices
+                                without
+                                any hassle. </p>
+                        </div>
+                        <div class="mx-auto lg:mx-0">
+                            <ul class="flex flex-wrap gap-x-5 gap-y-3">
+                                <li class="flex items-center gap-2">
+                                    <Zap class="h-5"/>
+                                    Fast
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <MonitorSmartphone class="h-5"/>
+                                    Cross-platform
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <Shield class="h-5"/>
+                                    Secure
+                                </li>
+
+                                <li class="flex items-center gap-2">
+                                    <Handshake class="h-5"/>
+                                    Free
+                                </li>
+                            </ul>
+                        </div>
                     </div>
-                    <p class="flex justify-center items-center text-base-content-secondary/60 max-w-lg">
-                        Send files with ease, fast and secure. No registration required. Connect with your devices
-                        and
-                        send
-                        files with a single click.
-                    </p>
-
-                    <ul class="hidden md:block text-base-content-secondary leading-relaxed space-y-1">
-                        <li class="flex items-center justify-center lg:justify-start gap-2">
-                            <Check/>
-                            Fast and secure
-                        </li>
-                        <li class="flex items-center justify-center lg:justify-start gap-2">
-                            <Check/>
-                            No file size limit
-                        </li>
-                        <li class="flex items-center justify-center lg:justify-start gap-2">
-                            <Check/>
-                            No registration required
-                        </li>
-                    </ul>
-
-                    <a href="/app" class="btn btn-primary btn-wide">
-                        Send Files
-                        <Send/>
-                    </a>
-
+                    <LandingFileZone client:only="svelte"/>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="bg-base-100 text-base-content" id="why-sendfast">
+    <section class="bg-base-100 text-base-content" id="features">
         <div class="max-w-5xl mx-auto px-8 py-16 md:py-32">
-            <h2 class="text-center font-extrabold text-4xl md:text-5xl tracking-tight mb-12 md:mb-20">Why Use
-                Sendfast?</h2>
+            <h2 class="text-center font-extrabold text-4xl md:text-5xl tracking-tight mb-12 md:mb-20">Features</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="card card-bordered">
                     <div class="card-body items-center">
@@ -72,7 +71,8 @@ const tweet = "I just used sendfa.st to send files between my devices. It's fast
                             <Shield class="h-16 w-16"/>
                         </div>
                         <p class="text-2xl font-bold">Secure & Private</p>
-                        <p class="text-center">Your data is fully end-to-end encrypted, sent straight to the other device</p>
+                        <p class="text-center">Your data is fully end-to-end encrypted, sent straight to the other
+                            device</p>
                     </div>
                 </div>
                 <div class="card card-bordered">
@@ -84,228 +84,76 @@ const tweet = "I just used sendfa.st to send files between my devices. It's fast
                         <p class="text-center">Works seamlessly across all devices and operating systems.</p>
                     </div>
                 </div>
+                <div class="card card-bordered">
+                    <div class="card-body items-center">
+                        <div class="space-y-3">
+                            <Handshake class="h-16 w-16"/>
+                        </div>
+                        <p class="text-2xl font-bold">Free</p>
+                        <p class="text-center">You can transfer your files for free.</p>
+                    </div>
+                </div>
+                <div class="card card-bordered">
+                    <div class="card-body items-center">
+                        <div class="space-y-3">
+                            <HandMetal class="h-16 w-16"/>
+                        </div>
+                        <p class="text-2xl font-bold">Easy to use</p>
+                        <p class="text-center">Transfer files without a complicated process</p>
+                    </div>
+                </div>
+                <div class="card card-bordered">
+                    <div class="card-body items-center">
+                        <div class="space-y-3">
+                            <Image class="h-16 w-16"/>
+                        </div>
+                        <p class="text-2xl font-bold">No data loss</p>
+                        <p class="text-center">All images and videos are sent without any compression</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
-
-    <!--<section class="bg-base-100 text-base-content" id="features">-->
-    <!--    <div class="max-w-5xl mx-auto px-8 py-16 md:py-32">-->
-    <!--        <h2 class="text-center font-extrabold text-4xl md:text-5xl tracking-tight mb-12 md:mb-20">Tired emailing-->
-    <!--            yourself files?</h2>-->
-    <!--        <div class="flex flex-col md:flex-row justify-center items-center md:items-start gap-8 md:gap-12">-->
-    <!--            <div class="card bg-rose-100/75 text-rose-700 max-w-md w-full">-->
-    <!--                <div class="card-body p-8 md:p-12">-->
-    <!--                    <h2 class="card-title text-lg font-bold">Sending files without sendfa.st</h2>-->
-    <!--                    <ul class="hidden md:block text-base-content-secondary leading-relaxed space-y-1">-->
-    <!--                        <li class="flex items-center justify-center lg:justify-start gap-2">-->
-    <!--                            <X/>-->
-    <!--                            Slow transfer speed.-->
-    <!--                        </li>-->
-    <!--                        <li class="flex items-center justify-center lg:justify-start gap-2">-->
-    <!--                            <X/>-->
-    <!--                            Files stored on servers.-->
-    <!--                        </li>-->
-    <!--                        <li class="flex items-center justify-center lg:justify-start gap-2">-->
-    <!--                            <X/>-->
-    <!--                            File size limits.-->
-    <!--                        </li>-->
-    <!--                        <li class="flex items-center justify-center lg:justify-start gap-2">-->
-    <!--                            <X/>-->
-    <!--                            Monthly subscription.-->
-    <!--                        </li>-->
-    <!--                    </ul>-->
-    <!--                </div>-->
-    <!--            </div>-->
-    <!--            <div class="card bg-emerald-100/75 text-emerald-700 max-w-md w-full">-->
-    <!--                <div class="card-body p-8 md:p-12">-->
-    <!--                    <h2 class="card-title text-lg font-bold">Sending files without sendfa.st</h2>-->
-    <!--                    <ul class="hidden md:block text-base-content-secondary leading-relaxed space-y-1">-->
-    <!--                        <li class="flex items-center justify-center lg:justify-start gap-2">-->
-    <!--                            <Check/>-->
-    <!--                            Unlimited transfer speed.-->
-    <!--                        </li>-->
-    <!--                        <li class="flex items-center justify-center lg:justify-start gap-2">-->
-    <!--                            <Check/>-->
-    <!--                            No files stored on servers.-->
-    <!--                        </li>-->
-    <!--                        <li class="flex items-center justify-center lg:justify-start gap-2">-->
-    <!--                            <Check/>-->
-    <!--                            No file size limits.-->
-    <!--                        </li>-->
-    <!--                        <li class="flex items-center justify-center lg:justify-start gap-2">-->
-    <!--                            <Check/>-->
-    <!--                            One-time payment.-->
-    <!--                        </li>-->
-    <!--                    </ul>-->
-    <!--                </div>-->
-    <!--            </div>-->
-    <!--        </div>-->
-    <!--    </div>-->
-    <!--</section>-->
 
     <section class="bg-base-100 text-base-content">
         <div class="max-w-5xl mx-auto px-8 py-16 md:py-32">
             <h2 class="text-center font-extrabold text-4xl md:text-5xl tracking-tight mb-12 md:mb-20">How it works</h2>
             <div class="collapse collapse-plus">
                 <input type="radio" name="my-accordion-3" checked="checked"/>
-                <div class="collapse-title text-xl font-medium">1. Open sendfa.st on both devices</div>
+                <div class="collapse-title text-xl font-medium">1. Upload Your Files</div>
                 <div class="collapse-content">
-                    <p>Open sendfa.st on both devices. Join a room and connect to each other using the unique room
-                        code.</p>
+                    <p>Simply drag and drop your files into Sendfa.st to get started with your transfer.</p>
                 </div>
             </div>
             <div class="collapse collapse-plus">
                 <input type="radio" name="my-accordion-3"/>
-                <div class="collapse-title text-xl font-medium">2. Select your files</div>
+                <div class="collapse-title text-xl font-medium">2. Share Your Download Link</div>
                 <div class="collapse-content">
-                    <p>Drag and drop or click and select the files you would like to send to the other device.</p>
+                    <p>Share the link with the person or device you want to transfer your files to.</p>
                 </div>
             </div>
             <div class="collapse collapse-plus">
                 <input type="radio" name="my-accordion-3"/>
-                <div class="collapse-title text-xl font-medium">3. Accept files & start the download</div>
+                <div class="collapse-title text-xl font-medium">3. Accept & Start The Transfer</div>
                 <div class="collapse-content">
-                    <p>Accept the files the other device wants to send. The transfer will start.</p>
+                    <p>Once the recipient accepts the files, the download will start automatically</p>
                 </div>
             </div>
             <div class="collapse collapse-plus">
                 <input type="radio" name="my-accordion-3"/>
-                <div class="collapse-title text-xl font-medium">4. Files received! 🎉</div>
+                <div class="collapse-title text-xl font-medium">4. Files Transferred! 🎉</div>
                 <div class="collapse-content">
-                    <p>Wait until the files are transferred. Congrats! You've successfully exchanged files</p>
+                    <p>Your files have been successfully sent & received. Congratulations on your smooth transfer</p>
                 </div>
             </div>
         </div>
     </section>
-    <!--&lt;!&ndash;DEMO VIDEO&ndash;&gt;-->
-    <!--<section class="bg-base-200 overflow-hidden" id="demo">-->
-    <!--    <div class="py-24 px-8 max-w-5xl mx-auto">-->
-    <!--        <div class="relative flex justify-center flex-col lg:flex-row items-center lg:items-stretch gap-8">-->
-    <!--            <div class="relative w-full max-w-lg">-->
-    <!--            </div>-->
-    <!--        </div>-->
-    <!--    </div>-->
-    <!--</section>-->
-    <!--PRICING-->
-    <!--<section class="bg-base-200 overflow-hidden" id="pricing">-->
-    <!--    <div class="py-24 px-8 max-w-5xl mx-auto">-->
-    <!--        <div class="flex flex-col text-center w-full mb-20">-->
-    <!--            <div class="mb-4">-->
-    <!--                <h2 class="max-w-xl font-black text-3xl lg:text-5xl tracking-tight mb-8 mx-auto ">Stop wasting time-->
-    <!--                    on sending yourself files</h2>-->
-    <!--                <p class="text-base-content-secondary max-w-md mx-auto">Streamline your workflow for sending files-->
-    <!--                    without losing privacy.</p>-->
-    <!--            </div>-->
-    <!--        </div>-->
-    <!--        <div class="relative flex justify-center flex-col lg:flex-row items-center lg:items-stretch gap-8">-->
-    <!--            <div class="relative max-w-lg w-full">-->
-    <!--                <div class="rounded-2xl p-6 shadow-sm bg-base-100">-->
-    <!--                    <div class="relative flex flex-col h-full gap-5 lg:gap-8 z-10 p-8 rounded-lg">-->
-    <!--                        <div class="flex flex-wrap gap-2">-->
-    <!--                            <div class="flex flex-col justify-end mb-[4px] text-lg "><p class="relative"><span-->
-    <!--                                    class="absolute bg-base-content h-[1.5px] inset-x-0 top-[53%]"></span><span-->
-    <!--                                    class="text-base-content/80"></span></p></div>-->
-    <!--                            <p class="text-5xl tracking-tight font-black">Free</p>-->
-    <!--                            <div class="flex flex-col justify-end mb-[4px]"><p-->
-    <!--                                    class="text-xs text-base-content/60 uppercase font-semibold"></p></div>-->
-    <!--                        </div>-->
-
-    <!--                        <ul class="space-y-2.5 leading-relaxed text-base flex-1">-->
-    <!--                            <li class="flex items-center gap-2">-->
-    <!--                                <Check class="h-5"/>-->
-    <!--                                Send files of any size-->
-    <!--                            </li>-->
-    <!--                            <li class="flex items-center gap-2">-->
-    <!--                                <Check class="h-5"/>-->
-    <!--                                Unlimited transfer speed-->
-    <!--                            </li>-->
-    <!--                            <li class="flex items-center gap-2">-->
-    <!--                                <Check class="h-5"/>-->
-    <!--                                2 devices-->
-    <!--                            </li>-->
-    <!--                            <li class="flex items-center gap-2">-->
-    <!--                                <X class="h-5"/>-->
-    <!--                                Send multiple files at once.-->
-    <!--                            </li>-->
-    <!--                            <li class="flex items-center gap-2">-->
-    <!--                                <X class="h-5"/>-->
-    <!--                                Unique username-->
-    <!--                            </li>-->
-    <!--                            <li class="flex items-center gap-2">-->
-    <!--                                <X class="h-5"/>-->
-    <!--                                Customized invite link-->
-    <!--                            </li>-->
-    <!--                        </ul>-->
-
-    <!--                        <div class="space-y-2">-->
-    <!--                            <a href="/app" class="btn btn-primary/20 w-full my-2 text-black">-->
-    <!--                                Start sending files-->
-    <!--                                <Send/>-->
-    <!--                            </a>-->
-    <!--                        </div>-->
-    <!--                    </div>-->
-    <!--                </div>-->
-    <!--            </div>-->
-    <!--            <div class="relative max-w-lg w-full">-->
-    <!--                <div class="rounded-2xl border border-indigo-600 p-6 shadow-sm ring-1 ring-indigo-600 bg-base-100">-->
-    <!--                    <div class="relative flex flex-col h-full gap-5 lg:gap-8 z-10 p-8 rounded-lg">-->
-    <!--                        <div class="flex flex-wrap gap-2">-->
-    <!--                            <div class="flex flex-col justify-end mb-[4px] text-lg "><p class="relative"><span-->
-    <!--                                    class="absolute bg-base-content h-[1.5px] inset-x-0 top-[53%]"></span><span-->
-    <!--                                    class="text-base-content/80">$25</span></p></div>-->
-    <!--                            <p class="text-5xl tracking-tight font-black">$15</p>-->
-    <!--                            <div class="flex flex-col justify-end mb-[4px]"><p-->
-    <!--                                    class="text-xs text-base-content/60 uppercase font-semibold">USD</p></div>-->
-    <!--                        </div>-->
-
-    <!--                        <ul class="space-y-2.5 leading-relaxed text-base flex-1">-->
-    <!--                            <li class="flex items-center gap-2">-->
-    <!--                                <Check class="h-5"/>-->
-    <!--                                Send files of any size-->
-    <!--                            </li>-->
-    <!--                            <li class="flex items-center gap-2">-->
-    <!--                                <Check class="h-5"/>-->
-    <!--                                Unlimited transfer speed-->
-    <!--                            </li>-->
-    <!--                            <li class="flex items-center gap-2">-->
-    <!--                                <Check class="h-5"/>-->
-    <!--                                <span class="bg-primary/50 px-2">Unlimited</span> devices-->
-    <!--                            </li>-->
-    <!--                            <li class="flex items-center gap-2">-->
-    <!--                                <Check class="h-5"/>-->
-    <!--                                Send multiple files at once.-->
-    <!--                            </li>-->
-    <!--                            <li class="flex items-center gap-2">-->
-    <!--                                <Check class="h-5"/>-->
-    <!--                                Unique username-->
-    <!--                            </li>-->
-    <!--                            <li class="flex items-center gap-2">-->
-    <!--                                <Check class="h-5"/>-->
-    <!--                                Customized invite link-->
-    <!--                            </li>-->
-    <!--                        </ul>-->
-
-    <!--                        <div class="space-y-2">-->
-    <!--                            <a class="btn btn-primary w-full my-2 text-white"-->
-    <!--                               href={import.meta.env.SENDFAST_PRO_URL}>-->
-    <!--                                Get Sendfa.st Pro-->
-    <!--                                <Send/>-->
-    <!--                            </a>-->
-    <!--                            <p class="text-sm text-center text-base-content-secondary font-bold relative">One-time-->
-    <!--                                payment, then <span class="underline">It's yours forever</span>-->
-    <!--                            </p>-->
-    <!--                        </div>-->
-    <!--                    </div>-->
-    <!--                </div>-->
-    <!--            </div>-->
-    <!--        </div>-->
-    <!--    </div>-->
-    <!--</section>-->
 
     <!--Support-->
     <section class="bg-base-100 text-base-content" id="support">
         <div class="max-w-5xl mx-auto px-8 py-16 md:py-32">
-            <h2 class="text-center font-extrabold text-4xl md:text-5xl tracking-tight mb-12 md:mb-20">Want to support?</h2>
+            <h2 class="text-center font-extrabold text-4xl md:text-5xl tracking-tight mb-12 md:mb-20">Want to
+                support?</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="card card-bordered">
                     <div class="card-body items-center">
@@ -313,8 +161,12 @@ const tweet = "I just used sendfa.st to send files between my devices. It's fast
                             <Users class="h-16 w-16"/>
                         </div>
                         <p class="text-2xl font-bold">Share</p>
-                        <p class="text-center">Please help us by sharing the platform with friends, family and colleagues!</p>
-                        <a class="btn btn-square mt-3" target="_blank" href=`https://x.com/intent/tweet?text=${tweet}`><Twitter/></a>
+                        <p class="text-center">Please help us by sharing the platform with friends, family and
+                            colleagues!</p>
+                        <a aria-label="twitter/x social media post" class="btn btn-square mt-3" target="_blank"
+                           href=`https://x.com/intent/tweet?text=${tweet}`>
+                            <Twitter/>
+                        </a>
                     </div>
                 </div>
                 <div class="card card-bordered">
@@ -323,71 +175,9 @@ const tweet = "I just used sendfa.st to send files between my devices. It's fast
                             <Heart class="h-16 w-16"/>
                         </div>
                         <p class="text-2xl font-bold">Donate</p>
-                        <p class="text-center">Please consider donating a bit of money so I can keep the platform running ❤️</p>
+                        <p class="text-center">Please consider donating a bit of money so I can keep the platform
+                            running ❤️</p>
                         <a class="btn btn-primary w-full mt-3" href="/donate">Donate</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!--  FAQ -->
-    <section class="bg-base-200" id="faq">
-        <div class="py-24 px-8 max-w-7xl mx-auto">
-            <div class="flex flex-col md:flex-row gap-12">
-                <div class="flex flex-col text-left basis-1/2">
-                    <p class="inline-block font-semibold text-primary mb-4">FAQ</p>
-                    <p class="text-3xl md:text-4xl font-extrabold text-base-content">Frequently Asked Questions</p>
-                </div>
-                <div class="basis-1/2">
-                    <div class="collapse collapse-plus">
-                        <input type="radio" name="my-accordion-3" checked="checked"/>
-                        <div class="collapse-title text-xl font-medium">Why do I need sendfa.st</div>
-                        <div class="collapse-content">
-                            <p>
-                                Sendfa.st is a fast and secure way to send files between devices. No registration
-                                required. The files are sent directly between the devices.
-                                No files are stored on any servers.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="collapse collapse-plus">
-                        <input type="radio" name="my-accordion-3"/>
-                        <div class="collapse-title text-xl font-medium">Is sendfa.st secure?</div>
-                        <div class="collapse-content">
-                            <p>
-                                Yes. All the data being sent with Sendfa.st is encrypted. Nor does sendfa.st store any
-                                of the data being sent.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="collapse collapse-plus">
-                        <input type="radio" name="my-accordion-3"/>
-                        <div class="collapse-title text-xl font-medium">Are my files private?</div>
-                        <div class="collapse-content">
-                            <p>
-                                Yes. All the data that a users sent is sent directly via a peer-to-peer connection. This
-                                means
-                                that the data being sent is never stored or received by any servers.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="collapse collapse-plus">
-                        <input type="radio" name="my-accordion-3"/>
-                        <div class="collapse-title text-xl font-medium">How fast can files be transferred?</div>
-                        <div class="collapse-content">
-                            <p>The speed of the file transfer is dependant on the upload speed of the sender and the
-                                download speed of the receiver. Sendfa.st does not limit these speeds.</p>
-                        </div>
-                    </div>
-                    <div class="collapse collapse-plus">
-                        <input type="radio" name="my-accordion-3"/>
-                        <div class="collapse-title text-xl font-medium">What devices are supported?</div>
-                        <div class="collapse-content">
-                            <p>All kinds! From phones to laptops. All the device requires is a modern browser and a
-                                Internet
-                                connection.</p>
-                        </div>
                     </div>
                 </div>
             </div>

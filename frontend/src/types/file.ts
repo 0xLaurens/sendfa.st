@@ -12,16 +12,18 @@ export enum FileOfferType {
     AcceptOffer = "ACCEPT_OFFER", // Accept offer to receive files
     DenyOffer = "DENY_OFFER", // Reject offer to receive files
     RequestNextFile = "REQUEST_NEXT_FILE", // Request the next file
+    ReadyForOffer = "READY_FOR_OFFER", // Ready to receive files
 }
 
 export type FileMessage = {
     name: string
+    accSize?: number
     size: number
     mime: string
 }
 
 export type FileProgress = {
-    id: string
     currentFile: number
+    size: number
     progress: number
 }

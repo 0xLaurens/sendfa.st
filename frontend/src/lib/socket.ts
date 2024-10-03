@@ -1,5 +1,4 @@
 import {atom, type WritableAtom} from "nanostores";
-import {persistentAtom} from "@nanostores/persistent";
 import type {User} from "../types/user.ts";
 import type {Room} from "../types/room.ts";
 import {
@@ -11,11 +10,13 @@ import {
     handleRtcOffer
 } from "./webrtc.ts";
 
-export const roomCode: WritableAtom<string | undefined> = persistentAtom("roomCode", undefined);
 export const isConnected = atom(false);
 export const users: WritableAtom<User[]> = atom([]);
 export const identity: WritableAtom<User> = atom({});
 export const room: WritableAtom<Room> = atom({});
+export const roomId: WritableAtom<string | undefined> = atom(undefined);
+export const roomExists: WritableAtom<boolean> = atom(true);
+export const downloadCancelled: WritableAtom<boolean> = atom(false);
 
 class WebsocketManager {
     private socket: WebSocket | null = null;
@@ -35,9 +36,11 @@ class WebsocketManager {
             console.log("Disconnected from websocket server");
             isConnected.set(false);
             closeAllWebRtcConnections()
-            setTimeout(() => {
-                this.connect();
-            }, 1000);
+            if (roomId.get() !== undefined) {
+                setTimeout(() => {
+                    this.connect();
+                }, 1000);
+            }
         }
 
         this.socket.onerror = (error) => {
@@ -50,10 +53,17 @@ class WebsocketManager {
         }
     }
 
+    getWebSocket(): WebSocket | null {
+        return this.socket;
+    }
+
     close() {
         if (this.socket) {
             this.socket.close();
         }
+        roomId.set(undefined);
+        isConnected.set(false);
+        users.set([]);
         this.socket = null;
     }
 
@@ -63,10 +73,11 @@ class WebsocketManager {
             case "IDENTITY": {
                 identity.set(data.user);
                 // is there an existing room code in localstorage?
-                let code = roomCode.get();
-                if (code !== undefined) {
+                // let code = roomCode.get();
+                let id= roomId.get();
+                if (id !== undefined) {
                     // verify if the room still exists
-                    sendRoomExists(this.socket, code);
+                    sendRoomExists(this.socket, id);
                     break;
                 }
 
@@ -76,7 +87,7 @@ class WebsocketManager {
             }
             case "ROOM_CREATED": {
                 room.set(data.room);
-                roomCode.set(data.room.code);
+                roomId.set(data.room.id);
                 isConnected.set(true);
                 users.set([])
                 break;
@@ -84,15 +95,18 @@ class WebsocketManager {
             case "ROOM_EXISTS": {
                 let exists = data.exists;
                 if (!exists) {
-                    sendRequestRoom(this.socket);
+                    // console.log("Room does not exist, creating a new one", data);
+                    // sendRequestRoom(this.socket);
+                    roomExists.set(false);
                     break;
                 }
-                roomCode.set(data.code);
-                sendJoinRoom(this.socket, data.code);
+                roomId.set(data.roomId);
+                sendJoinRoom(this.socket, data.roomId);
                 break;
             }
             case "ROOM_JOINED": {
                 isConnected.set(true);
+                downloadCancelled.set(false);
                 room.set(data.room);
                 for (let user of data.users) {
                     if (user.id === identity.get().id) {
@@ -129,6 +143,11 @@ class WebsocketManager {
                 await handleIceCandidate(data);
                 break;
             }
+            case "CANCEL_DOWNLOAD": {
+                console.log("Download cancelled");
+                downloadCancelled.set(true);
+                break;
+            }
         }
     }
 }
@@ -144,22 +163,32 @@ function sendRequestRoom(socket: WebSocket | null) {
     }))
 }
 
-function sendRoomExists(socket: WebSocket | null, code: string) {
+function sendRoomExists(socket: WebSocket | null, roomId: string) {
     if (!socket) return;
     socket.send(JSON.stringify({
         type: "ROOM_EXISTS",
         payload: {
-            code: code
+            roomId: roomId
         }
     }))
 }
 
-function sendJoinRoom(socket: WebSocket | null, code: string) {
+function sendJoinRoom(socket: WebSocket | null, roomId: string) {
     if (!socket) return;
     socket.send(JSON.stringify({
         type: "JOIN_ROOM",
         payload: {
-            code: code
+            roomId: roomId
+        }
+    }))
+}
+
+export function sendCancelDownload(socket: WebSocket | null) {
+    if (!socket) return;
+    socket.send(JSON.stringify({
+        type: "CANCEL_DOWNLOAD",
+        payload: {
+            roomId: roomId.get()
         }
     }))
 }
