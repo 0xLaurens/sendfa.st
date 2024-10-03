@@ -22,8 +22,7 @@
         manager = new WebsocketManager("ws://localhost:7331/api/websocket");
         roomId.listen(value => {
             if (value == null) return;
-            console.log("Setting room code to", value);
-            link = `${window.location.href}r/${value}`;
+            link = `${window.location.protocol}//${window.location.host}/r/${value}`;
         })
     })
 
