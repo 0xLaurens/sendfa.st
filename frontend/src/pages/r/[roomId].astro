@@ -9,7 +9,7 @@ import Layout from "../../layouts/Layout.astro";
     <section class="md:min-h-[100vh] bg-base-100 relative overflow-hidden min-h-screen justify-center content-center"
              id="Receive files">
         <GradientBackdrop/>
-        <div class="max-w-6xl flex flex-col items-center justify-center ">
+        <div class="max-w-6xl flex flex-col items-center justify-center mx-auto">
             <FileReceiver RoomId={roomId} client:only="svelte"/>
         </div>
     </section>
