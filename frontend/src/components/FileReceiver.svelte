@@ -28,7 +28,7 @@
         }
 
         roomId.set(RoomId);
-        manager = new WebsocketManager("ws://localhost:7331/api/websocket");
+        manager = new WebsocketManager(`${import.meta.env.WS_PROTOCOL}://${import.meta.env.WS_HOST}/api/websocket`);
         manager.connect();
 
         currentFileOffer.subscribe(value => {
