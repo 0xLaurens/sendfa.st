@@ -13,7 +13,6 @@ var (
 	LeaveRoom      = "LEAVE_ROOM"
 	RequestRoom    = "REQUEST_ROOM"
 	RoomExists     = "ROOM_EXISTS"
-	WhoAmI         = "WHOAMI"
 	CancelDownload = "CANCEL_DOWNLOAD"
 )
 

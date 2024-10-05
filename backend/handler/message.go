@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"github.com/0xlaurens/filefa.st/auth"
 	"github.com/0xlaurens/filefa.st/service"
 	"github.com/0xlaurens/filefa.st/types"
 	"github.com/gofiber/contrib/websocket"
@@ -39,17 +38,6 @@ func (mh *MessageHandler) handleResponse(c *websocket.Conn, message types.Messag
 		return mh.handleRequestRoom(c, message)
 	case types.Answer, types.IceCandidate, types.Offer:
 		return mh.handleWebrtcMessage(c, message)
-	case types.WhoAmI:
-		return mh.handleWhoAmi(c, message)
-	case "AUTH":
-		{
-			log.Println("Received auth message")
-			handler := auth.Protected(func(conn *websocket.Conn, message types.Message) error {
-				return mh.notifier.SendToConnection(fiber.Map{"type": "auth", "message": "You are authorized"}, conn)
-			})
-			return handler(c, message)
-		}
-
 	default:
 		log.Println("Unknown message type received", message.Type)
 		return errors.New("unknown message type")
@@ -169,15 +157,6 @@ func (mh *MessageHandler) handleRoomExists(c *websocket.Conn, message types.Mess
 		"type":   "ROOM_EXISTS",
 		"roomId": roomIdPayload.RoomID,
 		"exists": true,
-	}, c)
-}
-
-func (mh *MessageHandler) handleWhoAmi(c *websocket.Conn, message types.Message) error {
-	rooms := mh.roomService.GetAllRooms()
-
-	return mh.notifier.SendToConnection(fiber.Map{
-		"type":  "ROOMS",
-		"rooms": rooms,
 	}, c)
 }
 
