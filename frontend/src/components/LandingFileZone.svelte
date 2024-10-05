@@ -19,9 +19,7 @@
     let manager: WebsocketManager;
 
     onMount(() => {
-
-
-        manager = new WebsocketManager(`${import.meta.env.WS_PROTOCOL}://${import.meta.env.WS_HOST}/api/websocket`);
+        manager = new WebsocketManager(`${import.meta.env.PUBLIC_WS_PROTOCOL}://${import.meta.env.PUBLIC_WS_HOST}/api/websocket`);
         roomId.listen(value => {
             if (value == null) return;
             link = `${window.location.protocol}//${window.location.host}/r/${value}`;

@@ -28,7 +28,8 @@
         }
 
         roomId.set(RoomId);
-        manager = new WebsocketManager(`${import.meta.env.WS_PROTOCOL}://${import.meta.env.WS_HOST}/api/websocket`);
+        console.log(import.meta.env.SUPABASE_ANON_KEY)
+        manager = new WebsocketManager(`${import.meta.env.PUBLIC_WS_PROTOCOL}://${import.meta.env.PUBLIC_WS_HOST}/api/websocket`);
         manager.connect();
 
         currentFileOffer.subscribe(value => {
