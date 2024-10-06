@@ -215,9 +215,9 @@
                         Total
                         size: {formatFileSize(Array.from(filesToSend).reduce((total, file) => total + file.size, 0))}</p>
                     <div class="flex flex-row gap-2 items-center justify-center pt-5">
-                        <input class="input input-bordered w-3/4"
+                        <input disabled="{link === 'loading...'}" class:animate-pulse={link === 'loading...'} class="input input-bordered w-full"
                                value="{link}">
-                        <ShareButton {link}/>
+                        <ShareButton disabled="{link === 'loading...'}" {link}/>
                     </div>
                     <p class="text-wrap pt-3 font-bold">Make sure to keep this page open whilst sending!</p>
                     <p class="text-wrap pt-2">
