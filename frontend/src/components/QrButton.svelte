@@ -3,6 +3,7 @@
     import {QrCode} from "lucide-svelte";
 
     export let link: string;
+    export let disabled: boolean = false;
 
     function showModal() {
         let qr = document.getElementById("qr") as HTMLDialogElement
@@ -10,7 +11,7 @@
     }
 </script>
 <div class="tooltip tooltip-bottom" data-tip="Show QR code">
-    <button class="btn btn-square bg-base-100" on:click={showModal}>
+    <button disabled="{disabled}" class="btn btn-square bg-base-100" on:click={showModal}>
         <QrCode/>
     </button>
 </div>

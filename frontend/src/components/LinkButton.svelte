@@ -4,6 +4,7 @@
     import type {ToastData} from "../types/toast.ts";
 
     export let link: string = ""
+    export let disabled: boolean = false;
 
     function CopyToClipboard() {
         navigator.clipboard.writeText(link)
@@ -19,7 +20,7 @@
 </script>
 
 <div class="tooltip tooltip-bottom" data-tip="Copy the link">
-    <button on:click={CopyToClipboard} class="btn btn-square bg-base-100">
+    <button disabled="{disabled}" on:click={CopyToClipboard} class="btn btn-square bg-base-100">
         <Link/>
     </button>
 </div>

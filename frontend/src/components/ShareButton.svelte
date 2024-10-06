@@ -1,9 +1,10 @@
 <script lang="ts">
-    import {Link, Share2Icon, ShareIcon} from "lucide-svelte"
+    import {Share2Icon} from "lucide-svelte"
     import {addToast} from "../lib/toast.ts"
     import type {ToastData} from "../types/toast.ts";
 
     export let link: string = ""
+    export let disabled: boolean = false
 
     function ShareLink() {
         if (!navigator.share) {
@@ -32,7 +33,7 @@
 </script>
 
 <div class="tooltip tooltip-bottom" data-tip="Share link">
-    <button on:click={ShareLink} class="btn btn-square bg-base-100">
-        <Share2Icon />
+    <button disabled="{disabled}" on:click={ShareLink} class="btn btn-square bg-base-100">
+        <Share2Icon/>
     </button>
 </div>

@@ -13,7 +13,7 @@
     import ShareButton from "./ShareButton.svelte";
 
     let filesToSend: FileList | null = null;
-    let link: string = "dummy.com";
+    let link: string = 'loading...';
     let isDragging: boolean = false;
     let debounceTimer: ReturnType<typeof setTimeout>;
     let manager: WebsocketManager;
@@ -163,10 +163,11 @@
                             Total
                             size: {formatFileSize(Array.from(filesToSend).reduce((total, file) => total + file.size, 0))}</p>
                         <div class="flex flex-row gap-2 items-center justify-center pt-5">
-                            <input class="input input-bordered"
+                            <input disabled="{link === 'loading...'}" class="input input-bordered"
+                                   class:animate-pulse="{link === 'loading...'}"
                                    value="{link}">
-                            <QrButton {link}/>
-                            <LinkButton {link}/>
+                            <QrButton disabled="{link === 'loading...'}" {link}/>
+                            <LinkButton disabled="{link === 'loading...'}" {link}/>
                         </div>
                         <p class="text-wrap pt-3 font-bold">Make sure to keep this page open whilst sending!</p>
                         <p class="text-wrap pt-2">
@@ -214,15 +215,15 @@
                         Total
                         size: {formatFileSize(Array.from(filesToSend).reduce((total, file) => total + file.size, 0))}</p>
                     <div class="flex flex-row gap-2 items-center justify-center pt-5">
-                        <input class="input input-bordered w-3/4"
+                        <input disabled="{link === 'loading...'}" class:animate-pulse={link === 'loading...'} class="input input-bordered w-full"
                                value="{link}">
-                        <ShareButton {link}/>
+                        <ShareButton disabled="{link === 'loading...'}" {link}/>
                     </div>
                     <p class="text-wrap pt-3 font-bold">Make sure to keep this page open whilst sending!</p>
                     <p class="text-wrap pt-2">
                         Share the link or scan the QR code to start downloading the file on another device.
                     </p>
-                    <svg class="h-32 w-32 mx-auto" use:qr="{{ data: link }}" />
+                    <svg class="h-32 w-32 mx-auto" use:qr="{{ data: link }}"/>
                 </div>
                 <div class="flex flex-col gap-3">
                     <label for="change-files" class="btn btn-neutral w-full">
