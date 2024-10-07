@@ -15,7 +15,7 @@ export const users: WritableAtom<User[]> = atom([]);
 export const identity: WritableAtom<User> = atom({});
 export const room: WritableAtom<Room> = atom({});
 export const roomId: WritableAtom<string | undefined> = atom(undefined);
-export const roomExists: WritableAtom<boolean> = atom(true);
+export const roomExists: WritableAtom<boolean> = atom(false);
 export const downloadCancelled: WritableAtom<boolean> = atom(false);
 
 class WebsocketManager {
