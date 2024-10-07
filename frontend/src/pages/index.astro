@@ -1,6 +1,18 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import {Users, Zap, Shield, MonitorSmartphone, Twitter, Heart, Image, Handshake, HandMetal} from "lucide-astro";
+import {
+    Users,
+    Zap,
+    Shield,
+    MonitorSmartphone,
+    Twitter,
+    Heart,
+    Image,
+    Handshake,
+    HandMetal,
+    Plus,
+    Minus
+} from "lucide-astro";
 import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
 import GradientBackdrop from "../components/GradientBackdrop.astro";
@@ -116,35 +128,62 @@ const tweet = "I just used sendfa.st to send files between my devices. It's fast
     </section>
 
     <section class="bg-base-100 text-base-content" id="how-it-works">
-        <div class="max-w-5xl mx-auto px-8 py-16 md:py-32">
+        <div class="flow-root max-w-5xl mx-auto px-8 py-16 md:py-32">
             <h2 class="text-center font-extrabold text-4xl md:text-5xl tracking-tight mb-12 md:mb-20">How it works</h2>
-            <div class="collapse collapse-plus">
-                <input type="radio" name="my-accordion-3" checked="checked"/>
-                <div class="collapse-title text-xl font-medium">1. Upload Your Files</div>
-                <div class="collapse-content">
-                    <p>Simply drag and drop your files into Sendfa.st to get started with your transfer.</p>
-                </div>
+            <div class="-my-8 divide-y divide-gray-100">
+                <details class="group py-8 [&_summary::-webkit-details-marker]:hidden">
+                    <summary class="flex cursor-pointer items-center justify-between gap-1.5 text-gray-900">
+                        <h2 class="text-xl font-medium">1. Upload Your Files</h2>
+
+                        <span class="relative size-5 shrink-0 ">
+                            <Plus class="absolute inset-0 size-5 opacity-100 group-open:opacity-0"/>
+                            <Minus class="absolute inset-0 size-5 opacity-0 group-open:opacity-100"/>
+                        </span>
+                    </summary>
+
+                    <p class="mt-4 leading-relaxed text-gray-700">Simply drag and drop your files into Sendfa.st to get started with your transfer.</p>
+                </details>
             </div>
-            <div class="collapse collapse-plus">
-                <input type="radio" name="my-accordion-3"/>
-                <div class="collapse-title text-xl font-medium">2. Share Your Download Link</div>
-                <div class="collapse-content">
-                    <p>Share the link with the person or device you want to transfer your files to.</p>
-                </div>
+            <div class="-my-8 divide-y divide-gray-100">
+                <details class="group py-8 [&_summary::-webkit-details-marker]:hidden">
+                    <summary class="flex cursor-pointer items-center justify-between gap-1.5 text-gray-900">
+                        <h2 class="text-xl font-medium">2. Share Your Download Link</h2>
+
+                        <span class="relative size-5 shrink-0 ">
+                            <Plus class="absolute inset-0 size-5 opacity-100 group-open:opacity-0"/>
+                            <Minus class="absolute inset-0 size-5 opacity-0 group-open:opacity-100"/>
+                        </span>
+                    </summary>
+
+                    <p class="mt-4 leading-relaxed text-gray-700">Share the link with the person or device you want to transfer your files to.</p>
+                </details>
             </div>
-            <div class="collapse collapse-plus">
-                <input type="radio" name="my-accordion-3"/>
-                <div class="collapse-title text-xl font-medium">3. Accept & Start The Transfer</div>
-                <div class="collapse-content">
-                    <p>Once the recipient accepts the files, the download will start automatically</p>
-                </div>
+            <div class="-my-8 divide-y divide-gray-100">
+                <details class="group py-8 [&_summary::-webkit-details-marker]:hidden">
+                    <summary class="flex cursor-pointer items-center justify-between gap-1.5 text-gray-900">
+                        <h2 class="text-xl font-medium">3. Accept & Start The Transfer</h2>
+
+                        <span class="relative size-5 shrink-0 ">
+                            <Plus class="absolute inset-0 size-5 opacity-100 group-open:opacity-0"/>
+                            <Minus class="absolute inset-0 size-5 opacity-0 group-open:opacity-100"/>
+                        </span>
+                    </summary>
+
+                    <p class="mt-4 leading-relaxed text-gray-700">Once the recipient accepts the files, the download will start automatically</p>
+                </details>
             </div>
-            <div class="collapse collapse-plus">
-                <input type="radio" name="my-accordion-3"/>
-                <div class="collapse-title text-xl font-medium">4. Files Transferred! 🎉</div>
-                <div class="collapse-content">
-                    <p>Your files have been successfully sent & received. Congratulations on your smooth transfer</p>
-                </div>
+            <div class="-my-8 divide-y divide-gray-100">
+                <details class="group py-8 [&_summary::-webkit-details-marker]:hidden">
+                    <summary class="flex cursor-pointer items-center justify-between gap-1.5 text-gray-900">
+                        <h2 class="text-xl font-medium">4. Files Transferred! 🎉</h2>
+
+                        <span class="relative size-5 shrink-0 ">
+                            <Plus class="absolute inset-0 size-5 opacity-100 group-open:opacity-0"/>
+                            <Minus class="absolute inset-0 size-5 opacity-0 group-open:opacity-100"/>
+                        </span>
+                    </summary>
+                    <p class="mt-4 leading-relaxed text-gray-700">Your files have been successfully sent & received. Congratulations on your smooth transfer</p>
+                </details>
             </div>
         </div>
     </section>
