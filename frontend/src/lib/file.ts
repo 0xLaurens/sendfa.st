@@ -116,7 +116,6 @@ export async function buildFile(chunk: ArrayBuffer) {
     console.log("accSize", accSize, "Filesize", file.size)
     accSize += buffer.byteLength
     file.accSize = accSize
-    offer.files[offer.currentFile] = file
     currentFileOffer.set(offer)
 
     if (accSize === file.size) {

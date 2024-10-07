@@ -169,7 +169,7 @@
                             <QrButton disabled="{link === 'loading...'}" {link}/>
                             <LinkButton disabled="{link === 'loading...'}" {link}/>
                         </div>
-                        <p class="text-wrap pt-3 font-bold">Make sure to keep this page open whilst sending!</p>
+                        <p class="text-wrap pt-3 font-bold">⚠️ Make sure to keep this page open whilst sending!</p>
                         <p class="text-wrap pt-2">
                             Share the link or scan the QR code to start downloading the file on another device.
                         </p>
@@ -219,7 +219,7 @@
                                value="{link}">
                         <ShareButton disabled="{link === 'loading...'}" {link}/>
                     </div>
-                    <p class="text-wrap pt-3 font-bold">Make sure to keep this page open whilst sending!</p>
+                    <p class="text-wrap pt-3 font-bold">⚠️ Make sure to keep this page open whilst sending! ⚠️</p>
                     <p class="text-wrap pt-2">
                         Share the link or scan the QR code to start downloading the file on another device.
                     </p>

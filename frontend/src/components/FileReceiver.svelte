@@ -47,7 +47,7 @@
     }
 
 </script>
-<div class="card h-screen bg-base-100 w-screen sm:w-full sm:h-auto max-w-lg gap-3 space-y-6">
+<div class="card min-h-screen sm:min-h-0 bg-base-100 w-screen sm:w-full sm:h-auto max-w-lg gap-3 space-y-6">
     <div class="card-body flex-col justify-between h-full md:h-auto gap-16">
         <div class="flex items-center space-x-4">
             <div class="bg-gray-100 p-2 rounded-full">
@@ -70,10 +70,10 @@
                     <p class="text-base-content/70 text-lg">Setting up the connection</p>
                 </div>
             </div>
-        {:else if offer && !$downloadCancelled}
+        {:else if $currentFileOffer && !$downloadCancelled}
             <div>
                 <ul class="space-y-2">
-                    {#each offer.files as file}
+                    {#each $currentFileOffer.files as file}
                         <li class="flex flex-col py-2">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center space-x-3">
@@ -93,15 +93,11 @@
                                 </div>
                                 <span class="text-gray-500 text-sm">{formatFileSize(file.size)}</span>
                             </div>
-                            <div>
-                                <progress class="w-full progress" value="{file.accSize ? file.accSize : 0}"
-                                          max="{file.size}"></progress>
-                            </div>
                         </li>
                     {/each}
                 </ul>
                 <div class="mt-4">
-                    <span class="text-gray-500">Total size: {formatFileSize(offer.files.reduce((acc, file) => acc + file.size, 0))}</span>
+                    <span class="text-gray-500">Total size: {formatFileSize($currentFileOffer.files.reduce((acc, file) => acc + file.size, 0))}</span>
                 </div>
             </div>
         {:else if !$roomExists}

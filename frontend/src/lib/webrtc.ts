@@ -3,6 +3,8 @@ import type {Connection} from "../types/connection.ts";
 import {identity, room, sendWebRtcMessage} from "./socket.ts";
 import {addIncomingFileOffer, buildFile, createFilesOffer, filesUploaded, sendFile} from "./file.ts";
 import {FileOfferType} from "../types/file.ts";
+import type {ToastData} from "../types/toast.ts";
+import {addToast} from "./toast.ts";
 
 export const connections = atom(new Map<string, Connection>());
 
@@ -32,7 +34,13 @@ async function _setupDataChannelListeners(connection: Connection) {
                     addIncomingFileOffer(data);
                     break;
                 case FileOfferType.AcceptOffer:
-                    console.log("The offer was accepted :)");
+                    const toast: ToastData = {
+                        id: Date.now(),
+                        type: "success",
+                        title: "File Transfer",
+                        description: "A user has started downloading"
+                    }
+                    addToast(toast);
                     sendFile(data);
                     break;
                 case FileOfferType.DenyOffer:
