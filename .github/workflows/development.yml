@@ -11,25 +11,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Setup golang
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v4
         with:
           go-version: ">=1.22.5"
       - name: Cache Go modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-me: Run tests
-
+            ${{ runner.os }}-go-
       - name: Install dependencies
-        run:
+        run: |
           cd backend/
           go mod tidy
-
       - name: Run tests
-        run:
+        run: |
           cd backend/
           go test -v ./...
