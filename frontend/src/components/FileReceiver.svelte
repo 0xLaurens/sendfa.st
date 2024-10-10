@@ -1,14 +1,13 @@
 <script lang="ts">
     import {formatFileSize} from "../util/filesize.ts";
     import {
-        CircleXIcon,
+        CircleXIcon, DownloadIcon,
         FileAudioIcon,
         FileIcon,
         FileVideoIcon, FrownIcon, HeartIcon,
         ImageIcon,
         Loader2Icon,
         ShareIcon,
-        UploadIcon,
     } from "lucide-svelte";
     import type {FileOffer} from "../types/file.ts";
     import {onDestroy, onMount} from "svelte";
@@ -128,7 +127,7 @@
                 </a>
             {:else}
                 <button disabled="{!$isConnected || !offer}" on:click={acceptFiles} class="btn btn-neutral w-full">
-                    <UploadIcon class="h-5 w-5"/>
+                    <DownloadIcon class="h-5 w-5"/>
                     Start download
                 </button>
             {/if}
