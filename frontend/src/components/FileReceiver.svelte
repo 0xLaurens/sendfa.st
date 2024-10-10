@@ -46,7 +46,7 @@
     }
 
 </script>
-<div class="card min-h-screen sm:min-h-0 bg-base-100 w-screen sm:w-full sm:h-auto max-w-lg gap-3 space-y-6">
+<div class="card h-full min-h-svh sm:min-h-0 bg-base-100 w-screen sm:w-full sm:h-auto max-w-lg gap-3 space-y-6">
     <div class="card-body flex-col justify-between h-full md:h-auto gap-16">
         <div class="flex items-center space-x-4">
             <div class="bg-gray-100 p-2 rounded-full">
