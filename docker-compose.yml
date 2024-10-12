@@ -4,7 +4,10 @@ services:
       context: ./backend
     ports:
       - "7331:7331"
-  redis:
-    image: "redis:alpine"
+  frontend:
+    build:
+      context: ./frontend
     ports:
-      - "6379:6379"
+      - "4321:4321"
+    depends_on:
+      - backend
