@@ -17,6 +17,7 @@ export const room: WritableAtom<Room> = atom({});
 export const roomId: WritableAtom<string | undefined> = atom(undefined);
 export const roomExists: WritableAtom<boolean> = atom(false);
 export const downloadCancelled: WritableAtom<boolean> = atom(false);
+export const checkedRoomCode: WritableAtom<boolean> = atom(false);
 
 class WebsocketManager {
     private socket: WebSocket | null = null;
@@ -30,6 +31,7 @@ class WebsocketManager {
         this.socket = new WebSocket(this.url);
         this.socket.onopen = () => {
             console.log("Connected to websocket server");
+            isConnected.set(true);
         }
 
         this.socket.onclose = () => {
@@ -74,7 +76,7 @@ class WebsocketManager {
                 identity.set(data.user);
                 // is there an existing room code in localstorage?
                 // let code = roomCode.get();
-                let id= roomId.get();
+                let id = roomId.get();
                 if (id !== undefined) {
                     // verify if the room still exists
                     sendRoomExists(this.socket, id);
@@ -94,10 +96,9 @@ class WebsocketManager {
             }
             case "ROOM_EXISTS": {
                 let exists = data.exists;
+                roomExists.set(exists);
                 if (!exists) {
-                    // console.log("Room does not exist, creating a new one", data);
-                    // sendRequestRoom(this.socket);
-                    roomExists.set(false);
+                    checkedRoomCode.set(true);
                     break;
                 }
                 roomId.set(data.roomId);
@@ -105,8 +106,8 @@ class WebsocketManager {
                 break;
             }
             case "ROOM_JOINED": {
-                isConnected.set(true);
                 downloadCancelled.set(false);
+                checkedRoomCode.set(true);
                 room.set(data.room);
                 for (let user of data.users) {
                     if (user.id === identity.get().id) {
@@ -150,10 +151,6 @@ class WebsocketManager {
             }
         }
     }
-}
-
-export function findUserById(id: string) {
-    return users.get().find(user => user.id === id);
 }
 
 function sendRequestRoom(socket: WebSocket | null) {

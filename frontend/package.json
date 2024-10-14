@@ -18,21 +18,20 @@
     "@astrojs/tailwind": "^5.1.0",
     "@fontsource-variable/gabarito": "^5.0.5",
     "@nanostores/persistent": "^0.10.2",
-    "@stripe/stripe-js": "^4.1.0",
-    "@supabase/supabase-js": "^2.44.4",
     "astro": "^4.15.12",
     "lucide-astro": "^0.414.0",
     "lucide-svelte": "^0.427.0",
     "nanostores": "^0.11.2",
     "streamsaver": "^2.0.6",
-    "stripe": "^16.6.0",
     "svelte": "^4.2.19",
     "tailwindcss": "^3.4.13",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@svelte-put/qr": "^1.2.1",
     "@types/streamsaver": "^2.0.4",
+    "@types/uuid": "^10.0.0",
     "daisyui": "^4.12.10"
   }
 }
