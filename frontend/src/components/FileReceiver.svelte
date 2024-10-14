@@ -52,14 +52,14 @@
 
 </script>
 
-<!--quick and dirty debug :))-->
-<p>Room ID: {$roomId}</p>
-<p>Connected to websocket: {$isConnected}</p>
-<p>Room exists:{$roomExists}</p>
-<p>Room has been checked: {$checkedRoomCode}</p>
-<p>Download cancelled: {$downloadCancelled}</p>
-<p>Download finished: {$downloadFinished}</p>
-<p>Current file offer: {$currentFileOffer}</p>
+<!--&lt;!&ndash;quick and dirty debug :))&ndash;&gt;-->
+<!--<p>Room ID: {$roomId}</p>-->
+<!--<p>Connected to websocket: {$isConnected}</p>-->
+<!--<p>Room exists:{$roomExists}</p>-->
+<!--<p>Room has been checked: {$checkedRoomCode}</p>-->
+<!--<p>Download cancelled: {$downloadCancelled}</p>-->
+<!--<p>Download finished: {$downloadFinished}</p>-->
+<!--<p>Current file offer: {$currentFileOffer}</p>-->
 
 <div class="card h-full min-h-svh sm:min-h-0 bg-base-100 w-screen sm:w-full sm:h-auto max-w-lg gap-3 space-y-6">
     <div class="card-body flex-col justify-between h-full md:h-auto gap-16">
