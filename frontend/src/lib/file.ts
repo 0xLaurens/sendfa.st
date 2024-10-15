@@ -2,8 +2,8 @@ import StreamSaver from "streamsaver";
 import {connections} from "./webrtc.ts";
 import {type FileMessage, type FileOffer, FileOfferType} from "../types/file.ts";
 import {identity} from "./socket.ts";
-import {uuid} from "@supabase/supabase-js/dist/main/lib/helpers";
 import {atom, type WritableAtom} from "nanostores";
+import {v4 as uuidv4} from "uuid";
 
 export const filesUploaded: WritableAtom<FileList | null> = atom(null)
 const incomingFileOffers: WritableAtom<FileOffer[]> = atom([])
@@ -160,7 +160,7 @@ export function createFilesOffers(files: FileList) {
 export function createFilesOffer(files: FileList, target: string) {
     const messages = filesToMessage(files)
     const offer: FileOffer = {
-        id: uuid(),
+        id: uuidv4(),
         type: FileOfferType.Offer,
         files: messages,
         from: identity.get().id,

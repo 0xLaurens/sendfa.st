@@ -11,7 +11,13 @@
     } from "lucide-svelte";
     import type {FileOffer} from "../types/file.ts";
     import {onDestroy, onMount} from "svelte";
-    import WebsocketManager, {downloadCancelled, isConnected, roomExists, roomId} from "../lib/socket.ts";
+    import WebsocketManager, {
+        checkedRoomCode,
+        downloadCancelled,
+        isConnected, room,
+        roomExists, roomId,
+        users
+    } from "../lib/socket.ts";
     import {acceptIncomingFileOffer, currentFileOffer, downloadFinished} from "../lib/file.ts";
     import {truncateFileName} from "../util/truncate.ts";
 
@@ -27,7 +33,6 @@
         }
 
         roomId.set(RoomId);
-        console.log(import.meta.env.SUPABASE_ANON_KEY)
         manager = new WebsocketManager(`${import.meta.env.PUBLIC_WS_PROTOCOL}://${import.meta.env.PUBLIC_WS_HOST}/api/websocket`);
         manager.connect();
 
@@ -46,6 +51,45 @@
     }
 
 </script>
+
+<!--&lt;!&ndash;quick and dirty debug :))&ndash;&gt;-->
+<!--<div class="flex flex-col z-50 gap-3">-->
+<!--    <p>Room ID: {$roomId}</p>-->
+<!--    <div class="flex gap-3  justify-between">-->
+<!--        <p>Connected to websocket: {$isConnected}</p>-->
+<!--        <input type="checkbox" class="toggle toggle-primary" on:click={() => {-->
+<!--            isConnected.set(!isConnected.get())-->
+<!--        }} checked="{$isConnected}"/>-->
+<!--    </div>-->
+<!--    <div class="flex gap-3  justify-between">-->
+<!--        <p>Room exists:{$roomExists}</p>-->
+<!--        <input type="checkbox" class="toggle toggle-primary" on:click={() => {-->
+<!--            roomExists.set(!roomExists.get())-->
+<!--        }} checked="{$roomExists}"/>-->
+<!--    </div>-->
+<!--    <div class="flex gap-3 justify-between">-->
+<!--        <p>Room has been checked: {$checkedRoomCode}</p>-->
+<!--        <input type="checkbox" class="toggle toggle-primary" on:click={() => {-->
+<!--            checkedRoomCode.set(!checkedRoomCode.get())-->
+<!--        }} checked="{$checkedRoomCode}"/>-->
+<!--    </div>-->
+<!--    <div class="flex gap-3 justify-between">-->
+<!--        <p>Download cancelled: {$downloadCancelled}</p>-->
+<!--        <input type="checkbox" class="toggle toggle-primary" on:click={() => {-->
+<!--            downloadCancelled.set(!downloadCancelled.get())-->
+<!--        }} checked="{$downloadCancelled}"/>-->
+<!--    </div>-->
+<!--    <div class="flex justify-between gap-3">-->
+<!--        <p>Download finished: {$downloadFinished}</p>-->
+<!--        <input type="checkbox" class="toggle toggle-primary" on:click={() => {-->
+<!--            downloadFinished.set(!downloadFinished.get())-->
+<!--        }} checked="{$downloadFinished}"/>-->
+<!--    </div>-->
+<!--    <div class="flex gap-3">-->
+<!--        <p>Current file offer: {$currentFileOffer}</p>-->
+<!--    </div>-->
+<!--</div>-->
+
 <div class="card h-full min-h-svh sm:min-h-0 bg-base-100 w-screen sm:w-full sm:h-auto max-w-lg gap-3 space-y-6">
     <div class="card-body flex-col justify-between h-full md:h-auto gap-16">
         <div class="flex items-center space-x-4">
@@ -62,14 +106,22 @@
                 <p class="text-gray-500">Please consider donating! It helps the platform running ❤️</p>
 
             </div>
-        {:else if !$isConnected && !$roomExists}
+        {:else if $downloadCancelled}
+            <div>
+                <CircleXIcon class="w-32 h-32 mx-auto"/>
+                <p class="text-xl">Download cancelled</p>
+                <p class="text-gray-500">The download has been cancelled by the sender. <a class="link link-primary"
+                                                                                           href="/">Return to
+                    homepage</a></p>
+            </div>
+        {:else if $isConnected === false || $checkedRoomCode === false}
             <div>
                 <div class="flex flex-row gap-3">
                     <Loader2Icon class="animate-spin"/>
                     <p class="text-base-content/70 text-lg">Setting up the connection</p>
                 </div>
             </div>
-        {:else if $currentFileOffer && !$downloadCancelled}
+        {:else if $currentFileOffer}
             <div>
                 <ul class="space-y-2">
                     {#each $currentFileOffer.files as file}
@@ -99,24 +151,19 @@
                     <span class="text-gray-500">Total size: {formatFileSize($currentFileOffer.files.reduce((acc, file) => acc + file.size, 0))}</span>
                 </div>
             </div>
-        {:else if !$roomExists}
+        {:else if $roomExists === false && $checkedRoomCode && $isConnected || $room?.user_count === 1}
             <div>
                 <FrownIcon class="w-32 h-32 mx-auto"/>
                 <p class="text-xl">Invalid link</p>
                 <p class="text-gray-500">The link you received is incorrect. Please try again. <a
                         class="link link-primary" href="/">Return to homepage</a></p>
             </div>
-        {:else if $downloadCancelled}
-            <div>
-                <CircleXIcon class="w-32 h-32 mx-auto"/>
-                <p class="text-xl">Download cancelled</p>
-                <p class="text-gray-500">The download has been cancelled by the sender. <a class="link link-primary"
-                                                                                           href="/">Return to
-                    homepage</a></p>
-            </div>
         {:else}
-            <div class="text-center">
-                <p class="text-base-content/70 text-lg">No files received yet.</p>
+            <div>
+                <div class="flex flex-row gap-3">
+                    <Loader2Icon class="animate-spin"/>
+                    <p class="text-base-content/70 text-lg">Waiting for file(s)...</p>
+                </div>
             </div>
         {/if}
         <div class="flex flex-col gap-3">
