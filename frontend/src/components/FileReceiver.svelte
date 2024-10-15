@@ -53,13 +53,42 @@
 </script>
 
 <!--&lt;!&ndash;quick and dirty debug :))&ndash;&gt;-->
-<!--<p>Room ID: {$roomId}</p>-->
-<!--<p>Connected to websocket: {$isConnected}</p>-->
-<!--<p>Room exists:{$roomExists}</p>-->
-<!--<p>Room has been checked: {$checkedRoomCode}</p>-->
-<!--<p>Download cancelled: {$downloadCancelled}</p>-->
-<!--<p>Download finished: {$downloadFinished}</p>-->
-<!--<p>Current file offer: {$currentFileOffer}</p>-->
+<!--<div class="flex flex-col z-50 gap-3">-->
+<!--    <p>Room ID: {$roomId}</p>-->
+<!--    <div class="flex gap-3  justify-between">-->
+<!--        <p>Connected to websocket: {$isConnected}</p>-->
+<!--        <input type="checkbox" class="toggle toggle-primary" on:click={() => {-->
+<!--            isConnected.set(!isConnected.get())-->
+<!--        }} checked="{$isConnected}"/>-->
+<!--    </div>-->
+<!--    <div class="flex gap-3  justify-between">-->
+<!--        <p>Room exists:{$roomExists}</p>-->
+<!--        <input type="checkbox" class="toggle toggle-primary" on:click={() => {-->
+<!--            roomExists.set(!roomExists.get())-->
+<!--        }} checked="{$roomExists}"/>-->
+<!--    </div>-->
+<!--    <div class="flex gap-3 justify-between">-->
+<!--        <p>Room has been checked: {$checkedRoomCode}</p>-->
+<!--        <input type="checkbox" class="toggle toggle-primary" on:click={() => {-->
+<!--            checkedRoomCode.set(!checkedRoomCode.get())-->
+<!--        }} checked="{$checkedRoomCode}"/>-->
+<!--    </div>-->
+<!--    <div class="flex gap-3 justify-between">-->
+<!--        <p>Download cancelled: {$downloadCancelled}</p>-->
+<!--        <input type="checkbox" class="toggle toggle-primary" on:click={() => {-->
+<!--            downloadCancelled.set(!downloadCancelled.get())-->
+<!--        }} checked="{$downloadCancelled}"/>-->
+<!--    </div>-->
+<!--    <div class="flex justify-between gap-3">-->
+<!--        <p>Download finished: {$downloadFinished}</p>-->
+<!--        <input type="checkbox" class="toggle toggle-primary" on:click={() => {-->
+<!--            downloadFinished.set(!downloadFinished.get())-->
+<!--        }} checked="{$downloadFinished}"/>-->
+<!--    </div>-->
+<!--    <div class="flex gap-3">-->
+<!--        <p>Current file offer: {$currentFileOffer}</p>-->
+<!--    </div>-->
+<!--</div>-->
 
 <div class="card h-full min-h-svh sm:min-h-0 bg-base-100 w-screen sm:w-full sm:h-auto max-w-lg gap-3 space-y-6">
     <div class="card-body flex-col justify-between h-full md:h-auto gap-16">
