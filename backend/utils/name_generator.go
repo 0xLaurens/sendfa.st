@@ -1,6 +1,6 @@
 package utils
 
-import "math/rand"
+import "math/rand/v2"
 
 var (
 	ADJECTIVES = []string{
@@ -19,5 +19,5 @@ var (
 )
 
 func GenerateRandomDisplayName() string {
-	return ADJECTIVES[rand.Intn(30)] + NOUNS[rand.Intn(30)]
+	return ADJECTIVES[rand.UintN(30)] + NOUNS[rand.UintN(30)]
 }
