@@ -20,6 +20,6 @@ COPY --from=builder /app/main .
 EXPOSE 7331
 
 HEALTHCHECK --interval=5s --timeout=3s --retries=10 \
-  CMD curl --fail http://localhost:7331/api/health || exit 1
+  USER non-root CMD curl --fail http://localhost:7331/api/health || exit 1
 
-CMD ["./main"]
+USER non-root CMD ["./main"]

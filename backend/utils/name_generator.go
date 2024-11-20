@@ -1,6 +1,6 @@
 package utils
 
-import "math/rand"
+import "crypto/rand"
 
 var (
 	ADJECTIVES = []string{
