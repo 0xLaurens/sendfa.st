@@ -39,7 +39,7 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Environment variables
-.env
+frontend/.env
 .env.production
 
 # macOS-specific files
