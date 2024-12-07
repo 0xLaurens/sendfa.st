@@ -52,7 +52,7 @@ export function denyIncomingFileOffer() {
     currentFileOffer.set(null)
 }
 
-StreamSaver.mitm = `/StreamSaver/mitm.html?version=2.0.0`;
+StreamSaver.mitm = `/StreamSaver/mitm.html?version=2.0.6`;
 let stream: WritableStream<Uint8Array> | null
 let writer: WritableStreamDefaultWriter<Uint8Array> | null
 let accSize = 0
