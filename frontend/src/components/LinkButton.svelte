@@ -3,8 +3,12 @@
     import {addToast} from "../lib/toast.ts"
     import type {ToastData} from "../types/toast.ts";
 
-    export let link: string = ""
-    export let disabled: boolean = false;
+    interface Props {
+        link?: string;
+        disabled?: boolean;
+    }
+
+    let { link = "", disabled = false }: Props = $props();
 
     function CopyToClipboard() {
         navigator.clipboard.writeText(link)
@@ -20,7 +24,7 @@
 </script>
 
 <div class="tooltip tooltip-bottom" data-tip="Copy the link">
-    <button disabled="{disabled}" on:click={CopyToClipboard} class="btn btn-square bg-base-100">
+    <button disabled="{disabled}" onclick={CopyToClipboard} class="btn btn-square bg-base-100">
         <Link/>
     </button>
 </div>

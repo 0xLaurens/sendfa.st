@@ -3,8 +3,12 @@
     import {addToast} from "../lib/toast.ts"
     import type {ToastData} from "../types/toast.ts";
 
-    export let link: string = ""
-    export let disabled: boolean = false
+    interface Props {
+        link?: string;
+        disabled?: boolean;
+    }
+
+    let { link = "", disabled = false }: Props = $props();
 
     function ShareLink() {
         if (!navigator.share) {
@@ -33,7 +37,7 @@
 </script>
 
 <div class="tooltip tooltip-bottom" data-tip="Share link">
-    <button disabled="{disabled}" on:click={ShareLink} class="btn btn-square bg-base-100">
+    <button disabled="{disabled}" onclick={ShareLink} class="btn btn-square bg-base-100">
         <Share2Icon/>
     </button>
 </div>

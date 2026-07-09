@@ -1,6 +1,10 @@
 <script lang="ts">
-    export let primary = '#61d345';
-    export let secondary = '#fff';
+    interface Props {
+        primary?: string;
+        secondary?: string;
+    }
+
+    let { primary = '#61d345', secondary = '#fff' }: Props = $props();
 </script>
 
 <div style:--primary={primary} style:--secondary={secondary}></div>

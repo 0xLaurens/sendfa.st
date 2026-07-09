@@ -21,11 +21,15 @@
     import {acceptIncomingFileOffer, currentFileOffer, downloadFinished} from "../lib/file.ts";
     import {truncateFileName} from "../util/truncate.ts";
 
-    let offer: FileOffer | null;
+    let offer: FileOffer | null = $state();
     let manager: WebsocketManager;
 
 
-    export let RoomId: undefined | string;
+    interface Props {
+        RoomId: undefined | string;
+    }
+
+    let { RoomId }: Props = $props();
 
     onMount(() => {
         if (!RoomId) {
@@ -173,7 +177,7 @@
                     Donate
                 </a>
             {:else}
-                <button disabled="{!$isConnected || !offer}" on:click={acceptFiles} class="btn btn-neutral w-full">
+                <button disabled="{!$isConnected || !offer}" onclick={acceptFiles} class="btn btn-neutral w-full">
                     <DownloadIcon class="h-5 w-5"/>
                     Start download
                 </button>
