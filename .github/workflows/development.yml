@@ -4,6 +4,8 @@ on:
     branches:
       - dev
       - main
+permissions:
+  contents: read
 jobs:
   run-test:
     runs-on: ubuntu-latest
