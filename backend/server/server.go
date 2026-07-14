@@ -2,9 +2,10 @@ package server
 
 import (
 	"fmt"
-	"github.com/gofiber/fiber/v2"
 	"log"
 	"strconv"
+
+	"github.com/gofiber/fiber/v3"
 )
 
 type Server struct {

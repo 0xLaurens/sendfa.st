@@ -2,12 +2,13 @@ package auth
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/0xlaurens/filefa.st/config"
 	"github.com/0xlaurens/filefa.st/types"
-	"github.com/gofiber/contrib/websocket"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/contrib/v3/websocket"
+	"github.com/gofiber/fiber/v3"
 	"github.com/golang-jwt/jwt/v5"
-	"log"
 )
 
 // ParseToken parses a JWT token string and returns the token object
