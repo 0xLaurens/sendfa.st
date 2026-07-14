@@ -8,7 +8,7 @@ import svelte from "@astrojs/svelte";
 // https://astro.build/config
 export default defineConfig({
     site: "https://sendfa.st",
-    output: "static",
+    output: "server",
     integrations: [sitemap(), svelte()],
     adapter: cloudflare({
         imageService: "cloudflare"
