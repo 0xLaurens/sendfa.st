@@ -7,6 +7,7 @@ import (
 	"github.com/0xlaurens/filefa.st/types"
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"log"
 )
 
@@ -45,14 +46,34 @@ func (mh *MessageHandler) handleResponse(c *websocket.Conn, message types.Messag
 }
 
 func (mh *MessageHandler) handleWebrtcMessage(c *websocket.Conn, message types.Message) error {
-	var roomIdPayload types.RoomIdPayload
-	if err := json.Unmarshal(message.Payload, &roomIdPayload); err != nil {
-		log.Println("Failed to unmarshall the room id from the payload", err)
+	var route struct {
+		RoomID uuid.UUID `json:"roomId"`
+		To     uuid.UUID `json:"to"`
+	}
+	if err := json.Unmarshal(message.Payload, &route); err != nil {
+		log.Println("Failed to unmarshal the WebRTC payload", err)
 		return err
 	}
-	log.Println("Received webrtc message", roomIdPayload)
 
-	return mh.notifier.BroadcastMessage(c, message, roomIdPayload.RoomID)
+	user, err := mh.userService.GetUserByConn(c)
+	if err != nil {
+		return err
+	}
+	if user.RoomId != route.RoomID {
+		return errors.New("WebRTC sender is not in room")
+	}
+
+	var messagePayload map[string]any
+	if err := json.Unmarshal(message.Payload, &messagePayload); err != nil {
+		return err
+	}
+	messagePayload["from"] = user.ID
+	message.Payload, err = json.Marshal(messagePayload)
+	if err != nil {
+		return err
+	}
+
+	return mh.notifier.SendMessage(message, route.RoomID, route.To)
 }
 
 func (mh *MessageHandler) handleJoinRoom(c *websocket.Conn, message types.Message) error {

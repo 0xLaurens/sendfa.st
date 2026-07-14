@@ -12,9 +12,9 @@
     import {qr} from "@svelte-put/qr/svg"
     import ShareButton from "./ShareButton.svelte";
 
-    let filesToSend: FileList | null = null;
-    let link: string = 'loading...';
-    let isDragging: boolean = false;
+    let filesToSend: FileList | null = $state(null);
+    let link: string = $state('loading...');
+    let isDragging: boolean = $state(false);
     let debounceTimer: ReturnType<typeof setTimeout>;
     let manager: WebsocketManager;
 
@@ -106,19 +106,18 @@
 
 
 <svelte:window
-        class="z-50 h-screen w-screen absolute bg-red-500"
-        on:dragenter={handleDragEnter}
-        on:dragleave={handleDragLeave}
-        on:dragover={handleDragOver}
-        on:drop={handleDrop}
+        ondragenter={handleDragEnter}
+        ondragleave={handleDragLeave}
+        ondragover={handleDragOver}
+        ondrop={handleDrop}
 />
 
 {#if isDragging && !filesToSend}
-    <div class="fixed inset-0 bg-primary bg-opacity-75 z-50 flex items-center justify-center"
-         on:click={() => {setDragging(false)}}
+    <div class="absolute z-50 h-screen w-screen bg-red-500 flex items-center justify-center"
+         onclick={() => {setDragging(false)}}
          role="button"
          tabindex="0"
-         on:keydown={(e) => {if (e.key === "Escape") setDragging(false)}}
+         onkeydown={(e) => {if (e.key === "Escape") setDragging(false)}}
     >
         <div class="relative w-full h-full max-w-[85vw] max-h-[85vh] m-8">
             <!-- Top-left corner -->
@@ -179,8 +178,8 @@
                             <UploadIcon class="h-5 w-5"/>
                             Change upload
                         </label>
-                        <input on:change={handleFiles} class="hidden" id="change-files" type="file" multiple/>
-                        <button on:click={cancelUpload} class="btn w-full">
+                        <input onchange={handleFiles} class="hidden" id="change-files" type="file" multiple/>
+                        <button onclick={cancelUpload} class="btn w-full">
                             <XIcon class="h-5 w-5"/>
                             Cancel upload
                         </button>
@@ -195,13 +194,13 @@
         <UploadIcon/>
         Upload file(s)
     </label>
-    <input on:change={handleFiles} class="hidden" id="files" type="file"
+    <input onchange={handleFiles} class="hidden" id="files" type="file"
            disabled="{filesToSend && filesToSend?.length > 0}" multiple>
 </div>
 {#if filesToSend && filesToSend.length > 0}
     <div class="modal modal-open flex sm:hidden justify-center content-center z-50">
         <div class="modal-box card card-bordered card-compact bg-base-100">
-            <button class="self-end" on:click={cancelUpload} aria-label="close menu and cancel">
+            <button class="self-end" onclick={cancelUpload} aria-label="close menu and cancel">
                 <XIcon class="h-5 w-5"/>
             </button>
             <div class="flex flex-col gap-6">
@@ -230,8 +229,8 @@
                         <UploadIcon class="h-5 w-5"/>
                         Change upload
                     </label>
-                    <input on:change={handleFiles} class="hidden" id="change-files" type="file" multiple/>
-                    <button on:click={cancelUpload} class="btn w-full">
+                    <input onchange={handleFiles} class="hidden" id="change-files" type="file" multiple/>
+                    <button onclick={cancelUpload} class="btn w-full">
                         <XIcon class="h-5 w-5"/>
                         Cancel upload
                     </button>

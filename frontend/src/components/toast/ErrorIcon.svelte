@@ -1,7 +1,11 @@
 <!-- Adapted from https://github.com/timolins/react-hot-toast -->
 <script lang="ts">
-    export let primary = '#ff4b4b';
-    export let secondary = '#fff';
+    interface Props {
+        primary?: string;
+        secondary?: string;
+    }
+
+    let { primary = '#ff4b4b', secondary = '#fff' }: Props = $props();
 </script>
 
 <div style:--primary={primary} style:--secondary={secondary}></div>

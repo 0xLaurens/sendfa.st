@@ -21,6 +21,7 @@ export const checkedRoomCode: WritableAtom<boolean> = atom(false);
 
 class WebsocketManager {
     private socket: WebSocket | null = null;
+    private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
     private readonly url: string;
 
     constructor(url: string) {
@@ -28,30 +29,45 @@ class WebsocketManager {
     }
 
     connect() {
-        this.socket = new WebSocket(this.url);
-        this.socket.onopen = () => {
+        if (this.socket?.readyState === WebSocket.CONNECTING || this.socket?.readyState === WebSocket.OPEN) return;
+
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+            this.reconnectTimer = null;
+        }
+
+        const socket = new WebSocket(this.url);
+        this.socket = socket;
+        socket.onopen = () => {
+            if (this.socket !== socket) return;
             console.log("Connected to websocket server");
             isConnected.set(true);
         }
 
-        this.socket.onclose = () => {
+        socket.onclose = () => {
+            if (this.socket !== socket) return;
             console.log("Disconnected from websocket server");
             isConnected.set(false);
             closeAllWebRtcConnections()
             if (roomId.get() !== undefined) {
-                setTimeout(() => {
+                this.reconnectTimer = setTimeout(() => {
+                    this.reconnectTimer = null;
                     this.connect();
                 }, 1000);
             }
         }
 
-        this.socket.onerror = (error) => {
+        socket.onerror = (error) => {
             console.error("Websocket error", error);
         }
 
-        this.socket.onmessage = async (event) => {
-            let data = JSON.parse(event.data);
-            await this.handleMessages(data);
+        socket.onmessage = async (event) => {
+            if (this.socket !== socket) return;
+            try {
+                await this.handleMessages(JSON.parse(event.data));
+            } catch (error) {
+                console.error("Invalid websocket message", error);
+            }
         }
     }
 
@@ -60,9 +76,10 @@ class WebsocketManager {
     }
 
     close() {
-        if (this.socket) {
-            this.socket.close();
-        }
+        if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+        this.reconnectTimer = null;
+        this.socket?.close();
+        closeAllWebRtcConnections();
         roomId.set(undefined);
         isConnected.set(false);
         users.set([]);
@@ -154,46 +171,45 @@ class WebsocketManager {
 }
 
 function sendRequestRoom(socket: WebSocket | null) {
-    if (!socket) return;
-    socket.send(JSON.stringify({
+    send(socket, {
         type: "REQUEST_ROOM"
-    }))
+    });
 }
 
 function sendRoomExists(socket: WebSocket | null, roomId: string) {
-    if (!socket) return;
-    socket.send(JSON.stringify({
+    send(socket, {
         type: "ROOM_EXISTS",
         payload: {
             roomId: roomId
         }
-    }))
+    });
 }
 
 function sendJoinRoom(socket: WebSocket | null, roomId: string) {
-    if (!socket) return;
-    socket.send(JSON.stringify({
+    send(socket, {
         type: "JOIN_ROOM",
         payload: {
             roomId: roomId
         }
-    }))
+    });
 }
 
 export function sendCancelDownload(socket: WebSocket | null) {
-    if (!socket) return;
-    socket.send(JSON.stringify({
+    send(socket, {
         type: "CANCEL_DOWNLOAD",
         payload: {
             roomId: roomId.get()
         }
-    }))
+    });
 }
 
 export function sendWebRtcMessage(socket: WebSocket | null, type: string, payload: any) {
-    if (!socket) return;
-    const message = JSON.stringify({type, payload});
-    socket.send(message);
+    send(socket, {type, payload});
+}
+
+function send(socket: WebSocket | null, message: unknown) {
+    if (socket?.readyState !== WebSocket.OPEN) return;
+    socket.send(JSON.stringify(message));
 }
 
 export default WebsocketManager;

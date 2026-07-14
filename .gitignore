@@ -29,6 +29,12 @@ go.work.sum
 dist/
 .output/
 
+# Astro generated state
+frontend/.astro/
+
+# Wrangler / Miniflare local state and deployment metadata
+frontend/.wrangler/
+
 # Node modules
 node_modules/
 
