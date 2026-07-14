@@ -9,10 +9,13 @@ import svelte from "@astrojs/svelte";
 export default defineConfig({
     site: "https://sendfa.st",
     output: "static",
-    integrations: [sitemap(), tailwind(), svelte()],
+    integrations: [sitemap(), svelte()],
     adapter: cloudflare({
         imageService: "cloudflare"
     }),
+    vite: {
+        plugins: [tailwind()]
+    },
     security: {
         checkOrigin: true
     }

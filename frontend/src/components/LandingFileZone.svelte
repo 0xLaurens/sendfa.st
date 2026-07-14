@@ -106,7 +106,6 @@
 
 
 <svelte:window
-        class="z-50 h-screen w-screen absolute bg-red-500"
         ondragenter={handleDragEnter}
         ondragleave={handleDragLeave}
         ondragover={handleDragOver}
@@ -114,7 +113,7 @@
 />
 
 {#if isDragging && !filesToSend}
-    <div class="fixed inset-0 bg-primary bg-opacity-75 z-50 flex items-center justify-center"
+    <div class="absolute z-50 h-screen w-screen bg-red-500 flex items-center justify-center"
          onclick={() => {setDragging(false)}}
          role="button"
          tabindex="0"
