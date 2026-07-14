@@ -9,21 +9,17 @@
         Loader2Icon,
         ShareIcon,
     } from "lucide-svelte";
-    import type {FileOffer} from "../types/file.ts";
     import {onDestroy, onMount} from "svelte";
     import WebsocketManager, {
         checkedRoomCode,
         downloadCancelled,
         isConnected, room,
         roomExists, roomId,
-        users
     } from "../lib/socket.ts";
     import {acceptIncomingFileOffer, currentFileOffer, downloadFinished} from "../lib/file.ts";
     import {truncateFileName} from "../util/truncate.ts";
 
-    let offer: FileOffer | null = $state();
     let manager: WebsocketManager;
-
 
     interface Props {
         RoomId: undefined | string;
@@ -39,11 +35,6 @@
         roomId.set(RoomId);
         manager = new WebsocketManager(`${import.meta.env.PUBLIC_WS_PROTOCOL}://${import.meta.env.PUBLIC_WS_HOST}/api/websocket`);
         manager.connect();
-
-        currentFileOffer.subscribe(value => {
-            if (value == null) return
-            offer = value
-        })
     })
 
     onDestroy(() => {
@@ -117,7 +108,7 @@
                     <span class="text-gray-500">Total size: {formatFileSize($currentFileOffer.files.reduce((acc, file) => acc + file.size, 0))}</span>
                 </div>
             </div>
-        {:else if $roomExists === false && $checkedRoomCode && $isConnected || $room?.user_count === 1}
+        {:else if ($roomExists === false && $checkedRoomCode && $isConnected) || $room?.user_count === 1}
             <div>
                 <FrownIcon class="w-32 h-32 mx-auto"/>
                 <p class="text-xl">Invalid link</p>
@@ -139,7 +130,7 @@
                     Donate
                 </a>
             {:else}
-                <button disabled="{!$isConnected || !offer}" onclick={acceptFiles} class="btn btn-neutral w-full">
+                <button disabled={!$isConnected || !$currentFileOffer} onclick={acceptFiles} class="btn btn-neutral w-full">
                     <DownloadIcon class="h-5 w-5"/>
                     Start download
                 </button>
