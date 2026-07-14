@@ -13,7 +13,7 @@ export const downloadFinished: WritableAtom<boolean> = atom(false)
 
 export function addIncomingFileOffer(offer: FileOffer) {
     console.log("Adding incoming file offer", offer);
-    incomingFileOffers.get().push(offer)
+    incomingFileOffers.set([...incomingFileOffers.get(), offer])
     if (currentFileOffer.get() === null) {
         currentFileOffer.set(offer)
     }
@@ -167,7 +167,7 @@ export function createFilesOffer(files: FileList, target: string) {
         currentFile: 0,
         to: target,
     }
-    offeredFiles.get().set(offer.id, files)
+    offeredFiles.set(new Map(offeredFiles.get()).set(offer.id, files))
 
     const connection = connections.get().get(target)
     if (connection && connection.dataChannel) {

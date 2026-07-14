@@ -8,6 +8,13 @@ import {addToast} from "./toast.ts";
 
 export const connections = atom(new Map<string, Connection>());
 
+async function applyPendingIceCandidates(connection: Connection) {
+    const candidates = connection.pendingIceCandidates.splice(0);
+    for (const candidate of candidates) {
+        await connection.peerConnection.addIceCandidate(candidate);
+    }
+}
+
 async function _setupDataChannelListeners(connection: Connection) {
     if (!connection.dataChannel) return;
     connection.dataChannel.onopen = () => {
@@ -99,6 +106,7 @@ export async function createRtcOffer(socket: WebSocket | null, target: string) {
     if (connections.get().has(target)) return;
     let connection: Connection = {
         peerConnection: new RTCPeerConnection({iceServers: [{urls: "stun:stun.l.google.com:19302"}]}),
+        pendingIceCandidates: [],
         target
     };
     connections.get().set(target, connection);
@@ -127,13 +135,15 @@ export async function handleRtcOffer(socket: WebSocket | null, data: any) {
     console.log("Handle offer", data);
     let connection: Connection = {
         peerConnection: new RTCPeerConnection({iceServers: [{urls: "stun:stun.l.google.com:19302"}]}),
+        pendingIceCandidates: [],
         target: data.payload.from
     };
     connections.get().set(data.payload.from, connection);
 
     await _setupPeerConnectionListeners(connection, socket);
 
-    await connection.peerConnection.setRemoteDescription(data.payload.offer).catch(console.error);
+    await connection.peerConnection.setRemoteDescription(data.payload.offer);
+    await applyPendingIceCandidates(connection);
     const answer = await connection.peerConnection.createAnswer();
     await connection.peerConnection.setLocalDescription(answer);
 
@@ -141,7 +151,7 @@ export async function handleRtcOffer(socket: WebSocket | null, data: any) {
         roomId: room.get().id,
         answer: answer,
         from: identity.get().id,
-        to: data.from,
+        to: data.payload.from,
     }
 
     sendWebRtcMessage(socket, "ANSWER", payload);
@@ -154,7 +164,8 @@ export async function handleRtcAnswer(data: any) {
         return;
     }
 
-    await connection.peerConnection.setRemoteDescription(data.payload.answer).catch(console.error);
+    await connection.peerConnection.setRemoteDescription(data.payload.answer);
+    await applyPendingIceCandidates(connection);
 }
 
 export async function handleIceCandidate(data: any) {
@@ -165,7 +176,12 @@ export async function handleIceCandidate(data: any) {
         return;
     }
 
-    await connection.peerConnection.addIceCandidate(data.payload.candidate).catch(console.error);
+    if (!connection.peerConnection.remoteDescription) {
+        connection.pendingIceCandidates.push(data.payload.candidate);
+        return;
+    }
+
+    await connection.peerConnection.addIceCandidate(data.payload.candidate);
 }
 
 export async function closeWebRtcConnection(target: string) {
