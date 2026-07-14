@@ -1,10 +1,11 @@
 package server
 
 import (
-	"github.com/0xlaurens/filefa.st/handler"
-	"github.com/gofiber/contrib/websocket"
-	"github.com/gofiber/fiber/v2"
 	"log"
+
+	"github.com/0xlaurens/filefa.st/handler"
+	"github.com/gofiber/contrib/v3/websocket"
+	"github.com/gofiber/fiber/v3"
 )
 
 func (s *Server) SetupRoutes(wh *handler.WebsocketHandler) {
@@ -20,7 +21,7 @@ func (s *Server) SetupRoutes(wh *handler.WebsocketHandler) {
 		}
 	}))
 
-	api.Get("/health", func(ctx *fiber.Ctx) error {
+	api.Get("/health", func(ctx fiber.Ctx) error {
 		return ctx.SendStatus(fiber.StatusOK)
 	})
 

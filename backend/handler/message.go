@@ -3,12 +3,13 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"log"
+
 	"github.com/0xlaurens/filefa.st/service"
 	"github.com/0xlaurens/filefa.st/types"
-	"github.com/gofiber/contrib/websocket"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/contrib/v3/websocket"
+	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
-	"log"
 )
 
 type MessageHandler struct {

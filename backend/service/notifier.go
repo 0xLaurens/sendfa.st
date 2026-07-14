@@ -2,7 +2,7 @@ package service
 
 import (
 	"github.com/0xlaurens/filefa.st/types"
-	"github.com/gofiber/contrib/websocket"
+	"github.com/gofiber/contrib/v3/websocket"
 	"github.com/google/uuid"
 )
 
