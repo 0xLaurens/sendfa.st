@@ -30,7 +30,7 @@ The only point of contact with a server is to facilite the creation of a `WebRTC
 
 ### Prerequisites
 - Go version 1.22.5 or higher
-- Node.js version 20.12.2 or higher
+- Node.js version 22.22.0 or higher
 - Docker (optional)
 
 ### Frontend
