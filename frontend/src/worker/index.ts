@@ -5,13 +5,18 @@ export interface Env {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const json = (body: unknown, status = 200, origin?: string) => Response.json(body, { status, headers: origin ? { "Access-Control-Allow-Origin": origin, "Vary": "Origin" } : undefined });
+const noStore = (response: Response) => { response.headers.set("Cache-Control", "no-store"); return response; };
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
+    const roomMatch = url.pathname.match(/^\/api\/rooms\/([^/]+)$/);
     const origin = request.headers.get("Origin");
     const allowed = env.ALLOWED_ORIGINS.split(",").map(value => value.trim()).filter(Boolean);
-    if (origin && !allowed.includes(origin)) return json({ error: "origin_not_allowed" }, 403);
+    if (origin && !allowed.includes(origin)) {
+      const response = json({ error: "origin_not_allowed" }, 403);
+      return roomMatch && request.method === "GET" ? noStore(response) : response;
+    }
     if (url.pathname.startsWith("/api/") && request.method === "OPTIONS") {
       if (!origin) return json({ error: "origin_required" }, 403);
       return new Response(null, { status: 204, headers: { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Vary": "Origin" } });
@@ -28,17 +33,15 @@ export default {
       if (!created.ok) return json({ error: "room_creation_failed" }, 503, origin);
       return json({ id: roomId }, 201, origin);
     }
-    const roomMatch = url.pathname.match(/^\/api\/rooms\/([^/]+)$/);
     if (roomMatch) {
       if (request.method !== "GET") return json({ error: "method_not_allowed" }, 405, origin);
-      if (!UUID.test(roomMatch[1])) return json({ error: "invalid_room_id" }, 400, origin);
+      if (!UUID.test(roomMatch[1])) return noStore(json({ error: "invalid_room_id" }, 400, origin));
       const stub = env.ROOMS.get(env.ROOMS.idFromName(roomMatch[1]));
       const status = await stub.fetch("https://room.internal/status");
       const response = status.status === 200 || status.status === 404
         ? json({ exists: status.ok }, status.status, origin)
         : json({ error: "room_status_unavailable" }, 503, origin);
-      response.headers.set("Cache-Control", "no-store");
-      return response;
+      return noStore(response);
     }
     if (url.pathname === "/api/websocket") {
       if (request.method !== "GET") return json({ error: "method_not_allowed" }, 405, origin);
