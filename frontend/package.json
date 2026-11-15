@@ -14,7 +14,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "generate-types": "wrangler types",
-    "test:worker": "bun test test/worker.test.mjs"
+    "test:worker": "bun test --max-concurrency=1 --timeout=90000 test/worker.test.mjs",
+    "test:frontend": "vitest run test/socket.test.ts"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",
@@ -41,6 +42,8 @@
     "@types/streamsaver": "^2.0.4",
     "@types/uuid": "^10.0.0",
     "daisyui": "^5.6.18",
-    "vite": "^8.1.4"
+    "vite": "^8.1.4",
+    "vitest": "^5.1.0",
+    "ws": "^8.23.0"
   }
 }

@@ -5,7 +5,7 @@
     import {formatFileSize} from "../util/filesize.js";
     import QrButton from "./QrButton.svelte";
     import LinkButton from "./LinkButton.svelte";
-    import WebsocketManager, {connectionError, roomAdmitted, roomId, sendCancelDownload} from "../lib/socket.ts";
+    import WebsocketManager, {admittedRoomLink, connectionError, roomAdmitted, sendCancelDownload} from "../lib/socket.ts";
     import {onDestroy, onMount} from "svelte";
     import {filesUploaded} from "../lib/file.ts";
     import {truncateFileName} from "../util/truncate.ts";
@@ -21,9 +21,9 @@
     onMount(() => {
         manager = new WebsocketManager(`${import.meta.env.PUBLIC_WS_PROTOCOL}://${import.meta.env.PUBLIC_WS_HOST}/api/websocket`, true);
         roomAdmitted.listen(value => {
-            const id = roomId.get();
-            if (!value || !id) return;
-            link = `${window.location.protocol}//${window.location.host}/r/${id}`;
+            const admittedLink = admittedRoomLink(window.location.protocol, window.location.host);
+            if (!value || !admittedLink) return;
+            link = admittedLink;
         });
     })
 
@@ -50,7 +50,12 @@
             duration: 5000,
             description: `You have selected ${files.length} files to send.`,
         }
-        manager.connect();
+        const admittedLink = admittedRoomLink(window.location.protocol, window.location.host);
+        if (admittedLink) {
+            link = admittedLink;
+        } else {
+            manager.connect();
+        }
         addToast(toast);
     }
 

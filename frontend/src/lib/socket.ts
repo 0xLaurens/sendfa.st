@@ -21,6 +21,11 @@ export const connectionError = atom<string | undefined>(undefined);
 export const downloadCancelled: WritableAtom<boolean> = atom(false);
 export const checkedRoomCode: WritableAtom<boolean> = atom(false);
 
+export function admittedRoomLink(protocol: string, host: string): string | undefined {
+    const id = roomId.get();
+    return roomAdmitted.get() && id ? `${protocol}//${host}/r/${id}` : undefined;
+}
+
 class WebsocketManager {
     private socket: WebSocket | null = null;
     private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
@@ -28,6 +33,8 @@ class WebsocketManager {
     private readonly url: string;
     private readonly createRoom: boolean;
     private admissionFailed = false;
+    private lifecycle = 0;
+    private connecting = false;
 
     constructor(url: string, createRoom = false) {
         this.url = url;
@@ -36,73 +43,86 @@ class WebsocketManager {
 
     async connect() {
         if (this.socket?.readyState === WebSocket.CONNECTING || this.socket?.readyState === WebSocket.OPEN) return;
+        if (this.connecting) return;
+        this.connecting = true;
+        const lifecycle = this.lifecycle;
 
-        if (this.reconnectTimer) {
-            clearTimeout(this.reconnectTimer);
-            this.reconnectTimer = null;
-        }
-
-        if (this.createRoom && roomId.get() === undefined) {
-            try {
-                const response = await fetch(this.url.replace(/^ws/, "http").replace(/\/api\/websocket.*$/, "/api/rooms"), {method: "POST"});
-                if (!response.ok) throw new Error("Unable to create a room");
-                const created = await response.json();
-                if (!created.id) throw new Error("Invalid room response");
-                roomId.set(created.id);
-            } catch {
-                isConnected.set(false);
-                connectionError.set("Unable to create a sharing room. Please try again.");
-                return;
+        try {
+            if (this.reconnectTimer) {
+                clearTimeout(this.reconnectTimer);
+                this.reconnectTimer = null;
             }
-        }
-        const target = new URL(this.url);
-        if (roomId.get()) {
-            const apiBase = this.url.replace(/^ws/, "http").replace(/\/api\/websocket.*$/, "/api/rooms/");
-            try {
-                const status = await fetch(`${apiBase}${roomId.get()}`);
-                if (!status.ok) {
-                    this.admissionFailed = true;
-                    roomExists.set(false);
-                    checkedRoomCode.set(true);
-                    connectionError.set("This room link is invalid or has expired.");
+
+            if (this.createRoom && roomId.get() === undefined) {
+                try {
+                    const response = await fetch(this.url.replace(/^ws/, "http").replace(/\/api\/websocket.*$/, "/api/rooms"), {method: "POST"});
+                    if (lifecycle !== this.lifecycle) return;
+                    if (!response.ok) throw new Error("Unable to create a room");
+                    const created = await response.json();
+                    if (lifecycle !== this.lifecycle) return;
+                    if (!created.id) throw new Error("Invalid room response");
+                    roomId.set(created.id);
+                } catch {
+                    if (lifecycle !== this.lifecycle) return;
+                    isConnected.set(false);
+                    connectionError.set("Unable to create a sharing room. Please try again.");
                     return;
                 }
-            } catch {
-                // Preserve retry behavior for temporary network failures.
             }
-            target.searchParams.set("roomId", roomId.get()!);
-        }
-        const socket = new WebSocket(target.toString());
-        this.socket = socket;
-        socket.onopen = () => {
-            if (this.socket !== socket) return;
-            isConnected.set(true);
-        }
-
-        socket.onclose = () => {
-            if (this.socket !== socket) return;
-            isConnected.set(false);
-            roomAdmitted.set(false);
-            closeAllWebRtcConnections()
-            if (!this.admissionFailed && roomId.get() !== undefined) {
-                const ceiling = Math.min(30_000, 1_000 * 2 ** this.reconnectAttempts++);
-                const delay = Math.floor(ceiling * (0.5 + Math.random() * 0.5));
-                this.reconnectTimer = setTimeout(() => {
-                    this.reconnectTimer = null;
-                    this.connect();
-                }, delay);
+            const target = new URL(this.url);
+            if (roomId.get()) {
+                const apiBase = this.url.replace(/^ws/, "http").replace(/\/api\/websocket.*$/, "/api/rooms/");
+                try {
+                    const status = await fetch(`${apiBase}${roomId.get()}`);
+                    if (lifecycle !== this.lifecycle) return;
+                    if (!status.ok) {
+                        this.admissionFailed = true;
+                        roomExists.set(false);
+                        checkedRoomCode.set(true);
+                        connectionError.set("This room link is invalid or has expired.");
+                        return;
+                    }
+                } catch {
+                    if (lifecycle !== this.lifecycle) return;
+                    // Preserve retry behavior for temporary network failures.
+                }
+                target.searchParams.set("roomId", roomId.get()!);
             }
-        }
-
-        socket.onerror = () => {};
-
-        socket.onmessage = async (event) => {
-            if (this.socket !== socket) return;
-            try {
-                await this.handleMessages(JSON.parse(event.data));
-            } catch (error) {
-                // Ignore malformed server frames without logging signaling data.
+            if (lifecycle !== this.lifecycle) return;
+            const socket = new WebSocket(target.toString());
+            this.socket = socket;
+            socket.onopen = () => {
+                if (this.socket !== socket) return;
+                isConnected.set(true);
             }
+
+            socket.onclose = () => {
+                if (this.socket !== socket) return;
+                isConnected.set(false);
+                roomAdmitted.set(false);
+                closeAllWebRtcConnections()
+                if (!this.admissionFailed && roomId.get() !== undefined) {
+                    const ceiling = Math.min(30_000, 1_000 * 2 ** this.reconnectAttempts++);
+                    const delay = Math.floor(ceiling * (0.5 + Math.random() * 0.5));
+                    this.reconnectTimer = setTimeout(() => {
+                        this.reconnectTimer = null;
+                        this.connect();
+                    }, delay);
+                }
+            }
+
+            socket.onerror = () => {};
+
+            socket.onmessage = async (event) => {
+                if (this.socket !== socket) return;
+                try {
+                    await this.handleMessages(JSON.parse(event.data));
+                } catch (error) {
+                    // Ignore malformed server frames without logging signaling data.
+                }
+            }
+        } finally {
+            if (lifecycle === this.lifecycle) this.connecting = false;
         }
     }
 
@@ -111,15 +131,18 @@ class WebsocketManager {
     }
 
     close() {
+        this.lifecycle++;
+        this.connecting = false;
         if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
         this.reconnectTimer = null;
-        this.socket?.close();
+        const socket = this.socket;
+        this.socket = null;
+        socket?.close();
         closeAllWebRtcConnections();
         roomId.set(undefined);
         roomAdmitted.set(false);
         isConnected.set(false);
         users.set([]);
-        this.socket = null;
     }
 
     async handleMessages(data: any) {

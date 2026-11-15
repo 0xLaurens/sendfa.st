@@ -27,6 +27,8 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Run Worker tests
         run: bun run test:worker
+      - name: Run frontend regressions
+        run: bun run test:frontend
       - name: Build frontend
         run: bun run build
   run-test:
