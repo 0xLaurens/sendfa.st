@@ -1,9 +1,34 @@
 export interface Env {
   ROOMS: DurableObjectNamespace<Room>;
   ALLOWED_ORIGINS: string;
+  MAX_ROOM_PEERS?: string;
+  SIGNALS_PER_SECOND?: string;
+  SIGNAL_BURST?: string;
+  CREATIONS_PER_MINUTE?: string;
+  UPGRADES_PER_MINUTE?: string;
+  MAX_MESSAGE_BYTES?: string;
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const attempts = new Map<string, { count: number; expires: number }>();
+let nextSweep = 0;
+function rateLimited(request: Request, kind: string, maximum: number): boolean {
+  const ip = request.headers.get("CF-Connecting-IP");
+  if (!ip) return false;
+  const now = Date.now(), key = `${kind}:${ip}`;
+  if (now >= nextSweep) {
+    for (const [key, value] of attempts) if (value.expires <= now) attempts.delete(key);
+    nextSweep = now + 60_000;
+  }
+  let entry = attempts.get(key);
+  if (!entry || entry.expires <= now) {
+    // shortcut: per-isolate counters can be evicted under load; use platform rate limiting if stronger protection is needed.
+    if (attempts.size >= 10_000) attempts.delete(attempts.keys().next().value!);
+    entry = { count: 0, expires: now + 60_000 };
+    attempts.set(key, entry);
+  }
+  return ++entry.count > maximum;
+}
 const json = (body: unknown, status = 200, origin?: string) => Response.json(body, { status, headers: origin ? { "Access-Control-Allow-Origin": origin, "Vary": "Origin" } : undefined });
 const noStore = (response: Response) => { response.headers.set("Cache-Control", "no-store"); return response; };
 
@@ -27,6 +52,7 @@ export default {
     if (url.pathname === "/api/rooms") {
       if (request.method !== "POST") return json({ error: "method_not_allowed" }, 405, origin);
       if (request.body !== null && request.headers.get("Content-Length") !== "0") return json({ error: "request_body_not_allowed" }, 400, origin);
+      if (rateLimited(request, "create", limit(env.CREATIONS_PER_MINUTE, 10))) return json({ error: "rate_limited" }, 429, origin);
       const roomId = crypto.randomUUID();
       const stub = env.ROOMS.get(env.ROOMS.idFromName(roomId));
       const created = await stub.fetch("https://room.internal/create", { method: "POST" });
@@ -48,6 +74,7 @@ export default {
       if (request.headers.get("Upgrade")?.toLowerCase() !== "websocket") return json({ error: "websocket_upgrade_required" }, 426, origin);
       const roomId = url.searchParams.get("roomId");
       if (!roomId || url.searchParams.getAll("roomId").length !== 1 || !UUID.test(roomId)) return json({ error: "invalid_room_id" }, 400, origin);
+      if (rateLimited(request, "upgrade", limit(env.UPGRADES_PER_MINUTE, 30))) return json({ error: "rate_limited" }, 429, origin);
       const stub = env.ROOMS.get(env.ROOMS.idFromName(roomId));
       return stub.fetch(new Request(`https://room.internal/connect?roomId=${roomId}`, request));
     }
@@ -56,7 +83,11 @@ export default {
 };
 
 interface User { id: string; display_name: string; device_name: string }
-interface Peer { id: string; user: User }
+interface Peer { id: string; user: User; tokens?: number; updatedAt?: number }
+const limit = (value: string | undefined, fallback: number) => {
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : fallback;
+};
 const roomLifetimeMs = 60_000;
 function deviceLabel(userAgent: string): string {
   if (/windows/i.test(userAgent)) return "Windows";
@@ -88,8 +119,9 @@ function validSignal(type: string, signal: unknown): boolean {
 }
 export class Room {
   private state: DurableObjectState;
+  private env: Env;
   private expiryKey = "expiresAt";
-  constructor(state: DurableObjectState) { this.state = state; }
+  constructor(state: DurableObjectState, env: Env) { this.state = state; this.env = env; }
 
   async fetch(request: Request): Promise<Response> {
     if (new URL(request.url).pathname === "/status") {
@@ -106,7 +138,7 @@ export class Room {
     if (expiry === undefined || (expiry !== 0 && expiry <= Date.now())) return json({ error: "room_expired" }, 410);
     if (request.headers.get("Upgrade")?.toLowerCase() !== "websocket") return json({ error: "upgrade_required" }, 426);
     const peers = this.peers();
-    if (peers.length >= 8) {
+    if (peers.length >= limit(this.env.MAX_ROOM_PEERS, 8)) {
       return json({ error: "room_full" }, 503);
     }
     const pair = new WebSocketPair();
@@ -129,8 +161,12 @@ export class Room {
     const peers = this.peers();
     const sender = this.peer(socket);
     if (!sender || !peers.some(peer => peer.id === sender.id)) return;
+    const now = Date.now(), burst = limit(this.env.SIGNAL_BURST, 120);
+    const tokens = Math.min(burst, (sender.tokens ?? burst) + Math.max(0, now - (sender.updatedAt ?? now)) * limit(this.env.SIGNALS_PER_SECOND, 60) / 1000);
+    if (tokens < 1) { socket.close(1008); return; }
+    socket.serializeAttachment({ ...sender, tokens: tokens - 1, updatedAt: now });
     const bytes = typeof raw === "string" ? new TextEncoder().encode(raw).byteLength : raw.byteLength;
-    if (bytes > 64 * 1024) { socket.close(1009); return; }
+    if (bytes > limit(this.env.MAX_MESSAGE_BYTES, 64 * 1024)) { socket.close(1009); return; }
     let message: any;
     try { message = JSON.parse(typeof raw === "string" ? raw : new TextDecoder().decode(raw)); } catch { socket.close(1003); return; }
     if (!message || typeof message !== "object" || Array.isArray(message) || typeof message.type !== "string") { socket.close(1003); return; }
