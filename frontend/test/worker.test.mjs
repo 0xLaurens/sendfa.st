@@ -102,6 +102,27 @@ test('admission sends identity and snapshot before join notice; preserves device
   }
 });
 
+test('duplicate join and explicit leave do not create phantom members or duplicate notices', async () => {
+  const id = await createRoom();
+  const first = await join(id);
+  const notice = message(first.socket);
+  const second = await join(id);
+  try {
+    await notice;
+    second.socket.send(JSON.stringify({ type: 'JOIN_ROOM', payload: { roomId: id } }));
+    await assertSilent(first.socket);
+    const left = message(first.socket);
+    second.socket.send(JSON.stringify({ type: 'LEAVE_ROOM', payload: { roomId: id } }));
+    assert.equal((await left).user.id, second.identity.user.id);
+    await assertSilent(first.socket);
+    const third = await join(id);
+    try {
+      assert.equal(third.snapshot.room.user_count, 2);
+      assert.deepEqual(third.snapshot.users.map(user => user.id), [first.identity.user.id]);
+    } finally { third.socket.close(); }
+  } finally { first.socket.close(); second.socket.close(); }
+});
+
 test('unknown UUIDs cannot be admitted and malformed websocket origins are rejected', async () => {
   const unknown = uuid();
   assert.equal((await fetch(`${base}/api/rooms/${unknown}`)).status, 404);
@@ -184,6 +205,45 @@ test('unused room expiry is authoritative and cannot be resurrected', async () =
   });
   assert.match(String(result), /410|Unexpected server response/);
   assert.equal((await fetch(`${base}/api/rooms/${id}`)).status, 404);
+});
+
+test('last departure starts expiry, while rejoining cancels it for active members', async () => {
+  const id = await createRoom();
+  const first = await join(id);
+  const joined = message(first.socket);
+  const second = await join(id);
+  await joined;
+  const left = message(second.socket);
+  first.socket.close();
+  assert.equal((await left).type, 'USER_LEFT');
+  await new Promise(resolve => setTimeout(resolve, 61_000));
+  assert.equal((await fetch(`${base}/api/rooms/${id}`)).status, 200);
+  const third = await join(id);
+  assert.equal(third.snapshot.room.user_count, 2);
+  await message(second.socket);
+  second.socket.close();
+  assert.equal((await message(third.socket)).type, 'USER_LEFT');
+  third.socket.close();
+  await new Promise(resolve => setTimeout(resolve, 500));
+  const rejoined = await join(id);
+  assert.equal(rejoined.snapshot.room.user_count, 1);
+  await new Promise(resolve => setTimeout(resolve, 61_000));
+  assert.equal((await fetch(`${base}/api/rooms/${id}`)).status, 200);
+  rejoined.socket.close();
+});
+
+test('an empty room expires after its last peer leaves', async () => {
+  const id = await createRoom();
+  const peer = await join(id);
+  peer.socket.close();
+  await new Promise(resolve => setTimeout(resolve, 61_000));
+  assert.equal((await fetch(`${base}/api/rooms/${id}`)).status, 404);
+  const expired = connect(id);
+  const result = await new Promise(resolve => {
+    expired.once('error', error => resolve(error.message));
+    expired.once('unexpected-response', (_request, response) => resolve(response.statusCode));
+  });
+  assert.match(String(result), /410|Unexpected server response/);
 });
 
 test('room capacity rejection does not affect admitted peers', async () => {
