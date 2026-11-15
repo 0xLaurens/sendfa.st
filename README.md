@@ -50,9 +50,16 @@ Set `ALLOWED_ORIGINS` in that config (or a local `.dev.vars`) to the exact UI or
 
 Automated local checks: `bun run test:worker` starts the configured Worker and exercises HTTP method/body/CORS/origin/UUID validation, room creation, ordered admission, labels, rejected unknown-room upgrades, malformed signaling, spoofed identities, expiry/no-resurrection (takes about 61 seconds), the eight-peer limit, and cross-room routing/cancellation. `bun run test:frontend` exercises create-before-connect, admission gating, link availability on upload replacement, and close-during-create through the connection manager.
 
-**Recorded browser verification before the Bun migration:** two Chromium 155 profiles completed a transfer of 69,000 bytes; source and received SHA-256 were both `670b7c9ea15e292fc715dd2b5a2d93644e7f165540be9de9c560ed870982e747`. Signaling contained 39 frames with no filename/content, with zero browser exceptions. This is evidence from the pre-Bun `3d2c671` code, not a post-merge run. Local automated checks do not validate production Cloudflare hibernation/wake; repeat browser checks against the merged revision before considering deployment.
-
 **Post-merge local verification:** Bun 1.4.3 frozen install succeeded; Worker suite passed 7/7 (including the 61-second expiry test and nullable ICE candidate fields); frontend regression suite passed 2/2; `bun run build` completed with zero Astro diagnostics. Node emitted its upstream `punycode` deprecation warning during build.
+
+**Post-merge browser verification (`1728c27`, 2026-11-15):** two separate Chromium 155 profiles completed a 69,000-byte transfer through the local Worker. Downloaded bytes matched the source exactly; SHA-256 was `670b7c9ea15e292fc715dd2b5a2d93644e7f165540be9de9c560ed870982e747`. The 17 captured signaling frames contained no fixture filename or contents; there were zero browser exceptions. This run used the existing self-hosted frontend configuration in a clean worktree without a local `.env`:
+
+```sh
+PUBLIC_WS_PROTOCOL=ws PUBLIC_WS_HOST=localhost:8787 bun run astro build --config astro.config.selfhosted.mjs
+HOST=localhost PORT=4321 node dist/server/entry.mjs
+```
+
+**Limitations:** the workspace's existing `.env` selected a different backend despite shell overrides; it was left unchanged. Cloudflare frontend development failed with missing optimized modules, and its local preview returned 500 for a missing generated Layout module. The self-hosted build above passed, but Cloudflare frontend deployment validation remains blocked on investigating those errors. Local Workerd also emitted RPC warnings. No deployment, real Cloudflare hibernation/wake, eight-peer WebRTC negotiation, Docker build, or production rollback was verified; these remain separate validation gates.
 
 ## Get started
 
