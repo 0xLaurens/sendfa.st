@@ -34,6 +34,7 @@ frontend/.astro/
 
 # Wrangler / Miniflare local state and deployment metadata
 frontend/.wrangler/
+frontend/src/worker/.wrangler/
 
 # Node modules
 node_modules/
