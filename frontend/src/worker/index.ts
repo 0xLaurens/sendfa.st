@@ -114,10 +114,11 @@ export class Room {
     server.send(JSON.stringify({ type: "ROOM_JOINED", room: { id: new URL(request.url).searchParams.get("roomId"), user_count: peers.length + 1 }, users: peers.map(peer => peer.user) }));
     this.broadcast({ type: "USER_JOINED", user }, server);
     await this.state.storage.put(this.expiryKey, 0);
+    await this.state.storage.deleteAlarm();
     return new Response(null, { status: 101, webSocket: client });
   }
 
-  webSocketMessage(socket: WebSocket, raw: string | ArrayBuffer) {
+  async webSocketMessage(socket: WebSocket, raw: string | ArrayBuffer) {
     const peers = this.peers();
     const sender = this.peer(socket);
     if (!sender || !peers.some(peer => peer.id === sender.id)) return;
@@ -126,6 +127,7 @@ export class Room {
     let message: any;
     try { message = JSON.parse(typeof raw === "string" ? raw : new TextDecoder().decode(raw)); } catch { socket.close(1003); return; }
     if (!message || typeof message !== "object" || Array.isArray(message) || typeof message.type !== "string") { socket.close(1003); return; }
+    if (message.type === "LEAVE_ROOM") { await this.leave(socket); return; }
     if (message.type === "CANCEL_DOWNLOAD") {
       if (Object.keys(message).some(key => key !== "type" && key !== "payload")) return;
       if (message.payload !== undefined && (!message.payload || typeof message.payload !== "object" || Array.isArray(message.payload) ||
@@ -148,12 +150,13 @@ export class Room {
     this.sendTo(target, { type: message.type, from: sender.id, payload: { from: sender.id, [field]: signal } });
   }
 
-  webSocketClose(socket: WebSocket) { this.leave(socket); }
-  webSocketError(socket: WebSocket) { this.leave(socket); }
+  async webSocketClose(socket: WebSocket) { await this.leave(socket); }
+  async webSocketError(socket: WebSocket) { await this.leave(socket); }
   async alarm() {
     if (this.peers().length) return;
     const expires = await this.state.storage.get<number>(this.expiryKey);
     if (expires !== undefined && expires !== 0 && expires <= Date.now()) await this.state.storage.deleteAll();
+    else if (expires) await this.state.storage.setAlarm(expires);
   }
 
   private peers(): Peer[] {
@@ -167,15 +170,17 @@ export class Room {
       ? attachment as Peer : null;
   }
   private broadcast(message: unknown, except?: WebSocket) {
-    for (const socket of this.state.getWebSockets()) if (socket !== except) socket.send(JSON.stringify(message));
+    for (const socket of this.state.getWebSockets()) if (socket !== except && this.peer(socket)) socket.send(JSON.stringify(message));
   }
   private sendTo(id: string, message: unknown) {
     for (const socket of this.state.getWebSockets()) if (this.peer(socket)?.id === id) socket.send(JSON.stringify(message));
   }
   private async leave(socket: WebSocket) {
     const peer = this.peer(socket);
+    if (!peer) return;
+    socket.serializeAttachment(null);
     try { socket.close(); } catch {}
-    if (peer) this.broadcast({ type: "USER_LEFT", user: peer.user });
+    this.broadcast({ type: "USER_LEFT", user: peer.user });
     if (!this.peers().length) {
       await this.scheduleExpiry(Date.now() + roomLifetimeMs);
     }
