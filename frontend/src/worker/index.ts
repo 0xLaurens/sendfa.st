@@ -34,7 +34,11 @@ export default {
       if (!UUID.test(roomMatch[1])) return json({ error: "invalid_room_id" }, 400, origin);
       const stub = env.ROOMS.get(env.ROOMS.idFromName(roomMatch[1]));
       const status = await stub.fetch("https://room.internal/status");
-      return json({ exists: status.ok }, status.ok ? 200 : 404, origin);
+      const response = status.status === 200 || status.status === 404
+        ? json({ exists: status.ok }, status.status, origin)
+        : json({ error: "room_status_unavailable" }, 503, origin);
+      response.headers.set("Cache-Control", "no-store");
+      return response;
     }
     if (url.pathname === "/api/websocket") {
       if (request.method !== "GET") return json({ error: "method_not_allowed" }, 405, origin);

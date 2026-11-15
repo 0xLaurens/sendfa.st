@@ -5,7 +5,7 @@
     import {formatFileSize} from "../util/filesize.js";
     import QrButton from "./QrButton.svelte";
     import LinkButton from "./LinkButton.svelte";
-    import WebsocketManager, {admittedRoomLink, connectionError, roomAdmitted, sendCancelDownload} from "../lib/socket.ts";
+    import WebsocketManager, {admittedRoomLink, connectionError, connectionNotice, roomAdmitted, sendCancelDownload} from "../lib/socket.ts";
     import {onDestroy, onMount} from "svelte";
     import {filesUploaded} from "../lib/file.ts";
     import {truncateFileName} from "../util/truncate.ts";
@@ -20,7 +20,7 @@
 
     onMount(() => {
         manager = new WebsocketManager(`${import.meta.env.PUBLIC_WS_PROTOCOL}://${import.meta.env.PUBLIC_WS_HOST}/api/websocket`, true);
-        roomAdmitted.listen(value => {
+        return roomAdmitted.listen(value => {
             const admittedLink = admittedRoomLink(window.location.protocol, window.location.host);
             if (!value || !admittedLink) return;
             link = admittedLink;
@@ -168,14 +168,15 @@
                             Total
                             size: {formatFileSize(Array.from(filesToSend).reduce((total, file) => total + file.size, 0))}</p>
                         <div class="flex flex-row gap-2 items-center justify-center pt-5">
-                            <input disabled="{link === 'loading...'}" class="input input-bordered"
-                                   class:animate-pulse="{link === 'loading...'}"
-                                   value="{link}">
-                            <QrButton disabled="{link === 'loading...'}" {link}/>
-                            <LinkButton disabled="{link === 'loading...'}" {link}/>
+                            <input disabled="{!$roomAdmitted}" class="input input-bordered"
+                                   class:animate-pulse="{!$roomAdmitted && !$connectionError}"
+                                   value="{$roomAdmitted ? link : $connectionError ? '' : 'Connecting...'}">
+                            <QrButton disabled="{!$roomAdmitted}" {link}/>
+                            <LinkButton disabled="{!$roomAdmitted}" {link}/>
                         </div>
                         <p class="text-wrap pt-3 font-bold">⚠️ Make sure to keep this page open whilst sending!</p>
                         {#if $connectionError}<p class="text-error">{$connectionError}</p>{/if}
+                        {#if $connectionNotice}<p role="status">{$connectionNotice}</p>{/if}
                         <p class="text-wrap pt-2">
                             Share the link or scan the QR code to start downloading the file on another device.
                         </p>
@@ -221,16 +222,17 @@
                         Total
                         size: {formatFileSize(Array.from(filesToSend).reduce((total, file) => total + file.size, 0))}</p>
                     <div class="flex flex-row gap-2 items-center justify-center pt-5">
-                        <input disabled="{link === 'loading...'}" class:animate-pulse={link === 'loading...'} class="input input-bordered w-full"
-                               value="{link}">
-                        <ShareButton disabled="{link === 'loading...'}" {link}/>
+                        <input disabled="{!$roomAdmitted}" class:animate-pulse={!$roomAdmitted && !$connectionError} class="input input-bordered w-full"
+                               value="{$roomAdmitted ? link : $connectionError ? '' : 'Connecting...'}">
+                        <ShareButton disabled="{!$roomAdmitted}" {link}/>
                     </div>
                     <p class="text-wrap pt-3 font-bold">⚠️ Make sure to keep this page open whilst sending! ⚠️</p>
                     {#if $connectionError}<p class="text-error">{$connectionError}</p>{/if}
+                    {#if $connectionNotice}<p role="status">{$connectionNotice}</p>{/if}
                     <p class="text-wrap pt-2">
                         Share the link or scan the QR code to start downloading the file on another device.
                     </p>
-                    <svg class="h-32 w-32 mx-auto" use:qr="{{ data: link }}"/>
+                    {#if $roomAdmitted}<svg class="h-32 w-32 mx-auto" use:qr="{{ data: link }}"/>{/if}
                 </div>
                 <div class="flex flex-col gap-3">
                     <label for="change-files" class="btn btn-neutral w-full">
