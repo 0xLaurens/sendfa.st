@@ -14,6 +14,8 @@
 
     let filesToSend: FileList | null = $state(null);
     let link: string = $state('loading...');
+    let displayLink = $derived($roomAdmitted ? link : $connectionError ? '' : 'Connecting...');
+    let connecting = $derived(!$roomAdmitted && !$connectionError);
     let isDragging: boolean = $state(false);
     let debounceTimer: ReturnType<typeof setTimeout>;
     let manager: WebsocketManager;
@@ -169,8 +171,8 @@
                             size: {formatFileSize(Array.from(filesToSend).reduce((total, file) => total + file.size, 0))}</p>
                         <div class="flex flex-row gap-2 items-center justify-center pt-5">
                             <input disabled="{!$roomAdmitted}" class="input input-bordered"
-                                   class:animate-pulse="{!$roomAdmitted && !$connectionError}"
-                                   value="{$roomAdmitted ? link : $connectionError ? '' : 'Connecting...'}">
+                                   class:animate-pulse="{connecting}"
+                                   value="{displayLink}">
                             <QrButton disabled="{!$roomAdmitted}" {link}/>
                             <LinkButton disabled="{!$roomAdmitted}" {link}/>
                         </div>
@@ -222,8 +224,8 @@
                         Total
                         size: {formatFileSize(Array.from(filesToSend).reduce((total, file) => total + file.size, 0))}</p>
                     <div class="flex flex-row gap-2 items-center justify-center pt-5">
-                        <input disabled="{!$roomAdmitted}" class:animate-pulse={!$roomAdmitted && !$connectionError} class="input input-bordered w-full"
-                               value="{$roomAdmitted ? link : $connectionError ? '' : 'Connecting...'}">
+                        <input disabled="{!$roomAdmitted}" class:animate-pulse={connecting} class="input input-bordered w-full"
+                               value="{displayLink}">
                         <ShareButton disabled="{!$roomAdmitted}" {link}/>
                     </div>
                     <p class="text-wrap pt-3 font-bold">⚠️ Make sure to keep this page open whilst sending! ⚠️</p>

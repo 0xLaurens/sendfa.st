@@ -66,6 +66,17 @@ async function join(id, options) {
   return { socket, identity, snapshot };
 }
 
+test('room status errors are not cacheable', async () => {
+  for (const [id, origin, expected] of [
+    ['not-a-uuid', 'http://localhost:4321', 400],
+    [uuid(), 'https://evil.invalid', 403],
+  ]) {
+    const response = await fetch(`${base}/api/rooms/${id}`, { headers: { Origin: origin } });
+    assert.equal(response.status, expected);
+    assert.equal(response.headers.get('cache-control'), 'no-store');
+  }
+});
+
 test('HTTP methods, CORS, origins, and UUID validation have explicit contracts', async () => {
   assert.equal(server, true, 'local Worker starts');
   assert.equal((await fetch(`${base}/api/health`)).status, 200);
