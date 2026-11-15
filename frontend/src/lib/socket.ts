@@ -1,6 +1,7 @@
 import {atom, type WritableAtom} from "nanostores";
 import type {User} from "../types/user.ts";
 import type {Room} from "../types/room.ts";
+import {interruptTransfers} from "./file.ts";
 import {
     closeAllWebRtcConnections,
     closeWebRtcConnection,
@@ -18,6 +19,7 @@ export const roomId: WritableAtom<string | undefined> = atom(undefined);
 export const roomExists: WritableAtom<boolean> = atom(false);
 export const roomAdmitted = atom(false);
 export const connectionError = atom<string | undefined>(undefined);
+export const connectionNotice = atom<string | undefined>(undefined);
 export const downloadCancelled: WritableAtom<boolean> = atom(false);
 export const checkedRoomCode: WritableAtom<boolean> = atom(false);
 
@@ -42,9 +44,11 @@ class WebsocketManager {
     }
 
     async connect() {
+        if (this.admissionFailed) return;
         if (this.socket?.readyState === WebSocket.CONNECTING || this.socket?.readyState === WebSocket.OPEN) return;
         if (this.connecting) return;
         this.connecting = true;
+        connectionError.set(undefined);
         const lifecycle = this.lifecycle;
 
         try {
@@ -73,9 +77,12 @@ class WebsocketManager {
             if (roomId.get()) {
                 const apiBase = this.url.replace(/^ws/, "http").replace(/\/api\/websocket.*$/, "/api/rooms/");
                 try {
-                    const status = await fetch(`${apiBase}${roomId.get()}`);
+                    const status = await fetch(`${apiBase}${roomId.get()}`, {cache: "no-store"});
                     if (lifecycle !== this.lifecycle) return;
-                    if (!status.ok) {
+                    const failure = status.status === 404 || status.status === 400 ? await status.json() : null;
+                    if (lifecycle !== this.lifecycle) return;
+                    if ((status.status === 404 && failure?.exists === false) ||
+                        (status.status === 400 && failure?.error === "invalid_room_id")) {
                         this.admissionFailed = true;
                         roomExists.set(false);
                         checkedRoomCode.set(true);
@@ -98,8 +105,14 @@ class WebsocketManager {
 
             socket.onclose = () => {
                 if (this.socket !== socket) return;
+                this.socket = null;
+                if (roomAdmitted.get()) {
+                    interruptTransfers();
+                    connectionNotice.set("Connection lost. Interrupted transfers must be restarted after reconnecting.");
+                }
                 isConnected.set(false);
                 roomAdmitted.set(false);
+                users.set([]);
                 closeAllWebRtcConnections()
                 if (!this.admissionFailed && roomId.get() !== undefined) {
                     const ceiling = Math.min(30_000, 1_000 * 2 ** this.reconnectAttempts++);
@@ -139,10 +152,15 @@ class WebsocketManager {
         this.socket = null;
         socket?.close();
         closeAllWebRtcConnections();
+        interruptTransfers();
         roomId.set(undefined);
         roomAdmitted.set(false);
         isConnected.set(false);
         users.set([]);
+        connectionError.set(undefined);
+        connectionNotice.set(undefined);
+        this.admissionFailed = false;
+        this.reconnectAttempts = 0;
     }
 
     async handleMessages(data: any) {
@@ -195,6 +213,8 @@ class WebsocketManager {
                 this.admissionFailed = true;
                 roomExists.set(false);
                 checkedRoomCode.set(true);
+                connectionError.set("The room rejected this connection. Please request a new link.");
+                this.socket?.close();
                 break;
             }
         }

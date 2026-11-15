@@ -66,6 +66,17 @@ async function join(id, options) {
   return { socket, identity, snapshot };
 }
 
+test('room status errors are not cacheable', async () => {
+  for (const [id, origin, expected] of [
+    ['not-a-uuid', 'http://localhost:4321', 400],
+    [uuid(), 'https://evil.invalid', 403],
+  ]) {
+    const response = await fetch(`${base}/api/rooms/${id}`, { headers: { Origin: origin } });
+    assert.equal(response.status, expected);
+    assert.equal(response.headers.get('cache-control'), 'no-store');
+  }
+});
+
 test('HTTP methods, CORS, origins, and UUID validation have explicit contracts', async () => {
   assert.equal(server, true, 'local Worker starts');
   assert.equal((await fetch(`${base}/api/health`)).status, 200);
@@ -79,7 +90,13 @@ test('HTTP methods, CORS, origins, and UUID validation have explicit contracts',
   assert.equal((await fetch(`${base}/api/rooms`, { method: 'POST', body: '{' })).status, 400);
   const id = await createRoom();
   assert.match(id, /^[0-9a-f-]{36}$/i);
-  assert.equal((await fetch(`${base}/api/rooms/${id}`)).status, 200);
+  const status = await fetch(`${base}/api/rooms/${id}`, { headers: { Origin: 'http://localhost:4321' } });
+  assert.equal(status.status, 200);
+  assert.equal(status.headers.get('cache-control'), 'no-store');
+  assert.equal(status.headers.get('access-control-allow-origin'), 'http://localhost:4321');
+  const deniedStatus = await fetch(`${base}/api/rooms/${id}`, { headers: { Origin: 'https://evil.invalid' } });
+  assert.equal(deniedStatus.status, 403);
+  assert.equal(deniedStatus.headers.get('access-control-allow-origin'), null);
   assert.equal((await fetch(`${base}/api/rooms/${id}`, { method: 'POST' })).status, 405);
   assert.equal((await fetch(`${base}/api/websocket?roomId=${id}`)).status, 426);
   assert.equal((await fetch(`${base}/api/websocket`)).status, 426);
@@ -125,7 +142,10 @@ test('duplicate join and explicit leave do not create phantom members or duplica
 
 test('unknown UUIDs cannot be admitted and malformed websocket origins are rejected', async () => {
   const unknown = uuid();
-  assert.equal((await fetch(`${base}/api/rooms/${unknown}`)).status, 404);
+  const status = await fetch(`${base}/api/rooms/${unknown}`, { headers: { Origin: 'http://localhost:4321' } });
+  assert.equal(status.status, 404);
+  assert.deepEqual(await status.json(), { exists: false });
+  assert.equal(status.headers.get('cache-control'), 'no-store');
   const rejected = connect(unknown);
   const unavailable = await new Promise(resolve => {
     rejected.once('error', error => resolve(error.message));
