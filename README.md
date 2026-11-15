@@ -20,11 +20,17 @@ The files that are shared directly transferred from one device to another withou
 3. Receiver connects using the unique link
 4. Receiver accepts files and receives the files.
 
-The Go backend is used to create and connect users via `rooms`. In these rooms the `users` share the information required for setting up a direct WebRTC connection. These rooms are websocket connections, to have instant commnication between the users and the server.
+The Go backend remains available. The independently deployable TypeScript Cloudflare Worker in `frontend/src/worker` provides an alternative signaling backend: `POST /api/rooms` allocates a UUID, and `GET /api/websocket?roomId=<uuid>` admits a browser to an existing room. Room identifiers are bearer capabilities. The Worker keeps only temporary lifecycle metadata in Durable Object SQLite; active identity is held in socket attachments. Files, filenames, SDP/ICE history, and durable user identities are not stored. Cloudflare may independently process transport metadata under its platform logging policies.
 Over the direct WebRTC datachannel information is exchanged about the file. If the other user accepts the files the download starts. The downloader informs the sender when to start sending the next file if there are multiple.
 
 ## How private and secure is it?
-The only point of contact with a server is to facilite the creation of a `WebRTC` all other info is exchange via a p2p connection. The server persists no state. All protocols are encrypted using TLS.
+The signaling service facilitates WebRTC setup; file data travels directly over a peer-to-peer data channel. Worker room lifecycle metadata is temporary and expires after 60 seconds unused or after the final peer leaves. All protocols are encrypted using TLS in deployed environments.
+
+### Local Worker verification
+
+From `frontend/`, run `npm install`, then `npx wrangler dev --local --port 8787`. Configure `ALLOWED_ORIGINS` to include the exact frontend origin (for example `http://localhost:4321`) and set frontend `PUBLIC_WS_PROTOCOL=ws`, `PUBLIC_WS_HOST=localhost:8787`. Start the UI with `npm run dev`. Verify `GET /api/health`, create a room with `POST /api/rooms`, then open its `/r/<uuid>` link in a second browser and send a file. Unknown or expired rooms are rejected. This is a local verification recipe, not staging evidence. Real Cloudflare hibernation/wake and eight-peer validation remain staging gates.
+
+The HTTP API permits `GET /api/health` and `POST /api/rooms`. Room creation and WebSocket admission enforce the configured exact Origin allowlist when a browser supplies an Origin. Admission orders `IDENTITY`, `ROOM_JOINED`, then peer notification. Signaling messages retain `type`/`payload` envelopes and use `to` routing fields. Application signaling payloads are not logged.
 
 ## Get started
 

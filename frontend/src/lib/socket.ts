@@ -16,19 +16,25 @@ export const identity: WritableAtom<User> = atom({});
 export const room: WritableAtom<Room> = atom({});
 export const roomId: WritableAtom<string | undefined> = atom(undefined);
 export const roomExists: WritableAtom<boolean> = atom(false);
+export const roomAdmitted = atom(false);
+export const connectionError = atom<string | undefined>(undefined);
 export const downloadCancelled: WritableAtom<boolean> = atom(false);
 export const checkedRoomCode: WritableAtom<boolean> = atom(false);
 
 class WebsocketManager {
     private socket: WebSocket | null = null;
     private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    private reconnectAttempts = 0;
     private readonly url: string;
+    private readonly createRoom: boolean;
+    private admissionFailed = false;
 
-    constructor(url: string) {
+    constructor(url: string, createRoom = false) {
         this.url = url;
+        this.createRoom = createRoom;
     }
 
-    connect() {
+    async connect() {
         if (this.socket?.readyState === WebSocket.CONNECTING || this.socket?.readyState === WebSocket.OPEN) return;
 
         if (this.reconnectTimer) {
@@ -36,37 +42,66 @@ class WebsocketManager {
             this.reconnectTimer = null;
         }
 
-        const socket = new WebSocket(this.url);
+        if (this.createRoom && roomId.get() === undefined) {
+            try {
+                const response = await fetch(this.url.replace(/^ws/, "http").replace(/\/api\/websocket.*$/, "/api/rooms"), {method: "POST"});
+                if (!response.ok) throw new Error("Unable to create a room");
+                const created = await response.json();
+                if (!created.id) throw new Error("Invalid room response");
+                roomId.set(created.id);
+            } catch {
+                isConnected.set(false);
+                connectionError.set("Unable to create a sharing room. Please try again.");
+                return;
+            }
+        }
+        const target = new URL(this.url);
+        if (roomId.get()) {
+            const apiBase = this.url.replace(/^ws/, "http").replace(/\/api\/websocket.*$/, "/api/rooms/");
+            try {
+                const status = await fetch(`${apiBase}${roomId.get()}`);
+                if (!status.ok) {
+                    this.admissionFailed = true;
+                    roomExists.set(false);
+                    checkedRoomCode.set(true);
+                    connectionError.set("This room link is invalid or has expired.");
+                    return;
+                }
+            } catch {
+                // Preserve retry behavior for temporary network failures.
+            }
+            target.searchParams.set("roomId", roomId.get()!);
+        }
+        const socket = new WebSocket(target.toString());
         this.socket = socket;
         socket.onopen = () => {
             if (this.socket !== socket) return;
-            console.log("Connected to websocket server");
             isConnected.set(true);
         }
 
         socket.onclose = () => {
             if (this.socket !== socket) return;
-            console.log("Disconnected from websocket server");
             isConnected.set(false);
+            roomAdmitted.set(false);
             closeAllWebRtcConnections()
-            if (roomId.get() !== undefined) {
+            if (!this.admissionFailed && roomId.get() !== undefined) {
+                const ceiling = Math.min(30_000, 1_000 * 2 ** this.reconnectAttempts++);
+                const delay = Math.floor(ceiling * (0.5 + Math.random() * 0.5));
                 this.reconnectTimer = setTimeout(() => {
                     this.reconnectTimer = null;
                     this.connect();
-                }, 1000);
+                }, delay);
             }
         }
 
-        socket.onerror = (error) => {
-            console.error("Websocket error", error);
-        }
+        socket.onerror = () => {};
 
         socket.onmessage = async (event) => {
             if (this.socket !== socket) return;
             try {
                 await this.handleMessages(JSON.parse(event.data));
             } catch (error) {
-                console.error("Invalid websocket message", error);
+                // Ignore malformed server frames without logging signaling data.
             }
         }
     }
@@ -81,58 +116,26 @@ class WebsocketManager {
         this.socket?.close();
         closeAllWebRtcConnections();
         roomId.set(undefined);
+        roomAdmitted.set(false);
         isConnected.set(false);
         users.set([]);
         this.socket = null;
     }
 
     async handleMessages(data: any) {
-        console.log("message type:", data.type, "data:", data);
         switch (data.type) {
             case "IDENTITY": {
                 identity.set(data.user);
-                // is there an existing room code in localstorage?
-                // let code = roomCode.get();
-                let id = roomId.get();
-                if (id !== undefined) {
-                    // verify if the room still exists
-                    sendRoomExists(this.socket, id);
-                    break;
-                }
-
-                // request a new room
-                sendRequestRoom(this.socket);
-                break;
-            }
-            case "ROOM_CREATED": {
-                room.set(data.room);
-                roomId.set(data.room.id);
-                isConnected.set(true);
-                users.set([])
-                break;
-            }
-            case "ROOM_EXISTS": {
-                let exists = data.exists;
-                roomExists.set(exists);
-                if (!exists) {
-                    checkedRoomCode.set(true);
-                    break;
-                }
-                roomId.set(data.roomId);
-                sendJoinRoom(this.socket, data.roomId);
                 break;
             }
             case "ROOM_JOINED": {
                 downloadCancelled.set(false);
                 checkedRoomCode.set(true);
                 room.set(data.room);
-                for (let user of data.users) {
-                    if (user.id === identity.get().id) {
-                        continue;
-                    }
-
-                    users.set([...users.get(), user]);
-                }
+                roomExists.set(true);
+                roomAdmitted.set(true);
+                this.reconnectAttempts = 0;
+                users.set((data.users || []).filter((user: User) => user.id !== identity.get().id));
                 break;
             }
             case "USER_JOINED": {
@@ -162,36 +165,17 @@ class WebsocketManager {
                 break;
             }
             case "CANCEL_DOWNLOAD": {
-                console.log("Download cancelled");
                 downloadCancelled.set(true);
+                break;
+            }
+            case "ROOM_REJECTED": {
+                this.admissionFailed = true;
+                roomExists.set(false);
+                checkedRoomCode.set(true);
                 break;
             }
         }
     }
-}
-
-function sendRequestRoom(socket: WebSocket | null) {
-    send(socket, {
-        type: "REQUEST_ROOM"
-    });
-}
-
-function sendRoomExists(socket: WebSocket | null, roomId: string) {
-    send(socket, {
-        type: "ROOM_EXISTS",
-        payload: {
-            roomId: roomId
-        }
-    });
-}
-
-function sendJoinRoom(socket: WebSocket | null, roomId: string) {
-    send(socket, {
-        type: "JOIN_ROOM",
-        payload: {
-            roomId: roomId
-        }
-    });
 }
 
 export function sendCancelDownload(socket: WebSocket | null) {
