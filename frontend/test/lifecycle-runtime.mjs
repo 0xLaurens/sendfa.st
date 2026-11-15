@@ -4,7 +4,7 @@ let now = 2_000_000_000_000;
 Date.now = () => now;
 
 export class Room extends ProductionRoom {
-  constructor(state) { super(state); this.testState = state; }
+  constructor(state, env) { super(state, env); this.testState = state; }
   async fetch(request) {
     const url = new URL(request.url);
     if (url.pathname === '/test-control') {
