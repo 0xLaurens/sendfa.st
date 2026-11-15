@@ -55,6 +55,20 @@ StreamSaver.mitm = `/StreamSaver/mitm.html?version=2.0.6`;
 let stream: WritableStream<Uint8Array> | null
 let writer: WritableStreamDefaultWriter<Uint8Array> | null
 let accSize = 0
+let transferGeneration = 0
+
+export function interruptTransfers() {
+    transferGeneration++;
+    incomingFileOffers.set([]);
+    currentFileOffer.set(null);
+    offeredFiles.set(new Map());
+    downloadFinished.set(false);
+    const interruptedWriter = writer;
+    writer = null;
+    stream = null;
+    accSize = 0;
+    if (interruptedWriter) void interruptedWriter.abort().catch(() => {});
+}
 
 export function requestNextFile(offer: FileOffer) {
     offer.type = FileOfferType.RequestNextFile
@@ -96,6 +110,7 @@ export async function sendFile(fileOffer: FileOffer) {
 }
 
 export async function buildFile(chunk: ArrayBuffer) {
+    const generation = transferGeneration;
     console.log("Building file", chunk.byteLength);
     const offer = currentFileOffer.get()
     if (!offer) {
@@ -112,6 +127,7 @@ export async function buildFile(chunk: ArrayBuffer) {
 
     const buffer = new Uint8Array(chunk)
     await writer?.write(buffer).catch(console.error)
+    if (generation !== transferGeneration) return;
     console.log("accSize", accSize, "Filesize", file.size)
     accSize += buffer.byteLength
     file.accSize = accSize
@@ -119,6 +135,7 @@ export async function buildFile(chunk: ArrayBuffer) {
 
     if (accSize === file.size) {
         await writer?.close().catch(console.error)
+        if (generation !== transferGeneration) return;
         stream = null
         writer = null
         accSize = 0

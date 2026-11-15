@@ -13,9 +13,10 @@
     import WebsocketManager, {
         checkedRoomCode,
         connectionError,
+        connectionNotice,
         downloadCancelled,
         isConnected, room,
-        roomExists, roomId,
+        roomAdmitted, roomExists, roomId,
     } from "../lib/socket.ts";
     import {acceptIncomingFileOffer, currentFileOffer, downloadFinished} from "../lib/file.ts";
     import {truncateFileName} from "../util/truncate.ts";
@@ -61,6 +62,7 @@
             </div>
         </div>
         <div class="min-h-0 flex-1 overflow-y-auto pb-28 pr-1">
+            {#if $connectionNotice}<p role="status" class="pb-3">{$connectionNotice}</p>{/if}
             {#if $downloadFinished}
                 <div>
                 <p class="text-xl">Download finished!</p>
@@ -151,7 +153,7 @@
                     Donate
                 </a>
             {:else}
-                <button disabled={!$isConnected || !$currentFileOffer} onclick={acceptFiles} class="btn btn-neutral w-full">
+                <button disabled={!$roomAdmitted || !$currentFileOffer} onclick={acceptFiles} class="btn btn-neutral w-full">
                     <DownloadIcon class="h-5 w-5"/>
                     Start download
                 </button>
