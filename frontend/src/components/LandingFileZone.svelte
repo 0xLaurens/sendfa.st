@@ -5,7 +5,7 @@
     import {formatFileSize} from "../util/filesize.js";
     import QrButton from "./QrButton.svelte";
     import LinkButton from "./LinkButton.svelte";
-    import WebsocketManager, {roomId, sendCancelDownload} from "../lib/socket.ts";
+    import WebsocketManager, {connectionError, roomAdmitted, roomId, sendCancelDownload} from "../lib/socket.ts";
     import {onDestroy, onMount} from "svelte";
     import {filesUploaded} from "../lib/file.ts";
     import {truncateFileName} from "../util/truncate.ts";
@@ -19,11 +19,12 @@
     let manager: WebsocketManager;
 
     onMount(() => {
-        manager = new WebsocketManager(`${import.meta.env.PUBLIC_WS_PROTOCOL}://${import.meta.env.PUBLIC_WS_HOST}/api/websocket`);
-        roomId.listen(value => {
-            if (value == null) return;
-            link = `${window.location.protocol}//${window.location.host}/r/${value}`;
-        })
+        manager = new WebsocketManager(`${import.meta.env.PUBLIC_WS_PROTOCOL}://${import.meta.env.PUBLIC_WS_HOST}/api/websocket`, true);
+        roomAdmitted.listen(value => {
+            const id = roomId.get();
+            if (!value || !id) return;
+            link = `${window.location.protocol}//${window.location.host}/r/${id}`;
+        });
     })
 
     onDestroy(() => {
@@ -39,7 +40,7 @@
 
     function handleFilesSelected(files: FileList) {
         if (!files || files.length === 0) return
-        console.log('Selected files:', files);
+        link = "loading...";
         filesToSend = files;
         filesUploaded.set(files);
         const toast: ToastData = {
@@ -169,6 +170,7 @@
                             <LinkButton disabled="{link === 'loading...'}" {link}/>
                         </div>
                         <p class="text-wrap pt-3 font-bold">⚠️ Make sure to keep this page open whilst sending!</p>
+                        {#if $connectionError}<p class="text-error">{$connectionError}</p>{/if}
                         <p class="text-wrap pt-2">
                             Share the link or scan the QR code to start downloading the file on another device.
                         </p>
@@ -219,6 +221,7 @@
                         <ShareButton disabled="{link === 'loading...'}" {link}/>
                     </div>
                     <p class="text-wrap pt-3 font-bold">⚠️ Make sure to keep this page open whilst sending! ⚠️</p>
+                    {#if $connectionError}<p class="text-error">{$connectionError}</p>{/if}
                     <p class="text-wrap pt-2">
                         Share the link or scan the QR code to start downloading the file on another device.
                     </p>

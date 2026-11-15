@@ -12,7 +12,6 @@ const offeredFiles = atom(new Map<string, FileList>)
 export const downloadFinished: WritableAtom<boolean> = atom(false)
 
 export function addIncomingFileOffer(offer: FileOffer) {
-    console.log("Adding incoming file offer", offer);
     incomingFileOffers.set([...incomingFileOffers.get(), offer])
     if (currentFileOffer.get() === null) {
         currentFileOffer.set(offer)
