@@ -2,7 +2,9 @@
   "name": "frontend",
   "type": "module",
   "version": "0.0.1",
+  "packageManager": "bun@1.4.3",
   "engines": {
+    "bun": ">=1.4.3",
     "node": ">=22.22.0"
   },
   "scripts": {
@@ -12,7 +14,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "generate-types": "wrangler types",
-    "test:worker": "node --test test/worker.test.mjs"
+    "test:worker": "bun test test/worker.test.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",

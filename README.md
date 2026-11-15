@@ -28,7 +28,7 @@ The signaling service facilitates WebRTC setup; file data travels directly over 
 
 ### Local Worker verification
 
-From `frontend/`, run `npm install`, then `npx wrangler dev --local --port 8787`. Configure `ALLOWED_ORIGINS` to include the exact frontend origin (for example `http://localhost:4321`) and set frontend `PUBLIC_WS_PROTOCOL=ws`, `PUBLIC_WS_HOST=localhost:8787`. Start the UI with `npm run dev`. Verify `GET /api/health`, create a room with `POST /api/rooms`, then open its `/r/<uuid>` link in a second browser and send a file. Unknown or expired rooms are rejected. This is a local verification recipe, not staging evidence. Real Cloudflare hibernation/wake and eight-peer validation remain staging gates.
+From `frontend/`, run `bun install --frozen-lockfile`, then `bun run wrangler dev --local --config src/worker/wrangler.jsonc --port 8787`. Configure `ALLOWED_ORIGINS` to include the exact frontend origin (for example `http://localhost:4321`) and set frontend `PUBLIC_WS_PROTOCOL=ws`, `PUBLIC_WS_HOST=localhost:8787`. Start the UI with `bun run dev`. Run the automated Worker checks with `bun run test:worker`. Verify `GET /api/health`, create a room with `POST /api/rooms`, then open its `/r/<uuid>` link in a second browser and send a file. Unknown or expired rooms are rejected. This is a local verification recipe, not staging evidence. Real Cloudflare hibernation/wake and eight-peer validation remain staging gates.
 
 The HTTP API permits `GET /api/health` and `POST /api/rooms`. Room creation and WebSocket admission enforce the configured exact Origin allowlist when a browser supplies an Origin. Admission orders `IDENTITY`, `ROOM_JOINED`, then peer notification. Signaling messages retain `type`/`payload` envelopes and use `to` routing fields. Application signaling payloads are not logged.
 
@@ -36,18 +36,21 @@ The HTTP API permits `GET /api/health` and `POST /api/rooms`. Room creation and 
 
 ### Prerequisites
 - Go version 1.22.5 or higher
+- Bun version 1.4.3 (used by CI and Docker)
 - Node.js version 22.22.0 or higher
 - Docker (optional)
 
+Bun manages dependencies and runs scripts/tests. Astro and Wrangler still use Node.js; the self-hosted server also remains on Node.js.
+
 ### Frontend
 Install the required packages.
-```node
+```sh
 cd frontend/
-npm install
+bun install --frozen-lockfile
 ```
 Run in development mode
 ```
-npm run dev
+bun run dev
 ```
 ### Backend
 Running the backend

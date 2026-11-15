@@ -1,15 +1,17 @@
 FROM node:lts-alpine AS base
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY --from=oven/bun:1.4.3-alpine /usr/local/bin/bun /usr/local/bin/bun
+COPY package.json bun.lock ./
 
 FROM base AS prod-deps
-RUN npm install --omit=dev
+RUN bun install --production --frozen-lockfile
 
 FROM base AS build
+RUN bun install --frozen-lockfile
 COPY . .
 RUN cp astro.config.selfhosted.mjs astro.config.mjs
-RUN npm run build
+RUN bun run build
 
 FROM base AS prod
 COPY --from=prod-deps /app/node_modules ./node_modules
