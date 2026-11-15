@@ -170,10 +170,14 @@ export class Room {
       ? attachment as Peer : null;
   }
   private broadcast(message: unknown, except?: WebSocket) {
-    for (const socket of this.state.getWebSockets()) if (socket !== except && this.peer(socket)) socket.send(JSON.stringify(message));
+    for (const socket of this.state.getWebSockets()) if (socket !== except && this.peer(socket)) {
+      try { socket.send(JSON.stringify(message)); } catch {}
+    }
   }
   private sendTo(id: string, message: unknown) {
-    for (const socket of this.state.getWebSockets()) if (this.peer(socket)?.id === id) socket.send(JSON.stringify(message));
+    for (const socket of this.state.getWebSockets()) if (this.peer(socket)?.id === id) {
+      try { socket.send(JSON.stringify(message)); } catch {}
+    }
   }
   private async leave(socket: WebSocket) {
     const peer = this.peer(socket);
