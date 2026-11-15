@@ -207,7 +207,8 @@ describe("WebsocketManager public connection boundary", () => {
 
   it("discards a received offer after signaling loss so it cannot resume", async () => {
     vi.doUnmock("../src/lib/file.ts");
-    vi.doMock("streamsaver", () => ({ default: {} }));
+    const writer = { write: vi.fn().mockResolvedValue(undefined), abort: vi.fn().mockResolvedValue(undefined) };
+    vi.doMock("streamsaver", () => ({ default: { createWriteStream: () => ({ getWriter: () => writer }) } }));
     vi.resetModules();
     const api = await import("../src/lib/socket.ts");
     const files = await import("../src/lib/file.ts");
@@ -216,10 +217,12 @@ describe("WebsocketManager public connection boundary", () => {
     await manager.connect();
     const socket = FakeWebSocket.instances.at(-1)!;
     await socket.onmessage?.({ data: JSON.stringify({ type: "ROOM_JOINED", room: { id: createdId }, users: [] }) });
-    files.addIncomingFileOffer({ id: "offer", from: "peer", files: [], currentFile: 0 } as any);
+    files.addIncomingFileOffer({ id: "offer", from: "peer", files: [{ name: "file", size: 10 }], currentFile: 0 } as any);
     expect(files.currentFileOffer.get()).not.toBeNull();
+    await files.buildFile(new ArrayBuffer(2));
     socket.onclose?.();
     expect(files.currentFileOffer.get()).toBeNull();
+    expect(writer.abort).toHaveBeenCalledOnce();
     expect(api.connectionNotice.get()).toMatch(/restart/i);
     manager.close();
     vi.doMock("../src/lib/file.ts", () => ({ interruptTransfers: vi.fn() }));
