@@ -14,7 +14,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "generate-types": "wrangler types",
-    "test:worker": "bun test --max-concurrency=1 --timeout=150000 test/worker.test.mjs",
+    "test:worker": "bun test --max-concurrency=1 --timeout=150000 test/worker.test.mjs test/lifecycle-runtime.test.mjs",
     "test:frontend": "vitest run test/socket.test.ts"
   },
   "dependencies": {
