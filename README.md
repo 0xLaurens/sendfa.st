@@ -53,6 +53,8 @@ Automated local checks: `bun run test:worker` starts the configured Worker and e
 
 **Post-merge local verification:** Bun 1.4.3 frozen install succeeded; Worker suite passed 7/7 (including the 61-second expiry test and nullable ICE candidate fields); frontend regression suite passed 2/2; `bun run build` completed with zero Astro diagnostics. Node emitted its upstream `punycode` deprecation warning during build.
 
+**Issue #58 integration verification (`0fa7913`, 2026-11-15):** Worker tests passed 16/16, including six controlled runtime lifecycle tests; frontend tests passed 2/2; `bun run build` and `git diff --check` passed. Standards and Spec reviews have no outstanding findings. Local eviction preserved attached identities and membership, but real Cloudflare scheduling and hibernation/wake remain mandatory staging gates. No push, deployment, cutover, or live infrastructure changes were performed.
+
 **Post-merge browser verification (`1728c27`, 2026-11-15):** two separate Chromium 155 profiles completed a 69,000-byte transfer through the local Worker. Downloaded bytes matched the source exactly; SHA-256 was `670b7c9ea15e292fc715dd2b5a2d93644e7f165540be9de9c560ed870982e747`. The 17 captured signaling frames contained no fixture filename or contents; there were zero browser exceptions. This run used the existing self-hosted frontend configuration in a clean worktree without a local `.env`:
 
 ```sh
