@@ -12,6 +12,7 @@
     import {onDestroy, onMount} from "svelte";
     import WebsocketManager, {
         checkedRoomCode,
+        connectionError,
         downloadCancelled,
         isConnected, room,
         roomExists, roomId,
@@ -74,6 +75,8 @@
                                                                                            href="/">Return to
                     homepage</a></p>
             </div>
+            {:else if $connectionError}
+                <p class="text-lg text-error">{$connectionError}</p>
             {:else if $isConnected === false || $checkedRoomCode === false}
                 <div>
                 <div class="flex flex-row gap-3">

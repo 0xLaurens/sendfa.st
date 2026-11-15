@@ -33,7 +33,6 @@ async function _setupDataChannelListeners(connection: Connection) {
     }
 
     connection.dataChannel.onmessage = (event) => {
-        console.log("Data channel message", event.data);
         if (typeof event.data === "string") {
             const data = JSON.parse(event.data);
             switch (data.type) {
@@ -97,9 +96,6 @@ async function _setupPeerConnectionListeners(connection: Connection, socket: Web
         _setupDataChannelListeners(connection);
     }
 
-    connection.peerConnection.ontrack = (event) => {
-        console.log("Track event", event);
-    }
 }
 
 export async function createRtcOffer(socket: WebSocket | null, target: string) {
@@ -132,7 +128,6 @@ export async function createRtcOffer(socket: WebSocket | null, target: string) {
 }
 
 export async function handleRtcOffer(socket: WebSocket | null, data: any) {
-    console.log("Handle offer", data);
     let connection: Connection = {
         peerConnection: new RTCPeerConnection({iceServers: [{urls: "stun:stun.l.google.com:19302"}]}),
         pendingIceCandidates: [],
@@ -170,7 +165,6 @@ export async function handleRtcAnswer(data: any) {
 
 export async function handleIceCandidate(data: any) {
     const connection = connections.get().get(data.payload.from);
-    console.log("Handle ICE Candidate", data.payload);
     if (!connection) {
         console.error("Handle ICE Candidate", "Connection not found");
         return;

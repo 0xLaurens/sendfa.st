@@ -8,7 +8,7 @@ import svelte from "@astrojs/svelte";
 // https://astro.build/config
 export default defineConfig({
     site: "https://sendfa.st",
-    output: "hybrid",
+    output: "static",
     integrations: [sitemap(), svelte()],
     adapter: node({
         mode: "standalone"

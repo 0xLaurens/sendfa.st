@@ -20,28 +20,66 @@ The files that are shared directly transferred from one device to another withou
 3. Receiver connects using the unique link
 4. Receiver accepts files and receives the files.
 
-The Go backend is used to create and connect users via `rooms`. In these rooms the `users` share the information required for setting up a direct WebRTC connection. These rooms are websocket connections, to have instant commnication between the users and the server.
+The Go backend remains available. The independently deployable TypeScript Cloudflare Worker in `frontend/src/worker` provides an alternative signaling backend. Room identifiers are bearer capabilities. The Worker keeps only temporary lifecycle metadata in Durable Object SQLite; active identity is held in socket attachments. Files, filenames, SDP/ICE history, and durable user identities are not stored. Application code does not log signaling payloads or room IDs; Cloudflare may independently process transport metadata under its platform logging policies.
 Over the direct WebRTC datachannel information is exchanged about the file. If the other user accepts the files the download starts. The downloader informs the sender when to start sending the next file if there are multiple.
 
 ## How private and secure is it?
-The only point of contact with a server is to facilite the creation of a `WebRTC` all other info is exchange via a p2p connection. The server persists no state. All protocols are encrypted using TLS.
+The signaling service facilitates WebRTC setup; file data travels directly over a peer-to-peer data channel. Worker room lifecycle metadata is temporary and expires after 60 seconds unused or after the final peer leaves. All protocols are encrypted using TLS in deployed environments.
+
+### Worker HTTP and WebSocket contract
+
+- `GET /api/health` returns `200` with an empty body; other methods return `405`.
+- `POST /api/rooms` takes no body and returns `201 {"id":"<uuid>"}` only after the Durable Object stores its temporary expiry metadata and alarm. Bad request bodies return `400`; other methods return `405`.
+- `GET /api/rooms/<uuid>` returns `200 {"exists":true}` for a known, unexpired room and `404 {"exists":false}` otherwise. The path UUID must be valid. Other methods return `405`.
+- Browser HTTP requests and WebSocket handshakes with an `Origin` must match an exact comma-separated `ALLOWED_ORIGINS` entry. A rejected origin returns `403`; HTTP preflight returns `204` and allows `GET`, `POST`, `OPTIONS`, and `Content-Type`. Requests without an Origin are permitted for non-browser clients. No credentials are enabled.
+- WebSocket admission uses `GET /api/websocket?roomId=<uuid>` with the standard `Upgrade: websocket` header and exactly one valid UUID `roomId`. Missing/invalid UUIDs return `400`; non-GET requests return `405`; missing upgrade returns `426`. Unknown or expired rooms return `410` and are never created by admission. A room accepts up to eight simultaneous peers.
+- Room identifiers are UUIDs in the existing share link (`/r/<uuid>`) and are sent as the `roomId` WebSocket query parameter. A room with no peers is eligible for expiry after 60 seconds; expiry metadata and its Durable Object alarm are established before room creation succeeds. Joining marks the room active; the final departure starts a fresh 60-second unused deadline.
+- The first WebSocket frames are `{"type":"IDENTITY","user":...}` and `{"type":"ROOM_JOINED","room":{"id":"<uuid>","user_count":1},"users":[]}` in that order. The snapshot lists already-present peers; later admissions send `USER_JOINED` to existing peers, which initiate the offer. A room identity is kept in its socket attachment and is authoritative, not any client-supplied `from` or `roomId`.
+- Browser signaling uses `{"type":"OFFER","payload":{"to":"<peer-uuid>","offer":{"type":"offer","sdp":"<SDP>"},"from":"<untrusted legacy field>","roomId":"<legacy field>"}}`; `ANSWER` uses `answer` with SDP type `answer`, and `ICE_CANDIDATE` uses `candidate` with `candidate` and optional nullable `sdpMid`, `sdpMLineIndex`, and `usernameFragment`. Legacy `from` and `roomId` fields are accepted only in valid form and ignored for authorization. The service validates each peer/field and forwards a server-established `from`; only members of the same room can signal one another. Messages over 64 KiB, invalid JSON, and non-object frames are rejected. Invalid/unknown message schemas are ignored, not forwarded.
+- Cancellation is `{"type":"CANCEL_DOWNLOAD","payload":{"roomId":"<uuid>"}}` (the legacy room field is ignored); the sender must be an admitted member and cancellation is broadcast only in that socket's actual room. Files and filenames are exchanged only through the peer-to-peer data channel.
+
+### Local Worker verification
+
+From `frontend/`, run `bun install --frozen-lockfile`. Start the Worker with its dedicated configuration:
+
+```sh
+bun run wrangler dev --local --config src/worker/wrangler.jsonc --port 8787
+```
+
+Set `ALLOWED_ORIGINS` in that config (or a local `.dev.vars`) to the exact UI origin, for example `http://localhost:4321`; configure frontend `PUBLIC_WS_PROTOCOL=ws` and `PUBLIC_WS_HOST=localhost:8787`, then run `bun run dev` in another terminal. A reproducible two-browser walkthrough is: select a file in the first browser, wait for its admitted room link, open that link in the second browser, accept the offer, and verify the downloaded bytes match the original. Signaling carries only SDP/ICE and peer routing data, never files or filenames.
+
+Automated local checks: `bun run test:worker` starts the configured Worker and exercises HTTP method/body/CORS/origin/UUID validation, room creation, ordered admission, labels, rejected unknown-room upgrades, malformed signaling, spoofed identities, expiry/no-resurrection (takes about 61 seconds), the eight-peer limit, and cross-room routing/cancellation. `bun run test:frontend` exercises create-before-connect, admission gating, link availability on upload replacement, and close-during-create through the connection manager.
+
+**Post-merge local verification:** Bun 1.4.3 frozen install succeeded; Worker suite passed 7/7 (including the 61-second expiry test and nullable ICE candidate fields); frontend regression suite passed 2/2; `bun run build` completed with zero Astro diagnostics. Node emitted its upstream `punycode` deprecation warning during build.
+
+**Post-merge browser verification (`1728c27`, 2026-11-15):** two separate Chromium 155 profiles completed a 69,000-byte transfer through the local Worker. Downloaded bytes matched the source exactly; SHA-256 was `670b7c9ea15e292fc715dd2b5a2d93644e7f165540be9de9c560ed870982e747`. The 17 captured signaling frames contained no fixture filename or contents; there were zero browser exceptions. This run used the existing self-hosted frontend configuration in a clean worktree without a local `.env`:
+
+```sh
+PUBLIC_WS_PROTOCOL=ws PUBLIC_WS_HOST=localhost:8787 bun run astro build --config astro.config.selfhosted.mjs
+HOST=localhost PORT=4321 node dist/server/entry.mjs
+```
+
+**Limitations:** the workspace's existing `.env` selected a different backend despite shell overrides; it was left unchanged. Cloudflare frontend development failed with missing optimized modules, and its local preview returned 500 for a missing generated Layout module. The self-hosted build above passed, but Cloudflare frontend deployment validation remains blocked on investigating those errors. Local Workerd also emitted RPC warnings. No deployment, real Cloudflare hibernation/wake, eight-peer WebRTC negotiation, Docker build, or production rollback was verified; these remain separate validation gates.
 
 ## Get started
 
 ### Prerequisites
 - Go version 1.22.5 or higher
+- Bun version 1.4.3 (used by CI and Docker)
 - Node.js version 22.22.0 or higher
 - Docker (optional)
 
+Bun manages dependencies and runs scripts/tests. Astro and Wrangler still use Node.js; the self-hosted server also remains on Node.js.
+
 ### Frontend
 Install the required packages.
-```node
+```sh
 cd frontend/
-npm install
+bun install --frozen-lockfile
 ```
 Run in development mode
 ```
-npm run dev
+bun run dev
 ```
 ### Backend
 Running the backend

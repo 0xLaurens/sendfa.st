@@ -1,0 +1,8 @@
+{
+  "name": "sendfast-signaling",
+  "main": "index.ts",
+  "compatibility_date": "2026-07-09",
+  "vars": {"ALLOWED_ORIGINS": "http://localhost:4321"},
+  "durable_objects": {"bindings": [{"name": "ROOMS", "class_name": "Room"}]},
+  "migrations": [{"tag": "v1", "new_sqlite_classes": ["Room"]}]
+}
