@@ -20,11 +20,13 @@ The files that are shared directly transferred from one device to another withou
 3. Receiver connects using the unique link
 4. Receiver accepts files and receives the files.
 
-The Go backend remains available. The independently deployable TypeScript Cloudflare Worker in `frontend/src/worker` provides an alternative signaling backend. Room identifiers are bearer capabilities. The Worker keeps only temporary lifecycle metadata in Durable Object SQLite; active identity is held in socket attachments. Files, filenames, SDP/ICE history, and durable user identities are not stored. Application code does not log signaling payloads or room IDs; Cloudflare may independently process transport metadata under its platform logging policies.
+The repository retains the Go backend (in-memory room state) alongside the independently deployable TypeScript Cloudflare Worker in `frontend/src/worker`. The Worker migration is implemented here, but an approved production cutover and the live backend have not been verified. Do not assume repository behavior describes the current deployment; see the dated evidence and approval gates in the [operations runbook](docs/operations.md).
+
+Room identifiers are bearer capabilities. For the planned Worker deployment, Durable Object SQLite holds only temporary room lifecycle metadata; connection-scoped identity and membership use socket attachments, not a durable user database. Files, filenames, SDP/ICE history, and durable user identifiers are not stored by the signaling application. Worker code does not emit application logs; this does not describe legacy Go logs or Cloudflare's separate platform logging. Cloudflare can observe transport metadata, and actual logging, retention, and recovery settings must be verified before deployment.
 Over the direct WebRTC datachannel information is exchanged about the file. If the other user accepts the files the download starts. The downloader informs the sender when to start sending the next file if there are multiple.
 
 ## How private and secure is it?
-The signaling service facilitates WebRTC setup; file data travels directly over a peer-to-peer data channel. Worker room lifecycle metadata is temporary and expires after 60 seconds unused or after the final peer leaves. All protocols are encrypted using TLS in deployed environments.
+The signaling service facilitates WebRTC setup; file data travels directly over a peer-to-peer data channel. In the Worker migration, unused rooms expire 60 seconds after creation and empty rooms expire 60 seconds after the final peer leaves; connected rooms remain active and a valid rejoin cancels cleanup. Admission checks expiry even if the cleanup alarm is delayed. These are application lifecycle deadlines, not guarantees of physical erasure from platform logs or recovery history; see the [privacy and logging plan](docs/operations.md#privacy-and-platform-logging). Production must use HTTPS/WSS for signaling and encrypted WebRTC data channels for files.
 
 ### Worker HTTP and WebSocket contract
 
