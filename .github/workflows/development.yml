@@ -134,8 +134,8 @@ jobs:
           name = quote(dependency["dependencyName"], safe="")
           with urlopen(f"https://registry.npmjs.org/{name}", timeout=20) as response:
               published = json.load(response).get("time", {}).get(target[0])
-          if not published or datetime.now(timezone.utc) - datetime.fromisoformat(published) < timedelta(days=7):
-              print("The target version needs a verifiable publication date at least seven days ago.")
+          if not published or datetime.now(timezone.utc) - datetime.fromisoformat(published) < timedelta(hours=24):
+              print("The target version needs a verifiable publication date at least 24 hours ago.")
               raise SystemExit(0)
 
           with open(os.environ["GITHUB_OUTPUT"], "a") as output:
