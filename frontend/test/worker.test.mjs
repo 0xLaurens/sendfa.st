@@ -5,7 +5,7 @@ import WebSocket from 'ws';
 
 const port = 8799;
 const base = `http://127.0.0.1:${port}`;
-const child = spawn('bun', ['run', 'wrangler', 'dev', '--local', '--config', '../worker/wrangler.jsonc', '--port', String(port)], { stdio: 'ignore' });
+const child = spawn('bun', ['run', 'wrangler', 'dev', '--local', '--config', '../worker/wrangler.toml', '--port', String(port)], { stdio: 'ignore' });
 let server;
 for (let attempt = 0; attempt < 60; attempt++) {
   try { if ((await fetch(`${base}/api/health`)).ok) { server = true; break; } } catch {}

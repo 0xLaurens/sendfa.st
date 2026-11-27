@@ -23,7 +23,7 @@ were read. No billing, DNS, alerts, logging, artifacts or tracker state were cha
 
 ### Repository facts, not live deployment facts
 
-- [`worker/wrangler.jsonc`](../worker/wrangler.jsonc)
+- [`worker/wrangler.toml`](../worker/wrangler.toml)
   defines the separate `sendfast-signaling` Worker, `index.ts`, compatibility date
   `2026-07-09`, `ROOMS` binding to `Room`, and initial `v1` SQLite class migration.
   The default configuration allows `http://localhost:4321`. The named staging

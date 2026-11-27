@@ -56,7 +56,7 @@ Valid creation and upgrade attempts are counted separately per `CF-Connecting-IP
 From `frontend/`, run `bun install --frozen-lockfile`. Start the Worker with its dedicated configuration:
 
 ```sh
-bun run wrangler dev --local --config ../worker/wrangler.jsonc --port 8787
+bun run wrangler dev --local --config ../worker/wrangler.toml --port 8787
 ```
 
 Set `ALLOWED_ORIGINS` in that config (or a local `.dev.vars`) to the exact UI origin, for example `http://localhost:4321`; configure frontend `PUBLIC_WS_PROTOCOL=ws` and `PUBLIC_WS_HOST=localhost:8787`, then run `bun run dev` in another terminal. A reproducible two-browser walkthrough is: select a file in the first browser, wait for its admitted room link, open that link in the second browser, accept the offer, and verify the downloaded bytes match the original. Signaling carries only SDP/ICE and peer routing data, never files or filenames.
