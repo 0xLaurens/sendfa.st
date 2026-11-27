@@ -83,7 +83,7 @@ HOST=localhost PORT=4321 node dist/server/entry.mjs
 ### Prerequisites
 - Go version 1.22.5 or higher
 - Bun version 1.4.3 (used by CI and Docker)
-- Node.js version 22.22.0 or higher
+- Node.js version 22.23.4 or higher
 - Docker (optional)
 
 Bun manages dependencies and runs scripts/tests. Astro and Wrangler still use Node.js; the self-hosted server also remains on Node.js.
