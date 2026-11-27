@@ -23,6 +23,7 @@ new_sqlite_classes = ["Room"]
 name = "sendfast-signaling-staging"
 
 [env.staging.vars]
+ROOM_CLEANUP_DIAGNOSTICS = "true"
 ALLOWED_ORIGINS = "https://sendfast-staging.laurens-weterings.workers.dev"
 MAX_ROOM_PEERS = "8"
 MAX_MESSAGE_BYTES = "65536"

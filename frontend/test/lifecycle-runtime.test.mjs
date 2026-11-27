@@ -7,7 +7,7 @@ assert.equal(build.success, true);
 const mf = new Miniflare(convertV4MiniflareOptions({
   name: 'lifecycle', modules: true, script: await build.outputs[0].text(),
   compatibilityDate: '2026-07-09', durableObjects: { ROOMS: { className: 'Room', useSQLite: true } },
-  bindings: { ALLOWED_ORIGINS: 'http://localhost:4321' },
+  bindings: { ALLOWED_ORIGINS: 'http://localhost:4321', ROOM_CLEANUP_DIAGNOSTICS: 'true' },
 }));
 const worker = await mf.getWorker('lifecycle');
 after(() => mf.dispose());
@@ -65,7 +65,9 @@ test('admission honors the deadline before alarm delivery, including the exact b
   await control(after, { time: 2000000060001 });
   assert.equal((await connect(after)).status, 410);
   assert.equal((await connect(at)).status, 410);
+  assert.equal(await (await control(at, { storageCount: 1 })).json(), 1);
   await control(at, { alarm: 1 });
+  assert.equal(await (await control(at, { storageCount: 1 })).json(), 0);
   assert.equal((await connect(at)).status, 410);
   accepted.socket.close();
 });
@@ -85,7 +87,9 @@ test('stale and repeated alarms cannot delete active admissions or revive expire
   await control(id, { overlap: peer.identity.user.id });
   assert.equal((await next.message()).user.id, peer.identity.user.id);
   await control(id, { overlap: next.identity.user.id });
+  assert.equal(await (await control(id, { storageCount: 1 })).json(), 1);
   await control(id, { time: 2000000220002, alarm: 1 });
+  assert.equal(await (await control(id, { storageCount: 1 })).json(), 0);
   await control(id, { alarm: 1 });
   assert.equal((await fetch(`/api/rooms/${id}`)).status, 404);
   assert.equal((await connect(id)).status, 410);

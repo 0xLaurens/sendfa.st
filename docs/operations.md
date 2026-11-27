@@ -157,7 +157,7 @@ history to resurrect expired sessions as part of rollback.
 
 Files and filenames travel over browser-to-browser data channels, not signaling
 storage. SDP/ICE is relayed but no history is stored; durable user identifiers are
-not created. Worker code has no application logging calls, and the browser
+not created. The staging Worker can log a fixed cleanup event name, and the browser
 signaling handlers no longer log payloads. This is **not** a claim of zero browser
 logging or a guarantee about the live VPS: legacy Go handlers log room-related
 values and their deployed revision/proxy log policy is unknown.
@@ -201,6 +201,28 @@ Before staging, propose and obtain approval for a least-data policy:
   are not made in this documentation-only ticket.
 
 All actual logging/retention/export settings remain **unverified** pending access.
+
+### Verify room storage cleanup in staging
+
+After approval for the staging release, verify that invocation logs are disabled
+and Workers Logs are enabled. Run the synthetic cases one at a time and record
+their UTC windows and deployed Worker version. In Observability, look for
+`room_cleanup_verified`, which is emitted only after `deleteAll()` returns and a
+read-back finds no storage keys. `room_cleanup_not_empty` indicates a failed
+read-back check. These application messages contain only fixed event names.
+
+1. Create a room and leave it unused. After its 60-second deadline, look for
+   the event and verify status `404` and upgrade `410`.
+2. Join a fresh room, then close its last socket. Repeat the check after 60
+   seconds from that departure.
+3. Rejoin a fresh empty room before its deadline. Verify status `200` after the
+   original deadline and look for cleanup only after the final departure and
+   the new deadline.
+
+Use separate test windows to correlate events without logging room identifiers.
+The cleanup event verifies logical storage deletion. Deployment interruption
+requires its own approved drill to verify that a cleanup alarm still gets
+scheduled when all sockets disappear.
 
 ## Approval gates and release evidence
 

@@ -7,6 +7,7 @@ export interface Env {
   CREATIONS_PER_MINUTE?: string;
   UPGRADES_PER_MINUTE?: string;
   MAX_MESSAGE_BYTES?: string;
+  ROOM_CLEANUP_DIAGNOSTICS?: string;
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -198,8 +199,16 @@ export class Room {
   async alarm() {
     if (this.peers().length) return;
     const expires = await this.state.storage.get<number>(this.expiryKey);
-    if (expires !== undefined && expires !== 0 && expires <= Date.now()) await this.state.storage.deleteAll();
-    else if (expires) await this.state.storage.setAlarm(expires);
+    if (expires !== undefined && expires !== 0 && expires <= Date.now()) {
+      await this.state.storage.deleteAll();
+      if (this.env.ROOM_CLEANUP_DIAGNOSTICS === "true") {
+        const remaining = await this.state.storage.list({ limit: 1 });
+        if (remaining.size === 0) console.log("room_cleanup_verified");
+        else console.warn("room_cleanup_not_empty");
+      }
+    } else if (expires) {
+      await this.state.storage.setAlarm(expires);
+    }
   }
 
   private peers(): Peer[] {
