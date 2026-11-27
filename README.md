@@ -20,7 +20,7 @@ The files that are shared directly transferred from one device to another withou
 3. Receiver connects using the unique link
 4. Receiver accepts files and receives the files.
 
-The repository retains the Go backend (in-memory room state) alongside the independently deployable TypeScript Cloudflare Worker in `frontend/src/worker`. The Worker migration is implemented here, but an approved production cutover and the live backend have not been verified. Do not assume repository behavior describes the current deployment; see the dated evidence and approval gates in the [operations runbook](docs/operations.md).
+The repository retains the Go backend (in-memory room state) alongside the independently deployable TypeScript Cloudflare Worker in `worker/`. The Worker migration is implemented here, but an approved production cutover and the live backend have not been verified. Do not assume repository behavior describes the current deployment; see the dated evidence and approval gates in the [operations runbook](docs/operations.md).
 
 Room identifiers are bearer capabilities. For the planned Worker deployment, Durable Object SQLite holds only temporary room lifecycle metadata; connection-scoped identity and membership use socket attachments, not a durable user database. Files, filenames, SDP/ICE history, and durable user identifiers are not stored by the signaling application. Worker code does not emit application logs; this does not describe legacy Go logs or Cloudflare's separate platform logging. Cloudflare can observe transport metadata, and actual logging, retention, and recovery settings must be verified before deployment.
 Over the direct WebRTC datachannel information is exchanged about the file. If the other user accepts the files the download starts. The downloader informs the sender when to start sending the next file if there are multiple.
@@ -56,7 +56,7 @@ Valid creation and upgrade attempts are counted separately per `CF-Connecting-IP
 From `frontend/`, run `bun install --frozen-lockfile`. Start the Worker with its dedicated configuration:
 
 ```sh
-bun run wrangler dev --local --config src/worker/wrangler.jsonc --port 8787
+bun run wrangler dev --local --config ../worker/wrangler.jsonc --port 8787
 ```
 
 Set `ALLOWED_ORIGINS` in that config (or a local `.dev.vars`) to the exact UI origin, for example `http://localhost:4321`; configure frontend `PUBLIC_WS_PROTOCOL=ws` and `PUBLIC_WS_HOST=localhost:8787`, then run `bun run dev` in another terminal. A reproducible two-browser walkthrough is: select a file in the first browser, wait for its admitted room link, open that link in the second browser, accept the offer, and verify the downloaded bytes match the original. Signaling carries only SDP/ICE and peer routing data, never files or filenames.

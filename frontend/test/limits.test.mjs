@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
 
 test('configured room capacity rejects another peer', async () => {
-  const build = await Bun.build({ entrypoints: ['./src/worker/index.ts'], target: 'browser' });
+  const build = await Bun.build({ entrypoints: ['../worker/index.ts'], target: 'browser' });
   const mf = new Miniflare(convertV4MiniflareOptions({
     name: 'limits', modules: true, script: await build.outputs[0].text(),
     compatibilityDate: '2026-07-09', durableObjects: { ROOMS: { className: 'Room', useSQLite: true } },
@@ -23,7 +23,7 @@ test('configured room capacity rejects another peer', async () => {
 });
 
 test('socket burst remains exhausted after hibernation', async () => {
-  const build = await Bun.build({ entrypoints: ['./src/worker/index.ts'], target: 'browser' });
+  const build = await Bun.build({ entrypoints: ['../worker/index.ts'], target: 'browser' });
   const mf = new Miniflare(convertV4MiniflareOptions({
     name: 'rate', modules: true, script: await build.outputs[0].text(),
     compatibilityDate: '2026-07-09', durableObjects: { ROOMS: { className: 'Room', useSQLite: true } },
@@ -49,7 +49,7 @@ test('socket burst remains exhausted after hibernation', async () => {
 });
 
 test('creation attempts are limited per local IP', async () => {
-  const build = await Bun.build({ entrypoints: ['./src/worker/index.ts'], target: 'browser' });
+  const build = await Bun.build({ entrypoints: ['../worker/index.ts'], target: 'browser' });
   const mf = new Miniflare(convertV4MiniflareOptions({
     name: 'ip', modules: true, script: await build.outputs[0].text(),
     compatibilityDate: '2026-07-09', durableObjects: { ROOMS: { className: 'Room', useSQLite: true } },
@@ -76,7 +76,7 @@ test('creation attempts are limited per local IP', async () => {
 });
 
 test('message size is measured in UTF-8 bytes before parsing', async () => {
-  const build = await Bun.build({ entrypoints: ['./src/worker/index.ts'], target: 'browser' });
+  const build = await Bun.build({ entrypoints: ['../worker/index.ts'], target: 'browser' });
   const mf = new Miniflare(convertV4MiniflareOptions({
     name: 'size', modules: true, script: await build.outputs[0].text(),
     compatibilityDate: '2026-07-09', durableObjects: { ROOMS: { className: 'Room', useSQLite: true } },

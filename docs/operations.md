@@ -23,12 +23,13 @@ were read. No billing, DNS, alerts, logging, artifacts or tracker state were cha
 
 ### Repository facts, not live deployment facts
 
-- [`frontend/src/worker/wrangler.jsonc`](../frontend/src/worker/wrangler.jsonc)
+- [`worker/wrangler.jsonc`](../worker/wrangler.jsonc)
   defines the separate `sendfast-signaling` Worker, `index.ts`, compatibility date
   `2026-07-09`, `ROOMS` binding to `Room`, and initial `v1` SQLite class migration.
-  Its only allowed browser origin is currently `http://localhost:4321`.
-  It has **no** account, production route, named staging environment, or explicit
-  observability configuration. It is not production-ready configuration.
+  The default configuration allows `http://localhost:4321`. The named staging
+  environment targets `sendfast-signaling-staging` and enables Workers Logs with
+  invocation logs and traces disabled. The config specifies neither a Cloudflare
+  account nor a production route.
 - [`frontend/wrangler.jsonc`](../frontend/wrangler.jsonc) and
   [`astro.config.mjs`](../frontend/astro.config.mjs) configure the Cloudflare
   frontend separately; neither identifies the actual deployed project/account.
