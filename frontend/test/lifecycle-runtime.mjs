@@ -1,4 +1,4 @@
-import worker, { Room as ProductionRoom } from '../src/worker/index.ts';
+import worker, { Room as ProductionRoom } from '../../worker/index.ts';
 
 let now = 2_000_000_000_000;
 Date.now = () => now;
