@@ -202,6 +202,27 @@ Before staging, propose and obtain approval for a least-data policy:
 
 All actual logging/retention/export settings remain **unverified** pending access.
 
+### Staging deployment pipeline
+
+The [staging workflow](../.github/workflows/deploy-staging-worker.yml) runs on
+relevant pushes to `main`, including merged pull requests, and can also be
+started manually from `main`. It runs Worker tests and a Wrangler dry run before
+the deployment job. Set up the GitHub environment before adding credentials:
+
+1. In GitHub repository settings, create the `signaling-staging` environment.
+   Restrict deployments to `main` and configure required reviewers so the
+   deployment waits for explicit staging approval under #62.
+2. Add the environment variable `STAGING_CLOUDFLARE_ACCOUNT_ID` and the
+   environment secret `STAGING_CLOUDFLARE_API_TOKEN`. Use a Cloudflare CI token
+   restricted to the account that owns the staging signaling Worker.
+3. In Actions, review the run for the intended commit and approve the deployment.
+   The workflow records the previous version before deploying and checks the
+   staging health endpoint afterward. Retain the previous version as the
+   rollback checkpoint.
+
+This workflow deploys only the signaling Worker to staging. Browser transfers,
+cleanup, and other live validation still require their own evidence.
+
 ### Verify room storage cleanup in staging
 
 After approval for the staging release, verify that invocation logs are disabled

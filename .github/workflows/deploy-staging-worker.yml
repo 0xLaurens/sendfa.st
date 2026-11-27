@@ -1,0 +1,72 @@
+name: Deploy staging signaling Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'worker/**'
+      - 'frontend/package.json'
+      - 'frontend/bun.lock'
+      - 'frontend/test/**'
+      - '.github/workflows/deploy-staging-worker.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: staging-signaling-worker
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  validate:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.3'
+      - run: bun install --frozen-lockfile
+      - run: bun run test:worker
+      - run: bun run wrangler deploy --dry-run --config ../worker/wrangler.toml --env staging
+
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: signaling-staging
+      url: https://sendfast-signaling-staging.laurens-weterings.workers.dev
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.3'
+      - run: bun install --frozen-lockfile
+      - name: Record current deployment and deploy staging
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.STAGING_CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.STAGING_CLOUDFLARE_API_TOKEN }}
+        run: |
+          : "${CLOUDFLARE_ACCOUNT_ID:?Set STAGING_CLOUDFLARE_ACCOUNT_ID in signaling-staging}"
+          : "${CLOUDFLARE_API_TOKEN:?Set STAGING_CLOUDFLARE_API_TOKEN in signaling-staging}"
+          bun run wrangler deployments status --config ../worker/wrangler.toml --env staging
+          bun run wrangler deploy --config ../worker/wrangler.toml --env staging
+      - name: Check staging health
+        run: |
+          status="$(curl --silent --show-error --fail --retry 3 --max-time 15 \
+            --output /dev/null --write-out '%{http_code}' \
+            https://sendfast-signaling-staging.laurens-weterings.workers.dev/api/health)"
+          test "$status" = 200
