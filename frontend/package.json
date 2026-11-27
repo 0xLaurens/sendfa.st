@@ -41,7 +41,7 @@
     "@svelte-put/qr": "^2.1.4",
     "@types/streamsaver": "^2.0.4",
     "@types/uuid": "^10.0.0",
-    "daisyui": "^5.6.18",
+    "daisyui": "^5.8.3",
     "vite": "^8.1.4",
     "vitest": "^5.1.0",
     "ws": "^8.23.0"
