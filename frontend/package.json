@@ -38,7 +38,7 @@
     "wrangler": "^4.151.0"
   },
   "devDependencies": {
-    "@svelte-put/qr": "^1.2.1",
+    "@svelte-put/qr": "^2.1.4",
     "@types/streamsaver": "^2.0.4",
     "@types/uuid": "^10.0.0",
     "daisyui": "^5.6.18",
