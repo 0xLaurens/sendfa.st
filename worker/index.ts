@@ -153,15 +153,16 @@ export class Room {
     server.send(JSON.stringify({ type: "IDENTITY", user }));
     server.send(JSON.stringify({ type: "ROOM_JOINED", room: { id: new URL(request.url).searchParams.get("roomId"), user_count: peers.length + 1 }, users: peers.map(peer => peer.user) }));
     this.broadcast({ type: "USER_JOINED", user }, server);
-    await this.state.storage.put(this.expiryKey, 0);
-    await this.state.storage.deleteAlarm();
+    if (expiry !== 0) {
+      await this.state.storage.put(this.expiryKey, 0);
+      await this.state.storage.deleteAlarm();
+    }
     return new Response(null, { status: 101, webSocket: client });
   }
 
   async webSocketMessage(socket: WebSocket, raw: string | ArrayBuffer) {
-    const peers = this.peers();
     const sender = this.peer(socket);
-    if (!sender || !peers.some(peer => peer.id === sender.id)) return;
+    if (!sender) return;
     const now = Date.now(), burst = limit(this.env.SIGNAL_BURST, 120);
     const tokens = Math.min(burst, (sender.tokens ?? burst) + Math.max(0, now - (sender.updatedAt ?? now)) * limit(this.env.SIGNALS_PER_SECOND, 60) / 1000);
     if (tokens < 1) { socket.close(1008); return; }
@@ -190,8 +191,10 @@ export class Room {
     const target = message.payload.to;
     const signal = message.payload[field];
     if (typeof target !== "string" || !UUID.test(target) || !validSignal(message.type, signal)) return;
-    if (target === sender.id || !peers.some(peer => peer.id === target)) return;
-    this.sendTo(target, { type: message.type, from: sender.id, payload: { from: sender.id, [field]: signal } });
+    if (target === sender.id) return;
+    const recipient = this.state.getWebSockets().find(socket => this.peer(socket)?.id === target);
+    if (!recipient) return;
+    try { recipient.send(JSON.stringify({ type: message.type, from: sender.id, payload: { from: sender.id, [field]: signal } })); } catch {}
   }
 
   async webSocketClose(socket: WebSocket) { await this.leave(socket); }
@@ -222,13 +225,9 @@ export class Room {
       ? attachment as Peer : null;
   }
   private broadcast(message: unknown, except?: WebSocket) {
+    const frame = JSON.stringify(message);
     for (const socket of this.state.getWebSockets()) if (socket !== except && this.peer(socket)) {
-      try { socket.send(JSON.stringify(message)); } catch {}
-    }
-  }
-  private sendTo(id: string, message: unknown) {
-    for (const socket of this.state.getWebSockets()) if (this.peer(socket)?.id === id) {
-      try { socket.send(JSON.stringify(message)); } catch {}
+      try { socket.send(frame); } catch {}
     }
   }
   private async leave(socket: WebSocket) {
