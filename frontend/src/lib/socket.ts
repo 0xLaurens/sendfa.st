@@ -72,9 +72,7 @@ class WebsocketManager {
                     connectionError.set("Unable to create a sharing room. Please try again.");
                     return;
                 }
-            }
-            const target = new URL(this.url);
-            if (roomId.get()) {
+            } else if (roomId.get()) {
                 const apiBase = this.url.replace(/^ws/, "http").replace(/\/api\/websocket.*$/, "/api/rooms/");
                 try {
                     const status = await fetch(`${apiBase}${roomId.get()}`, {cache: "no-store"});
@@ -93,9 +91,11 @@ class WebsocketManager {
                     if (lifecycle !== this.lifecycle) return;
                     // Preserve retry behavior for temporary network failures.
                 }
-                target.searchParams.set("roomId", roomId.get()!);
             }
             if (lifecycle !== this.lifecycle) return;
+            const target = new URL(this.url);
+            const id = roomId.get();
+            if (id) target.searchParams.set("roomId", id);
             const socket = new WebSocket(target.toString());
             this.socket = socket;
             socket.onopen = () => {

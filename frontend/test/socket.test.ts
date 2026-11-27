@@ -119,11 +119,10 @@ describe("WebsocketManager public connection boundary", () => {
     expect(FakeWebSocket.instances).toHaveLength(8);
   });
 
-  it("stops on authoritative expiration following an opaque upgrade failure", async () => {
+  it("checks a newly created room after an opaque upgrade failure and stops if it expired", async () => {
     vi.useFakeTimers();
     vi.spyOn(Math, "random").mockReturnValue(0);
-    socketApi.roomId.set(createdId);
-    const manager = new socketApi.default("ws://localhost:8787/api/websocket");
+    const manager = new socketApi.default("ws://localhost:8787/api/websocket", true);
     await manager.connect();
     fetchMock.mockResolvedValueOnce({ ok: false, status: 404, json: async () => ({ exists: false }) });
     FakeWebSocket.instances[0].onclose?.();
@@ -171,9 +170,8 @@ describe("WebsocketManager public connection boundary", () => {
     const unlisten = socketApi.roomAdmitted.listen(value => admissionStates.push(value));
     await manager.connect();
 
-    expect(fetchMock.mock.calls.map(call => call[0])).toEqual([
-      "http://localhost:8787/api/rooms",
-      `http://localhost:8787/api/rooms/${createdId}`,
+    expect(fetchMock.mock.calls).toEqual([
+      ["http://localhost:8787/api/rooms", { method: "POST" }],
     ]);
     const socket = FakeWebSocket.instances[0];
     expect(new URL(socket.url).searchParams.get("roomId")).toBe(createdId);
