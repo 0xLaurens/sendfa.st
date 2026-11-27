@@ -61,7 +61,6 @@ jobs:
     name: Merge eligible Dependabot patch
     needs: [frontend, run-test]
     if: >-
-      github.repository == '0xLaurens/sendfa.st' &&
       github.event.pull_request.user.login == 'dependabot[bot]' &&
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.base_ref == 'main' &&
