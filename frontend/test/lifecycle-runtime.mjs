@@ -21,6 +21,9 @@ export class Room extends ProductionRoom {
         const socket = this.testState.getWebSockets().find(ws => ws.deserializeAttachment()?.id === url.searchParams.get('overlap'));
         if (socket) await Promise.all([this.webSocketMessage(socket, '{"type":"LEAVE_ROOM"}'), this.webSocketClose(socket), this.webSocketError(socket)]);
       }
+      if (url.searchParams.has('storageCount')) {
+        return Response.json((await this.testState.storage.list()).size);
+      }
       return new Response(null, { status: 204 });
     }
     return super.fetch(request);
