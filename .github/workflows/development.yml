@@ -57,3 +57,106 @@ jobs:
         run: |
           cd backend/
           go test -v ./...
+  dependabot-merge:
+    name: Merge eligible Dependabot patch
+    needs: [frontend, run-test]
+    if: >-
+      github.repository == '0xLaurens/sendfa.st' &&
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.base_ref == 'main' &&
+      startsWith(github.head_ref, 'dependabot/bun/frontend/') &&
+      !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    permissions:
+      checks: read
+      contents: write
+      pull-requests: write
+      statuses: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Verify the update's commit and files
+        id: scope
+        run: |
+          commits=$(gh api "repos/$GH_REPO/pulls/$PR_NUMBER/commits?per_page=2")
+          files=$(gh api "repos/$GH_REPO/pulls/$PR_NUMBER/files?per_page=3")
+          if jq -e --arg sha "$HEAD_SHA" 'length == 1 and
+              all(.[]; .sha == $sha and .author.login == "dependabot[bot]" and .commit.verification.verified)' <<< "$commits" &&
+            jq -e 'length <= 2 and any(.[]; .filename == "frontend/bun.lock") and
+              all(.[]; .status == "modified" and
+                (.filename == "frontend/bun.lock" or .filename == "frontend/package.json"))' <<< "$files"; then
+            echo 'eligible=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'The PR falls outside the automatic merge scope.'
+          fi
+      - name: Read Dependabot metadata
+        if: steps.scope.outputs.eligible == 'true'
+        id: metadata
+        uses: dependabot/fetch-metadata@d7267f607e9d3fb96fc2fbe83e0af444713e90b7
+      - name: Verify patch version and publication age
+        if: steps.scope.outputs.eligible == 'true'
+        id: release
+        shell: python
+        env:
+          DEPENDENCIES: ${{ steps.metadata.outputs.updated-dependencies-json }}
+        run: |
+          import json
+          import os
+          import re
+          from datetime import datetime, timedelta, timezone
+          from urllib.parse import quote
+          from urllib.request import urlopen
+
+          dependencies = json.loads(os.environ["DEPENDENCIES"])
+          if len(dependencies) != 1:
+              print("Only single-package updates are eligible.")
+              raise SystemExit(0)
+
+          dependency = dependencies[0]
+          version_pattern = r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)"
+          previous = re.fullmatch(version_pattern, dependency["prevVersion"])
+          target = re.fullmatch(version_pattern, dependency["newVersion"])
+          if (
+              dependency["updateType"] != "version-update:semver-patch"
+              or not previous
+              or not target
+              or previous.groups()[:2] != target.groups()[:2]
+              or int(previous[3]) >= int(target[3])
+          ):
+              print("This update requires review.")
+              raise SystemExit(0)
+
+          name = quote(dependency["dependencyName"], safe="")
+          with urlopen(f"https://registry.npmjs.org/{name}", timeout=20) as response:
+              published = json.load(response).get("time", {}).get(target[0])
+          if not published or datetime.now(timezone.utc) - datetime.fromisoformat(published) < timedelta(days=7):
+              print("The target version needs a verifiable publication date at least seven days ago.")
+              raise SystemExit(0)
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              print("eligible=true", file=output)
+      - name: Wait for PR checks and merge the tested commit
+        if: steps.release.outputs.eligible == 'true'
+        run: |
+          for attempt in {1..20}; do
+            checks=$(gh pr checks "$PR_NUMBER" --json name,workflow,state,bucket |
+              jq '[.[] | select(.name != "Merge eligible Dependabot patch" or .workflow != "Run tests")]')
+            if jq -e 'any(.[]; .bucket == "fail" or .bucket == "cancel")' <<< "$checks" > /dev/null; then
+              echo 'A PR check failed or was canceled. Leaving the PR open.'
+              exit 0
+            fi
+            if jq -e 'any(.[]; .workflow == "Run tests" and .name == "frontend" and .state == "SUCCESS") and
+                any(.[]; .workflow == "Run tests" and .name == "run-test" and .state == "SUCCESS") and
+                all(.[]; .state == "SUCCESS")' <<< "$checks" > /dev/null; then
+              gh api --method PUT "repos/$GH_REPO/pulls/$PR_NUMBER/merge" \
+                -f "sha=$HEAD_SHA" -f merge_method=squash --jq '.merged' | grep -qx true
+              exit 0
+            fi
+            sleep 10
+          done
+          echo 'Some PR checks did not report success. Leaving the PR open.'
