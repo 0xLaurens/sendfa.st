@@ -1,4 +1,4 @@
-import {atom, type WritableAtom} from "nanostores";
+import {atom, computed, type WritableAtom} from "nanostores";
 import type {User} from "../types/user.ts";
 import type {Room} from "../types/room.ts";
 import {interruptTransfers} from "./file.ts";
@@ -23,10 +23,8 @@ export const connectionNotice = atom<string | undefined>(undefined);
 export const downloadCancelled: WritableAtom<boolean> = atom(false);
 export const checkedRoomCode: WritableAtom<boolean> = atom(false);
 
-export function admittedRoomLink(protocol: string, host: string): string | undefined {
-    const id = roomId.get();
-    return roomAdmitted.get() && id ? `${protocol}//${host}/r/${id}` : undefined;
-}
+export const admittedRoomPath = computed([roomAdmitted, roomId], (admitted, id) =>
+    admitted && id ? `/r/${id}` : undefined);
 
 class WebsocketManager {
     private socket: WebSocket | null = null;

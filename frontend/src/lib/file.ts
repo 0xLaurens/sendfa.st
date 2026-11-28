@@ -1,14 +1,14 @@
 import StreamSaver from "streamsaver";
 import {connections} from "./webrtc.ts";
-import {type FileMessage, type FileOffer, FileOfferType} from "../types/file.ts";
+import {type FileOffer, FileOfferType} from "../types/file.ts";
 import {identity} from "./socket.ts";
 import {atom, type WritableAtom} from "nanostores";
 import {v4 as uuidv4} from "uuid";
 
-export const filesUploaded: WritableAtom<FileList | null> = atom(null)
+export const filesUploaded: WritableAtom<File[] | null> = atom(null)
 const incomingFileOffers: WritableAtom<FileOffer[]> = atom([])
 export const currentFileOffer: WritableAtom<FileOffer | null> = atom(null)
-const offeredFiles = atom(new Map<string, FileList>)
+const offeredFiles = atom(new Map<string, File[]>)
 export const downloadFinished: WritableAtom<boolean> = atom(false)
 
 export function addIncomingFileOffer(offer: FileOffer) {
@@ -37,18 +37,6 @@ function nextFileOffer() {
         downloadFinished.set(true)
         currentFileOffer.set(null)
     }
-}
-
-export function denyIncomingFileOffer() {
-    const offer = currentFileOffer.get()
-    if (offer) {
-        const connection = connections.get().get(offer.from)
-        if (connection && connection.dataChannel) {
-            offer.type = FileOfferType.DenyOffer
-            connection.dataChannel.send(JSON.stringify(offer))
-        }
-    }
-    currentFileOffer.set(null)
 }
 
 StreamSaver.mitm = `/StreamSaver/mitm.html?version=2.0.6`;
@@ -130,8 +118,6 @@ export async function buildFile(chunk: ArrayBuffer) {
     if (generation !== transferGeneration) return;
     console.log("accSize", accSize, "Filesize", file.size)
     accSize += buffer.byteLength
-    file.accSize = accSize
-    currentFileOffer.set(offer)
 
     if (accSize === file.size) {
         await writer?.close().catch(console.error)
@@ -151,34 +137,11 @@ export async function buildFile(chunk: ArrayBuffer) {
     }
 }
 
-function filesToMessage(files: FileList): FileMessage[] {
-    let messages: FileMessage[] = []
-    for (let i = 0; i < files.length; i++) {
-        messages.push({
-            name: files[i].name,
-            size: files[i].size,
-            mime: files[i].type,
-        })
-    }
-    return messages
-}
-
-export function createFilesOffers(files: FileList) {
-    if (files.length === 0) return;
-
-    for (const [target, connection] of connections.get()) {
-        if (connection.peerConnection.connectionState === "connected" && connection.dataChannel) {
-            createFilesOffer(files, target)
-        }
-    }
-}
-
-export function createFilesOffer(files: FileList, target: string) {
-    const messages = filesToMessage(files)
+export function createFilesOffer(files: File[], target: string) {
     const offer: FileOffer = {
         id: uuidv4(),
         type: FileOfferType.Offer,
-        files: messages,
+        files: files.map(({name, size, type}) => ({name, size, mime: type})),
         from: identity.get().id,
         currentFile: 0,
         to: target,
