@@ -1,14 +1,14 @@
 import StreamSaver from "streamsaver";
 import {connections} from "./webrtc.ts";
-import {type FileMessage, type FileOffer, FileOfferType} from "../types/file.ts";
+import {type FileOffer, FileOfferType} from "../types/file.ts";
 import {identity} from "./socket.ts";
 import {atom, type WritableAtom} from "nanostores";
 import {v4 as uuidv4} from "uuid";
 
-export const filesUploaded: WritableAtom<FileList | null> = atom(null)
+export const filesUploaded: WritableAtom<File[] | null> = atom(null)
 const incomingFileOffers: WritableAtom<FileOffer[]> = atom([])
 export const currentFileOffer: WritableAtom<FileOffer | null> = atom(null)
-const offeredFiles = atom(new Map<string, FileList>)
+const offeredFiles = atom(new Map<string, File[]>)
 export const downloadFinished: WritableAtom<boolean> = atom(false)
 
 export function addIncomingFileOffer(offer: FileOffer) {
@@ -137,24 +137,11 @@ export async function buildFile(chunk: ArrayBuffer) {
     }
 }
 
-function filesToMessage(files: FileList): FileMessage[] {
-    let messages: FileMessage[] = []
-    for (let i = 0; i < files.length; i++) {
-        messages.push({
-            name: files[i].name,
-            size: files[i].size,
-            mime: files[i].type,
-        })
-    }
-    return messages
-}
-
-export function createFilesOffer(files: FileList, target: string) {
-    const messages = filesToMessage(files)
+export function createFilesOffer(files: File[], target: string) {
     const offer: FileOffer = {
         id: uuidv4(),
         type: FileOfferType.Offer,
-        files: messages,
+        files: files.map(({name, size, type}) => ({name, size, mime: type})),
         from: identity.get().id,
         currentFile: 0,
         to: target,

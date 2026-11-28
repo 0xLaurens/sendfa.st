@@ -26,7 +26,7 @@
 
     function handleFilesSelected(files: FileList | null | undefined) {
         if (!files?.length) return;
-        filesUploaded.set(files);
+        filesUploaded.set(Array.from(files));
         if (!$roomAdmitted) manager.connect();
         const toast: ToastData = {
             type: "success",
@@ -129,9 +129,9 @@
                     <h2 class="text-xl font-semibold text-wrap">
                         {$filesUploaded.length > 1
                             ? `Multiple files (${$filesUploaded.length})`
-                            : truncateFileName($filesUploaded.item(0)?.name)}
+                            : truncateFileName($filesUploaded[0].name)}
                     </h2>
-                    <p>Total size: {formatFileSize(Array.from($filesUploaded).reduce((total, file) => total + file.size, 0))}</p>
+                    <p>Total size: {formatFileSize($filesUploaded.reduce((total, file) => total + file.size, 0))}</p>
                 </div>
                 <div class="flex items-center gap-2">
                     <input aria-label="Sharing link" class="input input-bordered min-w-0 flex-1"
@@ -157,7 +157,7 @@
         </div>
     {:else}
         <button type="button" onclick={() => fileInput.click()}
-                class="btn max-sm:btn-primary sm:card sm:card-bordered sm:min-h-96 sm:w-full sm:justify-center sm:gap-6
+                class="btn max-sm:btn-primary sm:card sm:card-bordered sm:flex-col sm:min-h-96 sm:w-full sm:justify-center sm:gap-6
                        sm:bg-base-100 sm:text-base-content sm:hover:bg-base-100 sm:hover:scale-105">
             <UploadIcon class="h-5 w-5 sm:h-16 sm:w-16"/>
             <span class="sm:btn sm:btn-primary">Upload file(s)</span>
