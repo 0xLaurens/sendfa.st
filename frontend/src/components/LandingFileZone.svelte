@@ -1,70 +1,45 @@
 <script lang="ts">
-    import {ShareIcon, UploadIcon, X, XIcon} from "lucide-svelte";
+    import {UploadIcon, XIcon} from "lucide-svelte";
     import type {ToastData} from "../types/toast.ts";
     import {addToast} from "../lib/toast.ts";
     import {formatFileSize} from "../util/filesize.js";
-    import QrButton from "./QrButton.svelte";
-    import LinkButton from "./LinkButton.svelte";
-    import WebsocketManager, {admittedRoomLink, connectionError, connectionNotice, roomAdmitted, sendCancelDownload} from "../lib/socket.ts";
-    import {onDestroy, onMount} from "svelte";
+    import WebsocketManager, {admittedRoomPath, connectionError, connectionNotice, roomAdmitted, sendCancelDownload} from "../lib/socket.ts";
+    import {onMount} from "svelte";
     import {filesUploaded} from "../lib/file.ts";
     import {truncateFileName} from "../util/truncate.ts";
     import {qr} from "@svelte-put/qr/svg"
     import ShareButton from "./ShareButton.svelte";
 
-    let filesToSend: FileList | null = $state(null);
-    let link: string = $state('loading...');
-    let displayLink = $derived($roomAdmitted ? link : $connectionError ? '' : 'Connecting...');
-    let connecting = $derived(!$roomAdmitted && !$connectionError);
-    let isDragging: boolean = $state(false);
+    let fileInput: HTMLInputElement;
+    let origin = $state("");
+    let link = $derived($admittedRoomPath && origin ? origin + $admittedRoomPath : undefined);
+    let connecting = $derived(!link && !$connectionError);
+    let isDragging = $state(false);
     let debounceTimer: ReturnType<typeof setTimeout>;
     let manager: WebsocketManager;
 
     onMount(() => {
+        origin = window.location.origin;
         manager = new WebsocketManager(`${import.meta.env.PUBLIC_WS_PROTOCOL}://${import.meta.env.PUBLIC_WS_HOST}/api/websocket`, true);
-        return roomAdmitted.listen(value => {
-            const admittedLink = admittedRoomLink(window.location.protocol, window.location.host);
-            if (!value || !admittedLink) return;
-            link = admittedLink;
-        });
-    })
+        return () => manager.close();
+    });
 
-    onDestroy(() => {
-        manager.close();
-    })
-
-    function handleFiles(event: any): void {
-        const files = (event.target as HTMLInputElement).files;
-        if (files || files) {
-            handleFilesSelected(files);
-        }
-    }
-
-    function handleFilesSelected(files: FileList) {
-        if (!files || files.length === 0) return
-        link = "loading...";
-        filesToSend = files;
+    function handleFilesSelected(files: FileList | null | undefined) {
+        if (!files?.length) return;
         filesUploaded.set(files);
+        if (!$roomAdmitted) manager.connect();
         const toast: ToastData = {
             type: "success",
             id: Date.now(),
             title: "Files selected",
-            duration: 5000,
             description: `You have selected ${files.length} files to send.`,
-        }
-        const admittedLink = admittedRoomLink(window.location.protocol, window.location.host);
-        if (admittedLink) {
-            link = admittedLink;
-        } else {
-            manager.connect();
-        }
+        };
         addToast(toast);
     }
 
     function cancelUpload() {
         setTimeout(() => {
             sendCancelDownload(manager.getWebSocket());
-            filesToSend = null;
             filesUploaded.set(null);
             manager.close();
         }, 100)
@@ -105,10 +80,7 @@
         event.preventDefault();
         dragCounter = 0;
         setDragging(false);
-        const files = event.dataTransfer?.files;
-        if (files) {
-            handleFilesSelected(files);
-        }
+        handleFilesSelected(event.dataTransfer?.files);
     }
 </script>
 
@@ -120,7 +92,7 @@
         ondrop={handleDrop}
 />
 
-{#if isDragging && !filesToSend}
+{#if isDragging && !$filesUploaded}
     <div class="absolute z-50 h-screen w-screen bg-red-500 flex items-center justify-center"
          onclick={() => {setDragging(false)}}
          role="button"
@@ -144,110 +116,52 @@
     </div>
 {/if}
 
-<div class="hidden sm:flex flex-col max-w-md">
-    <label for="files"
-           class="card card-bordered card-compact bg-base-100 min-w-md min-h-96 w-96 transition-transform duration-200"
-           class:hover:scale-105={!filesToSend}>
-        <div class="card-body flex items-center justify-center gap-8 w-full">
-            {#if !filesToSend || filesToSend.length === 0}
+<div class="w-full max-w-sm shrink-0">
+    <input bind:this={fileInput} onchange={() => {
+        handleFilesSelected(fileInput.files);
+        fileInput.value = "";
+    }} class="hidden" type="file" multiple>
+
+    {#if $filesUploaded}
+        <div class="card card-bordered card-compact bg-base-100">
+            <div class="card-body gap-4 text-left">
                 <div>
-                    <UploadIcon class="h-16 w-16"/>
+                    <h2 class="text-xl font-semibold text-wrap">
+                        {$filesUploaded.length > 1
+                            ? `Multiple files (${$filesUploaded.length})`
+                            : truncateFileName($filesUploaded.item(0)?.name)}
+                    </h2>
+                    <p>Total size: {formatFileSize(Array.from($filesUploaded).reduce((total, file) => total + file.size, 0))}</p>
                 </div>
-                <div class="space-y-4">
-                    <label for="files" class="btn btn-primary btn-wide shadow-xl">Upload file(s)</label>
-                    <p class="font-semibold">Or drop file(s)</p>
+                <div class="flex items-center gap-2">
+                    <input aria-label="Sharing link" class="input input-bordered min-w-0 flex-1"
+                           class:animate-pulse={connecting} readonly disabled={!link}
+                           value={link ?? (connecting ? "Connecting..." : "")}>
+                    <ShareButton {link}/>
                 </div>
-            {/if}
-            {#if filesToSend && filesToSend.length > 0}
-                <div class="flex flex-col gap-16">
-                    <div class="text-left">
-                        {#if filesToSend.length > 1}
-                            <h2 class="text-xl font-semibold">Multiple files ({filesToSend.length})</h2>
-                        {:else}
-                            <h2 class="text-xl font-semibold text-wrap">{truncateFileName(filesToSend.item(0)?.name)}</h2>
-                        {/if}
-                        <p>
-                            Total
-                            size: {formatFileSize(Array.from(filesToSend).reduce((total, file) => total + file.size, 0))}</p>
-                        <div class="flex flex-row gap-2 items-center justify-center pt-5">
-                            <input disabled="{!$roomAdmitted}" class="input input-bordered"
-                                   class:animate-pulse="{connecting}"
-                                   value="{displayLink}">
-                            <QrButton disabled="{!$roomAdmitted}" {link}/>
-                            <LinkButton disabled="{!$roomAdmitted}" {link}/>
-                        </div>
-                        <p class="text-wrap pt-3 font-bold">⚠️ Make sure to keep this page open whilst sending!</p>
-                        {#if $connectionError}<p class="text-error">{$connectionError}</p>{/if}
-                        {#if $connectionNotice}<p role="status">{$connectionNotice}</p>{/if}
-                        <p class="text-wrap pt-2">
-                            Share the link or scan the QR code to start downloading the file on another device.
-                        </p>
-                    </div>
-                    <div class="flex flex-col gap-3">
-                        <label for="change-files" class="btn btn-neutral w-full">
-                            <UploadIcon class="h-5 w-5"/>
-                            Change upload
-                        </label>
-                        <input onchange={handleFiles} class="hidden" id="change-files" type="file" multiple/>
-                        <button onclick={cancelUpload} class="btn w-full">
-                            <XIcon class="h-5 w-5"/>
-                            Cancel upload
-                        </button>
-                    </div>
-                </div>
-            {/if}
-        </div>
-    </label>
-</div>
-<div class="flex sm:hidden flex-col">
-    <label for="files" class="btn btn-primary btn-wide">
-        <UploadIcon/>
-        Upload file(s)
-    </label>
-    <input onchange={handleFiles} class="hidden" id="files" type="file"
-           disabled="{filesToSend && filesToSend?.length > 0}" multiple>
-</div>
-{#if filesToSend && filesToSend.length > 0}
-    <div class="modal modal-open flex sm:hidden justify-center content-center z-50">
-        <div class="modal-box card card-bordered card-compact bg-base-100">
-            <button class="self-end" onclick={cancelUpload} aria-label="close menu and cancel">
-                <XIcon class="h-5 w-5"/>
-            </button>
-            <div class="flex flex-col gap-6">
-                <div class="text-left">
-                    {#if filesToSend.length > 1}
-                        <h2 class="text-xl font-semibold">Multiple files ({filesToSend.length})</h2>
-                    {:else}
-                        <h2 class="text-xl font-semibold text-wrap">{truncateFileName(filesToSend.item(0)?.name)}</h2>
-                    {/if}
-                    <p>
-                        Total
-                        size: {formatFileSize(Array.from(filesToSend).reduce((total, file) => total + file.size, 0))}</p>
-                    <div class="flex flex-row gap-2 items-center justify-center pt-5">
-                        <input disabled="{!$roomAdmitted}" class:animate-pulse={connecting} class="input input-bordered w-full"
-                               value="{displayLink}">
-                        <ShareButton disabled="{!$roomAdmitted}" {link}/>
-                    </div>
-                    <p class="text-wrap pt-3 font-bold">⚠️ Make sure to keep this page open whilst sending! ⚠️</p>
-                    {#if $connectionError}<p class="text-error">{$connectionError}</p>{/if}
-                    {#if $connectionNotice}<p role="status">{$connectionNotice}</p>{/if}
-                    <p class="text-wrap pt-2">
-                        Share the link or scan the QR code to start downloading the file on another device.
-                    </p>
-                    {#if $roomAdmitted}<svg class="h-32 w-32 mx-auto" use:qr="{{ data: link }}"/>{/if}
-                </div>
-                <div class="flex flex-col gap-3">
-                    <label for="change-files" class="btn btn-neutral w-full">
-                        <UploadIcon class="h-5 w-5"/>
-                        Change upload
-                    </label>
-                    <input onchange={handleFiles} class="hidden" id="change-files" type="file" multiple/>
-                    <button onclick={cancelUpload} class="btn w-full">
-                        <XIcon class="h-5 w-5"/>
-                        Cancel upload
-                    </button>
-                </div>
+                {#if link}
+                    <svg aria-label="Sharing link QR code" role="img" class="h-32 w-32 self-center" use:qr={{data: link}}/>
+                {/if}
+                <p class="font-bold">Keep this page open while sending.</p>
+                {#if $connectionError}<p class="text-error">{$connectionError}</p>{/if}
+                {#if $connectionNotice}<p role="status">{$connectionNotice}</p>{/if}
+                <button type="button" onclick={() => fileInput.click()} class="btn btn-neutral w-full">
+                    <UploadIcon class="h-5 w-5"/>
+                    Change upload
+                </button>
+                <button type="button" onclick={cancelUpload} class="btn w-full">
+                    <XIcon class="h-5 w-5"/>
+                    Cancel upload
+                </button>
             </div>
         </div>
-    </div>
-{/if}
+    {:else}
+        <button type="button" onclick={() => fileInput.click()}
+                class="btn max-sm:btn-primary sm:card sm:card-bordered sm:min-h-96 sm:w-full sm:justify-center sm:gap-6
+                       sm:bg-base-100 sm:text-base-content sm:hover:bg-base-100 sm:hover:scale-105">
+            <UploadIcon class="h-5 w-5 sm:h-16 sm:w-16"/>
+            <span class="sm:btn sm:btn-primary">Upload file(s)</span>
+            <span class="hidden sm:block">Or drop file(s)</span>
+        </button>
+    {/if}
+</div>

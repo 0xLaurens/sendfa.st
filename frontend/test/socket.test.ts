@@ -178,15 +178,16 @@ describe("WebsocketManager public connection boundary", () => {
     expect(admissionStates).not.toContain(true);
     socket.onopen?.();
     expect(admissionStates).not.toContain(true);
+    expect(socketApi.admittedRoomPath.get()).toBeUndefined();
     await socket.onmessage?.({ data: JSON.stringify({ type: "IDENTITY", user: { id: "peer" } }) });
     await socket.onmessage?.({ data: JSON.stringify({ type: "ROOM_JOINED", room: { id: createdId }, users: [] }) });
     expect(admissionStates.at(-1)).toBe(true);
-    expect(socketApi.admittedRoomLink("http:", "sendfa.st")).toBe(`http://sendfa.st/r/${createdId}`);
+    expect(socketApi.admittedRoomPath.get()).toBe(`/r/${createdId}`);
     // A later upload on the already-admitted socket can restore the usable link
     // synchronously instead of waiting for connect(), which correctly no-ops.
     await manager.connect();
     expect(FakeWebSocket.instances).toHaveLength(1);
-    expect(socketApi.admittedRoomLink("https:", "sendfa.st")).toBe(`https://sendfa.st/r/${createdId}`);
+    expect(socketApi.admittedRoomPath.get()).toBe(`/r/${createdId}`);
     unlisten();
     manager.close();
   });

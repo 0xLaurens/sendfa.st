@@ -1,43 +1,36 @@
 <script lang="ts">
-    import {Share2Icon} from "lucide-svelte"
-    import {addToast} from "../lib/toast.ts"
-    import type {ToastData} from "../types/toast.ts";
+    import {Share2Icon} from "lucide-svelte";
+    import {addToast} from "../lib/toast.ts";
 
     interface Props {
         link?: string;
-        disabled?: boolean;
     }
 
-    let { link = "", disabled = false }: Props = $props();
+    let {link}: Props = $props();
 
-    function ShareLink() {
-        if (!navigator.share) {
-            console.error("Web Share API not supported")
-            CopyToClipboard()
-            return
+    async function shareLink() {
+        if (!link) return;
+        const url = link;
+        if (navigator.share) {
+            try {
+                await navigator.share({title: "Share the link", url});
+                return;
+            } catch (error) {
+                if (error instanceof DOMException && error.name === "AbortError") return;
+            }
         }
-        navigator.share({
-            title: "Share the link",
-            text: "Share the link with your friends",
-            url: link,
-        })
-    }
 
-    function CopyToClipboard() {
-        navigator.clipboard.writeText(link)
-        console.log("Copied to clipboard")
-        const toast: ToastData = {
-            id: Date.now(),
-            type: "success",
-            title: "Copied to clipboard",
-            description: "The link has been copied to your clipboard",
+        try {
+            await navigator.clipboard.writeText(url);
+            addToast({id: Date.now(), type: "success", title: "Copied to clipboard", description: "The sharing link is ready to paste."});
+        } catch {
+            addToast({id: Date.now(), type: "error", title: "Could not copy the link", description: "Select the link to copy it manually."});
         }
-        addToast(toast)
     }
 </script>
 
 <div class="tooltip tooltip-bottom" data-tip="Share link">
-    <button disabled="{disabled}" onclick={ShareLink} class="btn btn-square bg-base-100">
+    <button type="button" disabled={!link} onclick={shareLink} aria-label="Share link" class="btn btn-square bg-base-100">
         <Share2Icon/>
     </button>
 </div>

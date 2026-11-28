@@ -39,18 +39,6 @@ function nextFileOffer() {
     }
 }
 
-export function denyIncomingFileOffer() {
-    const offer = currentFileOffer.get()
-    if (offer) {
-        const connection = connections.get().get(offer.from)
-        if (connection && connection.dataChannel) {
-            offer.type = FileOfferType.DenyOffer
-            connection.dataChannel.send(JSON.stringify(offer))
-        }
-    }
-    currentFileOffer.set(null)
-}
-
 StreamSaver.mitm = `/StreamSaver/mitm.html?version=2.0.6`;
 let stream: WritableStream<Uint8Array> | null
 let writer: WritableStreamDefaultWriter<Uint8Array> | null
@@ -130,8 +118,6 @@ export async function buildFile(chunk: ArrayBuffer) {
     if (generation !== transferGeneration) return;
     console.log("accSize", accSize, "Filesize", file.size)
     accSize += buffer.byteLength
-    file.accSize = accSize
-    currentFileOffer.set(offer)
 
     if (accSize === file.size) {
         await writer?.close().catch(console.error)
@@ -161,16 +147,6 @@ function filesToMessage(files: FileList): FileMessage[] {
         })
     }
     return messages
-}
-
-export function createFilesOffers(files: FileList) {
-    if (files.length === 0) return;
-
-    for (const [target, connection] of connections.get()) {
-        if (connection.peerConnection.connectionState === "connected" && connection.dataChannel) {
-            createFilesOffer(files, target)
-        }
-    }
 }
 
 export function createFilesOffer(files: FileList, target: string) {

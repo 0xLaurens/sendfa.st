@@ -49,9 +49,6 @@ async function _setupDataChannelListeners(connection: Connection) {
                     addToast(toast);
                     sendFile(data);
                     break;
-                case FileOfferType.DenyOffer:
-                    console.log("The offer was denied :(");
-                    break;
                 case FileOfferType.RequestNextFile:
                     console.log("Requesting next file");
                     sendFile(data);
