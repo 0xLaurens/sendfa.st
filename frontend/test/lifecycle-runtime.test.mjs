@@ -7,7 +7,11 @@ assert.equal(build.success, true);
 const mf = new Miniflare(convertV4MiniflareOptions({
   name: 'lifecycle', modules: true, script: await build.outputs[0].text(),
   compatibilityDate: '2026-07-09', durableObjects: { ROOMS: { className: 'Room', useSQLite: true } },
-  bindings: { ALLOWED_ORIGINS: 'http://localhost:4321', ROOM_CLEANUP_DIAGNOSTICS: 'true' },
+  bindings: {
+    ALLOWED_ORIGINS: 'http://localhost:4321',
+    ROOM_CLEANUP_DIAGNOSTICS: 'true',
+    ROOM_WAKE_DIAGNOSTICS: 'true',
+  },
 }));
 const worker = await mf.getWorker('lifecycle');
 after(() => mf.dispose());
@@ -39,12 +43,12 @@ test('eviction reconstructs identities, roster, routing and one departure', asyn
   const id = await create(), first = await connect(id), second = await connect(id);
   assert.equal((await first.message()).user.id, second.identity.user.id);
   await mf.unsafeEvictDurableObject('lifecycle', 'Room', { name: id, webSockets: 'hibernate' });
+  first.socket.send(JSON.stringify({ type: 'ICE_CANDIDATE', payload: { to: second.identity.user.id, candidate: { candidate: '' } } }));
+  assert.equal((await second.message()).from, first.identity.user.id);
   const third = await connect(id);
   assert.equal(third.snapshot.room.user_count, 3);
   assert.deepEqual(third.snapshot.users.map(user => user.id).sort(), [first.identity.user.id, second.identity.user.id].sort());
   await first.message(); await second.message();
-  first.socket.send(JSON.stringify({ type: 'ICE_CANDIDATE', payload: { to: second.identity.user.id, candidate: { candidate: '' } } }));
-  assert.equal((await second.message()).from, first.identity.user.id);
   await control(id, { overlap: second.identity.user.id });
   assert.equal((await first.message()).user.id, second.identity.user.id);
   assert.equal((await third.message()).user.id, second.identity.user.id);
