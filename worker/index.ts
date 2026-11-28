@@ -8,6 +8,7 @@ export interface Env {
   UPGRADES_PER_MINUTE?: string;
   MAX_MESSAGE_BYTES?: string;
   ROOM_CLEANUP_DIAGNOSTICS?: string;
+  ROOM_WAKE_DIAGNOSTICS?: string;
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -122,7 +123,14 @@ export class Room {
   private state: DurableObjectState;
   private env: Env;
   private expiryKey = "expiresAt";
-  constructor(state: DurableObjectState, env: Env) { this.state = state; this.env = env; }
+  constructor(state: DurableObjectState, env: Env) {
+    this.state = state;
+    this.env = env;
+    if (env.ROOM_WAKE_DIAGNOSTICS === "true") {
+      const attachedPeers = this.peers().length;
+      if (attachedPeers > 0) console.log("room_wake_with_attached_peers", { attachedPeers });
+    }
+  }
 
   async fetch(request: Request): Promise<Response> {
     if (new URL(request.url).pathname === "/status") {
